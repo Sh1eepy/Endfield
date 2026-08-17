@@ -18,7 +18,7 @@
 | 合成树 API | `api_server.py /api/synthesis` | 物品合成树 / 设备配方卡 / 歧义→候选列表 / 无配方→知识库信息；叶子=基础资源，配方≤2，深度≤10，循环剪枝 |
 | 名称建议 | `api_server.py /api/names` | 全部名称（配方物品+设备+知识库条目，1908 个），前端模糊搜索联想 |
 | 媒体结构库 | `output/item_media.json` | extract_media.py 提取：封面图 1957 / 正文图 2046 / 外链 291 / 引用 14693（含数量与链接样式） |
-| 前端 | `web/index.html` | 深色工业 HUD，配方树/知识问答双模式；搜索联想、节点封面图、引用卡片与结构化知识卡 |
+| 前端 | `web/index.html` | 终末地工业档案 v2：黑/骨白/工业黄原创视觉，配方树/知识问答双模式，响应式布局与状态动效 |
 | 评测 | `eval_retrieval.py` | 71 条查询；当前 Recall@5=100%、MRR=97.3%（`final_reviewed.json`） |
 
 ## 3. 关键文件地图

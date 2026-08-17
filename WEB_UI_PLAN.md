@@ -1,6 +1,6 @@
-# WEB_UI_PLAN.md — 已完成的前端 UI 改版方案（终末地风格）
+# WEB_UI_PLAN.md — 前端 UI 改版记录（终末地风格）
 
-> 状态：✅ 已于 2026-08 完成。本文保留改版依据，不再作为待办清单。
+> 状态：✅ v1 与 2026-08 的工业档案 v2 均已完成。本文保留早期改版依据，不再作为待办清单。
 > 当前实际界面与后续任务以 `web/index.html`、`PROJECT_STATE.md` 和 `PROJECT_PROGRESS.md` 为准。
 > 目标：参考 https://endfield.hypergryph.com/#lore 的视觉语言，重做 `web/index.html`
 > 的范围：配色 / 布局 / 组件 / 交互 / RAG 问答展示

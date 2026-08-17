@@ -218,41 +218,145 @@ main{max-width:1180px; margin:0 auto; padding:24px 20px 40px;}
 .node-label{cursor:pointer;text-decoration:none}
 .node-label:hover{fill:var(--accent2);text-decoration:underline}
 .collapse-mark{pointer-events:none;fill:var(--accent3);font-size:11px;font-weight:700}
+
+/* ===== 2026 / Endfield-inspired visual system ===== */
+:root{
+  --bg:#090a09;--card:#111310;--panel:#111310;--panel2:#171a16;--panel3:#22261f;
+  --border:#2b3028;--border2:#464d40;--accent:#f2d321;--accent2:#d9ff63;--accent3:#fff2a8;
+  --text:#f4f2e9;--sub:#a9aea1;--faint:#686e62;--ok:#b7ef58;--danger:#ff6b57;
+  --ink:#090a09;--paper:#e9e7dc;--yellow:#f2d321;
+}
+html{scroll-behavior:smooth;background:var(--bg)}
+body{
+  overflow-x:hidden;line-height:1.55;font-family:Inter,"Segoe UI","Microsoft YaHei",sans-serif;
+  background:
+    linear-gradient(90deg,rgba(242,211,33,.045) 1px,transparent 1px) 0 0/72px 72px,
+    linear-gradient(rgba(242,211,33,.035) 1px,transparent 1px) 0 0/72px 72px,
+    radial-gradient(circle at 82% 6%,rgba(242,211,33,.13),transparent 26%),#090a09;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.22;
+  background:repeating-linear-gradient(118deg,transparent 0 80px,rgba(255,255,255,.018) 81px 82px);
+}
+.ambient{position:fixed;inset:0;pointer-events:none;z-index:-1;overflow:hidden}
+.ambient::before{
+  content:"";position:absolute;width:48vw;height:110vh;right:-11vw;top:-18vh;transform:rotate(17deg);
+  background:linear-gradient(90deg,transparent,rgba(242,211,33,.045),rgba(242,211,33,.15),transparent);
+  filter:blur(10px);animation:ambientShift 14s ease-in-out infinite alternate;
+}
+.ambient::after{content:"ENDFIELD INDUSTRIES // SYNTHESIS ARCHIVE";position:absolute;right:-115px;top:48%;transform:rotate(90deg);font:700 10px/1 Consolas,monospace;letter-spacing:.32em;color:rgba(242,211,33,.24)}
+@keyframes ambientShift{to{transform:translateX(-5vw) rotate(12deg);opacity:.65}}
+.topbar{
+  height:76px;padding:0 38px;border:0;border-bottom:1px solid rgba(242,211,33,.2);
+  background:rgba(9,10,9,.78);backdrop-filter:blur(18px);box-shadow:none;
+}
+.brand{display:flex;align-items:center;gap:14px}.brand-mark{width:38px;height:38px;display:grid;place-items:center;background:var(--yellow);color:var(--ink);font:900 19px/1 Arial;clip-path:polygon(0 0,100% 0,100% 72%,72% 100%,0 100%)}
+.brand-cn{font-size:15px;font-weight:800;letter-spacing:.14em}.brand-en{font:600 9px/1.4 Consolas,monospace;letter-spacing:.22em;color:var(--faint);margin-top:3px}
+.top-meta{display:flex;align-items:center;gap:28px}.top-code{font:600 10px/1 Consolas,monospace;letter-spacing:.18em;color:var(--faint)}
+.status{padding:8px 12px;border:1px solid var(--border);background:rgba(255,255,255,.02)}
+.status .dot{border-radius:0;transform:rotate(45deg);width:7px;height:7px}.status .dot.on{box-shadow:0 0 12px rgba(183,239,88,.7)}
+.site-main{max-width:1440px;margin:0 auto;padding:0 34px 64px}
+.hero{min-height:340px;display:grid;grid-template-columns:minmax(0,1fr) 300px;align-items:end;padding:78px 0 46px;position:relative}
+.hero::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:1px;background:linear-gradient(90deg,var(--yellow),rgba(242,211,33,.12) 55%,transparent)}
+.eyebrow{display:flex;align-items:center;gap:12px;font:700 10px/1 Consolas,monospace;letter-spacing:.22em;color:var(--yellow);margin-bottom:18px}.eyebrow::before{content:"";width:34px;height:3px;background:var(--yellow)}
+.hero h1{font-size:clamp(42px,6.2vw,88px);line-height:.94;letter-spacing:-.055em;font-weight:900;max-width:920px}.hero h1 span{display:block;color:var(--yellow);-webkit-text-stroke:1px rgba(242,211,33,.25)}
+.hero-copy{max-width:610px;margin-top:24px;color:var(--sub);font-size:14px;letter-spacing:.035em}.hero-copy b{color:var(--text);font-weight:600}
+.hero-stats{align-self:end;border-left:1px solid var(--border);padding-left:28px;display:grid;gap:20px}.stat{display:flex;justify-content:space-between;align-items:end;border-bottom:1px solid var(--border);padding-bottom:8px}.stat b{font:800 27px/1 Consolas,monospace;color:var(--paper)}.stat span{font:600 9px/1.4 Consolas,monospace;letter-spacing:.16em;color:var(--faint);text-align:right}
+.search-wrap{margin:34px 0 18px;position:relative;z-index:20}
+.command-shell{background:rgba(17,19,16,.92);border:1px solid var(--border);box-shadow:0 28px 80px rgba(0,0,0,.3);position:relative}
+.command-shell::before{content:"";position:absolute;left:-1px;top:-1px;width:82px;height:4px;background:var(--yellow)}
+.command-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.mode-tabs{margin:0;padding:0;border:0;border-radius:0;background:transparent;gap:0;position:relative}
+.mode-btn{position:relative;border-radius:0;padding:10px 22px 10px 32px;font:700 11px/1 Consolas,monospace;letter-spacing:.12em;color:var(--faint);overflow:hidden}
+.mode-btn::before{content:attr(data-index);position:absolute;left:9px;color:#555b50;font-size:8px}.mode-btn::after{content:"";position:absolute;left:50%;right:50%;bottom:0;height:2px;background:var(--yellow);transition:left .3s ease,right .3s ease}
+.mode-btn:hover{background:rgba(255,255,255,.03);color:var(--text)}
+.mode-btn.active{background:transparent;color:var(--text);box-shadow:none}.mode-btn.active::before{color:var(--yellow)}.mode-btn.active::after{left:10px;right:10px}
+.mode-note{font:500 9px/1 Consolas,monospace;color:var(--faint);letter-spacing:.14em}.mode-note strong{color:var(--yellow)}
+.query-row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;padding:24px 26px;background:linear-gradient(100deg,rgba(242,211,33,.055),transparent 30%)}
+.query-prefix{font:800 12px/1 Consolas,monospace;color:var(--yellow);letter-spacing:.1em}
+#in-search{padding:4px 0;background:transparent;border:0;border-radius:0;box-shadow:none;font-size:clamp(18px,2.2vw,29px);font-weight:650;letter-spacing:-.02em}
+#in-search:focus{border:0;box-shadow:none}#in-search::placeholder{color:#565b51}
+.enter-key{font:700 9px/1 Consolas,monospace;color:var(--faint);border:1px solid var(--border2);padding:7px 9px;letter-spacing:.12em}
+#suggest{top:calc(100% - 1px);left:0;right:0;border-radius:0;background:#161915;border-color:var(--border2);box-shadow:0 28px 70px rgba(0,0,0,.7)}
+.sug-item{border-bottom:1px solid #242820;padding:12px 26px}.sug-item:hover,.sug-item.active{background:var(--yellow);color:var(--ink)}
+.search-history{padding:0 26px 17px;margin:0;min-height:0}.history-label{font-family:Consolas,monospace}.history-chip,.history-clear{border-radius:0;background:transparent;padding:4px 9px}.history-chip:hover{background:var(--yellow);border-color:var(--yellow);color:var(--ink)}
+.workspace{display:grid;grid-template-columns:190px minmax(0,1fr);gap:18px;align-items:start}
+.side-rail{position:sticky;top:94px;border:1px solid var(--border);background:rgba(17,19,16,.72);padding:18px 16px;color:var(--faint)}
+.rail-title{font:800 9px/1 Consolas,monospace;letter-spacing:.2em;color:var(--yellow);margin-bottom:20px}.rail-item{padding:12px 0;border-top:1px solid var(--border)}.rail-item b{display:block;color:var(--text);font:700 11px/1.3 Consolas,monospace;margin-bottom:5px}.rail-item span{font-size:10px;line-height:1.5}.rail-legend{display:grid;grid-template-columns:10px 1fr;gap:8px;align-items:center;margin-top:8px;font-size:10px}.legend-dot{width:8px;height:8px;background:var(--yellow)}.legend-dot.recipe{background:transparent;border:1px solid var(--accent2)}.legend-dot.base{background:#5c6258}
+.panel{border-radius:0;background:rgba(15,17,14,.9);box-shadow:0 22px 80px rgba(0,0,0,.24);min-height:620px;position:relative}
+.panel::after{content:"";position:absolute;right:-1px;top:-1px;width:30px;height:30px;border-top:2px solid var(--yellow);border-right:2px solid var(--yellow);pointer-events:none}
+.panel-head{padding:15px 20px;border-radius:0;background:#151814;text-transform:uppercase}.panel-kicker{font:700 9px/1 Consolas,monospace;color:var(--yellow);letter-spacing:.18em;margin-right:12px}
+#tree-title{font-size:13px;letter-spacing:.06em}.panel-guide{font:500 9px/1.4 Consolas,monospace!important;letter-spacing:.08em}
+#syn-tree{padding:18px;min-height:560px;transition:opacity .18s ease,transform .28s cubic-bezier(.2,.8,.2,1)}
+#syn-tree.is-entering{animation:contentIn .42s cubic-bezier(.2,.8,.2,1)}
+@keyframes contentIn{from{opacity:0;transform:translateY(12px);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
+#syn-empty{padding:120px 20px;font-family:Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;position:relative;overflow:hidden}
+#syn-empty::after{content:"";position:absolute;left:12%;right:12%;bottom:70px;height:1px;background:linear-gradient(90deg,transparent,var(--yellow),transparent);animation:scanLine 2.4s ease-in-out infinite}
+@keyframes scanLine{0%,100%{transform:translateX(-35%);opacity:.15}50%{transform:translateX(35%);opacity:.8}}
+.hero .eyebrow,.hero h1,.hero-copy,.hero-stats,.command-shell{animation:heroRise .7s both cubic-bezier(.2,.8,.2,1)}
+.hero h1{animation-delay:.06s}.hero-copy{animation-delay:.14s}.hero-stats{animation-delay:.19s}.command-shell{animation-delay:.23s}
+@keyframes heroRise{from{opacity:0;transform:translateY(18px);filter:blur(5px)}to{opacity:1;transform:none;filter:none}}
+.item-head{background:linear-gradient(90deg,rgba(242,211,33,.11),transparent 45%);border-left:3px solid var(--yellow)}.item-cover{border-radius:0;clip-path:polygon(0 0,100% 0,100% 78%,78% 100%,0 100%)}
+.refs-block,.msg.bot,.ask-recipe-card,.ask-hits details{border-radius:0}.ref-chip,.ask-src-chip,.ask-intent-tag,.ask-ambig,.src-chip{border-radius:0}
+.node-item circle{fill:#171a15;stroke:var(--yellow)}.node-recipe rect{fill:#121b16;stroke:var(--accent2)}.node-recipe text{fill:var(--accent2)}.link{stroke:#485044}.edge-label{fill:var(--yellow)}
+.footer-line{display:flex;justify-content:space-between;margin-top:22px;padding-top:14px;border-top:1px solid var(--border);font:600 9px/1 Consolas,monospace;letter-spacing:.12em;color:var(--faint)}
+@media(max-width:850px){.top-code,.hero-stats,.side-rail{display:none}.topbar{height:64px;padding:0 18px}.site-main{padding:0 14px 38px}.hero{display:block;min-height:280px;padding:62px 4px 36px}.hero h1{font-size:clamp(40px,13vw,68px)}.workspace{display:block}.query-row{grid-template-columns:auto 1fr;padding:20px 16px}.enter-key{display:none}.command-head{align-items:flex-start;gap:12px}.mode-note{display:none}.panel{min-height:520px}.panel-guide{display:none}}
+@media(max-width:520px){.brand-en{display:none}.top-meta{gap:8px}.status{padding:7px}.status span:last-child{font-size:0}.status span:last-child::after{content:"API";font-size:10px}.mode-btn{padding:10px 12px 10px 26px}.query-prefix{display:none}.query-row{grid-template-columns:1fr}.hero-copy{font-size:13px}.footer-line span:last-child{display:none}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
-<header>
-  <div>
-    <h1>终末地 <span class="hl">工业</span> · 合成终端</h1>
-    <div class="tag">明日方舟：终末地 WIKI 数据驱动 · 配方链可视化 · RAG 问答</div>
-  </div>
-  <div class="status"><span class="dot" id="api-dot"></span><span id="api-text">后端未连接</span></div>
+<div class="ambient" aria-hidden="true"></div>
+<header class="topbar">
+  <div class="brand"><div class="brand-mark">E</div><div><div class="brand-cn">终末地工业 · 合成档案</div><div class="brand-en">ENDFIELD SYNTHESIS ARCHIVE</div></div></div>
+  <div class="top-meta"><span class="top-code">TALOS-II / DATA TERMINAL 07</span><div class="status"><span class="dot" id="api-dot"></span><span id="api-text">后端未连接</span></div></div>
 </header>
 
-<main>
-  <div class="search-wrap">
-    <div class="mode-tabs" id="mode-tabs">
-      <button class="mode-btn active" data-mode="syn">配方合成树</button>
-      <button class="mode-btn" data-mode="ask">知识问答</button>
+<main class="site-main">
+  <section class="hero">
+    <div><div class="eyebrow">INDUSTRIAL RECIPE DATABASE / 01</div><h1>拆解每一种<span>制造路径</span></h1><p class="hero-copy"><b>从目标物品反向追踪至基础资源。</b> 345 条真实配方、完整设备链路与 WIKI 知识库，被整理成一套可搜索、可展开的工业档案。</p></div>
+    <div class="hero-stats"><div class="stat"><b>345</b><span>VERIFIED<br>RECIPES</span></div><div class="stat"><b>1,958</b><span>WIKI<br>ENTRIES</span></div><div class="stat"><b>100%</b><span>RECALL<br>AT 5</span></div></div>
+  </section>
+
+  <div class="search-wrap command-shell">
+    <div class="command-head"><div class="mode-tabs" id="mode-tabs">
+      <button class="mode-btn active" data-mode="syn" data-index="01">配方合成树</button>
+      <button class="mode-btn" data-mode="ask" data-index="02">知识问答</button>
+    </div><div class="mode-note"><strong>●</strong> SELECT OPERATION MODE</div></div>
+    <div class="query-row"><span class="query-prefix">QUERY://</span>
+      <input id="in-search" aria-label="搜索物品、设备或知识问题" placeholder="输入物品、设备名或直接提问…" autocomplete="off">
+      <span class="enter-key">ENTER ↵</span>
     </div>
-    <input id="in-search" placeholder="输入物品、设备名或直接提问，如：重息壤怎么造、天有洪炉能做什么…" autocomplete="off">
     <div id="suggest"></div>
     <div id="search-history" class="search-history"></div>
   </div>
 
+  <section class="workspace"><aside class="side-rail"><div class="rail-title">ARCHIVE INDEX</div><div class="rail-item"><b>OPERATION</b><span>输入名称后展开完整生产链，圆点可折叠分支。</span></div><div class="rail-item"><b>NODE LEGEND</b><div class="rail-legend"><i class="legend-dot"></i><span>可制造物品</span><i class="legend-dot recipe"></i><span>生产设备</span><i class="legend-dot base"></i><span>基础资源</span></div></div><div class="rail-item"><b>DATA SOURCE</b><span>终末地官方 WIKI<br>本地离线索引</span></div></aside>
   <div class="panel">
     <div class="panel-head">
-      <span><b id="tree-title">配方合成树</b></span>
-      <span style="font-size:12px;color:var(--faint)">圆点展开/收起 · 点击物品名跳转 · 叶子 = 基础资源</span>
+      <span><i class="panel-kicker">OUTPUT</i><b id="tree-title">配方合成树</b></span>
+      <span class="panel-guide" style="font-size:12px;color:var(--faint)">圆点展开/收起 · 点击物品名跳转 · 叶子 = 基础资源</span>
     </div>
     <div id="syn-tree"><div id="syn-empty">输入名称，展开配方树</div></div>
   </div>
+  </section>
+  <div class="footer-line"><span>© ENDFIELD SYNTHESIS ARCHIVE / COMMUNITY TOOL</span><span>DATA INTEGRITY: VERIFIED · LOCAL INDEX: ONLINE</span></div>
 </main>
 <div id="tip"></div>
 <script>
 /* ===================== 工具 ===================== */
 const $ = id => document.getElementById(id);
 const tip = $('tip');
+let RESULT_ANIM_TIMER = null;
+const resultObserver = new MutationObserver(() => {
+  const el = $('syn-tree');
+  el.classList.remove('is-entering');
+  void el.offsetWidth;
+  el.classList.add('is-entering');
+  clearTimeout(RESULT_ANIM_TIMER);
+  RESULT_ANIM_TIMER = setTimeout(() => el.classList.remove('is-entering'), 460);
+});
+resultObserver.observe($('syn-tree'), { childList: true });
 function esc(s) {
   return String(s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
