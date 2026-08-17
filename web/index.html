@@ -205,6 +205,19 @@ main{max-width:1180px; margin:0 auto; padding:24px 20px 40px;}
   cursor:pointer; font-size:13px; color:var(--accent2); transition:all .15s;
 }
 .ask-ambig:hover{background:var(--accent); color:#0B0E13; border-color:var(--accent);}
+.search-history{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px;min-height:24px}
+.history-label{font-size:11px;color:var(--faint);letter-spacing:.08em}
+.history-chip,.history-clear{
+  border:1px solid var(--border);background:var(--panel2);color:var(--sub);border-radius:4px;
+  padding:3px 8px;font-size:12px;cursor:pointer;transition:all .15s;
+}
+.history-chip:hover{border-color:var(--accent2);color:var(--accent2)}
+.history-clear{background:transparent;color:var(--faint)}
+.history-clear:hover{color:var(--danger);border-color:var(--danger)}
+.node-item.has-children circle{cursor:pointer}
+.node-label{cursor:pointer;text-decoration:none}
+.node-label:hover{fill:var(--accent2);text-decoration:underline}
+.collapse-mark{pointer-events:none;fill:var(--accent3);font-size:11px;font-weight:700}
 </style>
 </head>
 <body>
@@ -224,12 +237,13 @@ main{max-width:1180px; margin:0 auto; padding:24px 20px 40px;}
     </div>
     <input id="in-search" placeholder="输入物品、设备名或直接提问，如：重息壤怎么造、天有洪炉能做什么…" autocomplete="off">
     <div id="suggest"></div>
+    <div id="search-history" class="search-history"></div>
   </div>
 
   <div class="panel">
     <div class="panel-head">
       <span><b id="tree-title">配方合成树</b></span>
-      <span style="font-size:12px;color:var(--faint)">悬停节点查看详情 · 叶子 = 基础资源（清水/矿物/气体矿物/种子）</span>
+      <span style="font-size:12px;color:var(--faint)">圆点展开/收起 · 点击物品名跳转 · 叶子 = 基础资源</span>
     </div>
     <div id="syn-tree"><div id="syn-empty">输入名称，展开配方树</div></div>
   </div>
@@ -252,6 +266,47 @@ fetch('/api/health').then(r => r.json()).then(() => {
 /* ===================== 模糊搜索联想 ===================== */
 let ALL_NAMES = [];
 let SUG_INDEX = -1;
+const HISTORY_KEY = 'endfield-search-history-v1';
+const HISTORY_LIMIT = 8;
+
+function getHistory() {
+  try {
+    const value = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    return Array.isArray(value) ? value.filter(x => x && x.q).slice(0, HISTORY_LIMIT) : [];
+  } catch (_) { return []; }
+}
+function renderHistory() {
+  const history = getHistory();
+  const box = $('search-history');
+  if (!history.length) { box.innerHTML = ''; return; }
+  box.innerHTML = `<span class="history-label">最近查询</span>` + history.map((x, i) =>
+    `<button class="history-chip" data-history="${i}" title="${x.mode === 'ask' ? '知识问答' : '配方合成树'}">${esc(x.q)}</button>`
+  ).join('') + `<button class="history-clear" title="仅清除本浏览器记录">清除</button>`;
+}
+function recordHistory(q, mode) {
+  const clean = String(q || '').trim();
+  if (!clean) return;
+  const next = [{ q: clean, mode }, ...getHistory().filter(x => x.q !== clean || x.mode !== mode)].slice(0, HISTORY_LIMIT);
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(next)); } catch (_) {}
+  renderHistory();
+}
+$('search-history').addEventListener('click', ev => {
+  const chip = ev.target.closest('[data-history]');
+  if (chip) {
+    const entry = getHistory()[Number(chip.dataset.history)];
+    if (!entry) return;
+    $('in-search').value = entry.q;
+    CUR_MODE = entry.mode === 'ask' ? 'ask' : 'syn';
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === CUR_MODE));
+    hideSuggest();
+    CUR_MODE === 'syn' ? loadSyn() : loadAsk();
+  }
+  if (ev.target.closest('.history-clear')) {
+    try { localStorage.removeItem(HISTORY_KEY); } catch (_) {}
+    renderHistory();
+  }
+});
+renderHistory();
 
 fetch('/api/names').then(r => r.json()).then(d => { ALL_NAMES = d.names || []; }).catch(() => {});
 
@@ -407,6 +462,7 @@ async function loadAsk() {
     });
     const d = await res.json();
     if (!d.ok) { $('syn-tree').innerHTML = `<div class="msg bot"><span style="color:var(--danger)">${esc(d.error || '问答失败')}</span></div>`; return; }
+    recordHistory(q, 'ask');
     renderAsk(d);
   } catch (e) { $('syn-tree').innerHTML = `<div class="msg bot"><span style="color:var(--danger)">${esc(e.message)}</span></div>`; }
 }
@@ -420,19 +476,19 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
     btn.classList.add('active');
     CUR_MODE = btn.dataset.mode;
     $('tree-title').textContent = CUR_MODE === 'syn' ? '配方合成树' : '知识问答';
-    $('syn-empty').textContent = CUR_MODE === 'syn' ? '输入名称，展开配方树' : '输入问题，AI 结合知识库回答';
     $('syn-tree').innerHTML = `<div id="syn-empty">${CUR_MODE === 'syn' ? '输入名称，展开配方树' : '输入问题，AI 结合知识库回答'}</div>`;
     const q = $('in-search').value.trim();
     if (q) CUR_MODE === 'syn' ? loadSyn() : loadAsk();
   });
 });
-function synToD3(node, depth) {
+function synToD3(node, depth, key = 'root') {
   const d = { name: node.name, item_id: node.item_id, depth: depth, kind: 'item',
-              leaf: node.leaf, truncated: node.truncated, cover: node.cover, children: [] };
-  (node.recipes || []).forEach(r => {
-    const rn = { name: r.machine, kind: 'recipe', duration: r.duration, children: [] };
-    (r.inputs || []).forEach(x => {
-      const cn = synToD3(x, depth + 1);
+              leaf: node.leaf, truncated: node.truncated, cover: node.cover, key, children: [] };
+  (node.recipes || []).forEach((r, ri) => {
+    const recipeKey = `${key}/r${ri}`;
+    const rn = { name: r.machine, kind: 'recipe', duration: r.duration, key: recipeKey, children: [] };
+    (r.inputs || []).forEach((x, xi) => {
+      const cn = synToD3(x, depth + 1, `${recipeKey}/i${xi}:${x.item_id || x.name}`);
       cn.count = x.count;
       rn.children.push(cn);
     });
@@ -442,14 +498,23 @@ function synToD3(node, depth) {
 }
 
 function renderTree(tree) {
-  const root = d3.hierarchy(synToD3(tree, 0));
+  const source = synToD3(tree, 0);
+  const collapsed = new Set();
   const W = 940, H = 620;
-  const layout = d3.tree().size([H - 80, W - 160]);
-  const data = layout(root);
-  data.descendants().forEach((n, i) => { n.data._idx = i; });
-  const svg = d3.select('#syn-tree').html('').append('svg')
-    .attr('viewBox', `0 0 ${W} ${H}`).attr('width', '100%').attr('height', H);
-  const g = svg.append('g').attr('transform', 'translate(50,40)');
+  function visible(node) {
+    const copy = { ...node };
+    copy._hasChildren = Boolean(node.children && node.children.length);
+    copy.children = collapsed.has(node.key) ? [] : (node.children || []).map(visible);
+    return copy;
+  }
+  function draw() {
+    const root = d3.hierarchy(visible(source));
+    const layout = d3.tree().size([H - 80, W - 160]);
+    const data = layout(root);
+    data.descendants().forEach((n, i) => { n.data._idx = i; });
+    const svg = d3.select('#syn-tree').html('').append('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('width', '100%').attr('height', H);
+    const g = svg.append('g').attr('transform', 'translate(50,40)');
 
   g.selectAll('.link').data(data.links()).enter().append('path')
     .attr('class', d => d.source.data.kind === 'item' ? 'link cnt' : 'link')
@@ -461,8 +526,8 @@ function renderTree(tree) {
     .attr('y', d => (d.source.x + d.target.x) / 2 - 4)
     .text(d => d.target.data.count ? '×' + d.target.data.count : '');
 
-  const nodes = g.selectAll('.node').data(data.descendants()).enter().append('g')
-    .attr('class', d => d.data.kind === 'item' ? 'node node-item' : 'node node-recipe')
+    const nodes = g.selectAll('.node').data(data.descendants()).enter().append('g')
+    .attr('class', d => d.data.kind === 'item' ? `node node-item${d.data._hasChildren ? ' has-children' : ''}` : 'node node-recipe')
     .attr('transform', d => `translate(${d.y},${d.x})`)
     .on('mouseover', function (ev, d) {
       tip.innerHTML = `<div class="t-name">${esc(d.data.name)}</div>` +
@@ -474,13 +539,29 @@ function renderTree(tree) {
       tip.style.left = (ev.clientX - r.left + 12) + 'px';
       tip.style.top = (ev.clientY - r.top + 12) + 'px';
     })
-    .on('mouseout', () => tip.style.display = 'none');
+    .on('mouseout', () => tip.style.display = 'none')
+    .on('click', (ev, d) => {
+      if (d.data.kind !== 'item' || !d.data._hasChildren) return;
+      collapsed.has(d.data.key) ? collapsed.delete(d.data.key) : collapsed.add(d.data.key);
+      tip.style.display = 'none';
+      draw();
+    });
 
   nodes.filter(d => d.data.kind === 'item').append('circle')
     .attr('r', d => d.data.depth === 0 ? 20 : 15);
   nodes.filter(d => d.data.kind === 'item').append('text').attr('dy', '0.35em')
+    .attr('class', 'node-label')
     .attr('text-anchor', 'middle')
-    .text(d => d.data.name.length > 5 ? d.data.name.slice(0, 5) + '…' : d.data.name);
+    .text(d => d.data.name.length > 5 ? d.data.name.slice(0, 5) + '…' : d.data.name)
+    .on('click', (ev, d) => {
+      ev.stopPropagation();
+      $('in-search').value = d.data.name;
+      hideSuggest();
+      loadSyn();
+    });
+  nodes.filter(d => d.data.kind === 'item' && d.data._hasChildren).append('text')
+    .attr('class', 'collapse-mark').attr('x', d => d.data.depth === 0 ? 16 : 12).attr('y', -10)
+    .text(d => collapsed.has(d.data.key) ? '+' : '−');
 
   // 有封面图的物品节点：圆形裁剪小图 + 描边圆，名称移到圆下方
   nodes.filter(d => d.data.kind === 'item' && d.data.cover).each(function (d) {
@@ -506,6 +587,8 @@ function renderTree(tree) {
   nodes.filter(d => d.data.kind === 'recipe').append('text').attr('dy', '0.35em')
     .attr('text-anchor', 'middle')
     .text(d => d.data.name.length > 5 ? d.data.name.slice(0, 5) + '…' : d.data.name);
+  }
+  draw();
 }
 
 function renderDeviceCards(tree) {
@@ -630,6 +713,7 @@ async function loadSyn() {
       });
       return;
     }
+    recordHistory(item, 'syn');
     if (d.no_recipe) { renderKbCard(d.kb); }
     else if (d.tree && d.tree.kind === 'device') { renderDeviceCards(d.tree); }
     else { renderTree(d.tree); }
@@ -643,5 +727,3 @@ loadSyn();
 </script>
 </body>
 </html>
-
-
