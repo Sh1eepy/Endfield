@@ -1,0 +1,167 @@
+# -*- coding: utf-8 -*-
+"""
+rag_search.py — 混合检索（向量语义 + BM25 关键词 → RRF 融合）
+
+CLI 用法:
+    python scripts/rag_search.py "什么设备能辅助攻击"
+    python scripts/rag_search.py "制造重息壤气" --top-k 5
+    python scripts/rag_search.py "赤铜耐压罐" --json          # 输出 JSON（供 RAG 系统集成）
+
+模块用法:
+    from rag_search import RAGRetriever
+    retriever = RAGRetriever()                       # 默认加载 output/rag
+    results = retriever.search("查询", top_k=5)
+    # results: [{meta:{item_id,name,category,...}, text, score, vector_score, bm25_score}]
+
+检索方式: 向量 top-N + BM25 top-N 双路召回，Reciprocal Rank Fusion 融合排序。
+"""
+import argparse
+import json
+import os
+import pickle
+import sys
+
+if sys.stdout:
+    sys.stdout.reconfigure(encoding="utf-8")
+
+# 离线模式：模型已缓存，禁止联网检查 HF（否则会超时失败）
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+
+BGE_QUERY_INSTRUCTION = "为这个句子生成表示以用于检索相关文章："
+
+_DICT_LOADED = False
+
+
+def _load_userdict():
+    """加载项目自定义 jieba 词典（与 build_rag 保持一致的分词）。"""
+    global _DICT_LOADED
+    if _DICT_LOADED:
+        return
+    import jieba
+    dict_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                             "scripts", "dict_zh.txt")
+    if os.path.exists(dict_path):
+        jieba.load_userdict(dict_path)
+    _DICT_LOADED = True
+
+
+class RAGRetriever:
+    def __init__(self, index_dir="output/rag", model_name="BAAI/bge-small-zh-v1.5"):
+        self.index_dir = index_dir
+        # ---------- 加载 BM25（按分类分片，跨分片合并）----------
+        import glob as _glob
+
+        bm25_dir = os.path.join(index_dir, "bm25")
+        self.bm25_shards = []          # [(BM25, 全局起点)]
+        self.chunk_texts, self.metas = [], []
+        shard_files = sorted(_glob.glob(os.path.join(bm25_dir, "*.pkl"))) if os.path.isdir(bm25_dir) else []
+        if not shard_files and os.path.exists(os.path.join(index_dir, "bm25.pkl")):
+            shard_files = [os.path.join(index_dir, "bm25.pkl")]  # 旧版单一文件兼容
+        for f in shard_files:
+            with open(f, "rb") as fh:
+                data = pickle.load(fh)
+            self.bm25_shards.append((data["bm25"], len(self.chunk_texts)))
+            self.chunk_texts.extend(data["chunk_texts"])
+            self.metas.extend(data["metas"])
+        # ---------- 加载向量库 ----------
+        import chromadb
+        from sentence_transformers import SentenceTransformer
+
+        self.model = SentenceTransformer(model_name, local_files_only=True)
+        self.client = chromadb.PersistentClient(path=os.path.join(index_dir, "chroma"))
+        self.coll = self.client.get_collection("endfield_kb")
+
+    # ---------- BM25 检索（跨分片）----------
+    def bm25_search(self, query, top_n):
+        import jieba
+
+        _load_userdict()
+        tokens = [t for t in jieba.cut(query) if t.strip() and t.strip() != "\n"]
+        if not tokens or not self.bm25_shards:
+            return []
+        candidates = []
+        for bm25, base in self.bm25_shards:
+            scores = bm25.get_scores(tokens)
+            order = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:top_n]
+            for i in order:
+                if scores[i] > 0:
+                    candidates.append((float(scores[i]), base + i))
+        candidates.sort(key=lambda x: -x[0])
+        return [(i, s) for s, i in candidates[:top_n]]
+
+    # ---------- 向量检索 ----------
+    def vector_search(self, query, top_n):
+        qv = self.model.encode(
+            [BGE_QUERY_INSTRUCTION + query],
+            normalize_embeddings=True,
+        ).tolist()
+        res = self.coll.query(query_embeddings=qv, n_results=min(top_n, self.coll.count()))
+        ids, dists = res["ids"][0], res["distances"][0]
+        idx_map = {f"{m['category']}-{m['item_id']}-{m['chunk_index']}": i for i, m in enumerate(self.metas)}
+        out = []
+        for cid, d in zip(ids, dists):
+            i = idx_map[cid]
+            out.append((i, float(1.0 - d)))  # cosine 距离转相似度
+        return out
+
+    # ---------- RRF 融合 ----------
+    @staticmethod
+    def rrf_fuse(ranked_a, ranked_b, k=60):
+        scores = {}
+        for rank, (i, _s) in enumerate(ranked_a):
+            scores[i] = scores.get(i, 0.0) + 1.0 / (k + rank + 1)
+        for rank, (i, _s) in enumerate(ranked_b):
+            scores[i] = scores.get(i, 0.0) + 1.0 / (k + rank + 1)
+        return sorted(scores.items(), key=lambda x: x[1], reverse=True)
+
+    def search(self, query, top_k=5, bm25_top_n=20, vec_top_n=20, fuse_k=60):
+        bm25_hits = self.bm25_search(query, bm25_top_n)
+        vec_hits = self.vector_search(query, vec_top_n)
+        vec_score = dict(vec_hits)
+        bm25_score = dict(bm25_hits)
+        fused = self.rrf_fuse(bm25_hits, vec_hits, k=fuse_k)
+        results = []
+        for i, score in fused[:top_k]:
+            m = self.metas[i]
+            results.append(
+                {
+                    "meta": m,
+                    "text": self.chunk_texts[i],
+                    "score": round(score, 5),
+                    "vector_sim": round(vec_score.get(i, 0.0), 5),
+                    "bm25_score": round(bm25_score.get(i, 0.0), 5),
+                }
+            )
+        return results
+
+
+def main():
+    ap = argparse.ArgumentParser(description="混合检索：向量 + BM25 → RRF")
+    ap.add_argument("query", help="查询语句")
+    ap.add_argument("--top-k", type=int, default=5, help="返回条数")
+    ap.add_argument("--index-dir", default="output/rag", help="索引目录")
+    ap.add_argument("--model", default="BAAI/bge-small-zh-v1.5", help="embedding 模型名")
+    ap.add_argument("--json", action="store_true", help="以 JSON 输出（供系统集成）")
+    args = ap.parse_args()
+
+    r = RAGRetriever(args.index_dir, args.model)
+    results = r.search(args.query, top_k=args.top_k)
+
+    if args.json:
+        print(json.dumps(results, ensure_ascii=False, indent=2))
+        return
+
+    print(f"查询: {args.query}\n")
+    for rank, hit in enumerate(results, 1):
+        m = hit["meta"]
+        print(
+            f"[{rank}] ({m['category']}) {m['name']}  #ID {m['item_id']} "
+            f"RRF={hit['score']} 向量={hit['vector_sim']} BM25={hit['bm25_score']}"
+        )
+        print("  " + hit["text"].replace("\n", "\n  ")[:400])
+        print()
+
+
+if __name__ == "__main__":
+    main()

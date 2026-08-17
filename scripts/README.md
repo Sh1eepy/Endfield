@@ -1,0 +1,176 @@
+# scripts - 通用工具集
+
+《明日方舟：终末地》**配方合成树** 项目的工具集。
+（早期「生产流水线空间规划」工具已全部移除，勿重建。）
+
+## 使用前提
+- Python 3.10+ / Node.js 18+
+- 相对路径基于运行命令的当前目录（项目根）
+
+## 数据层工具
+
+### 1. `wiki_collector.js` — 浏览器采集（需登录）
+在已登录的 WIKI 页面控制台运行，借站内已认证 API 抓全量 JSON。
+凭证不离开浏览器。
+
+### 2. `build_kb_all.py` — 全量按分类提取知识库
+把 `endfield_wiki_full_*.json` 全部条目按子分类提取为 jsonl + md：
+```bash
+python scripts/build_kb_all.py            # → endfield_kb/{分类}.jsonl/.md/_catalog.json
+```
+jsonl 格式 `{item_id,name,category,sections,sections_struct,full_text}`，直接喂给 `build_rag.py`。
+渲染规则：entry（物品引用）→ `名称×数量`（空格分隔防粘连）；link（外链）→ 链接文本；
+image 块 → `[图片](url)`；表格逐单元格渲染（不再丢数据）。
+`sections_struct` 为结构化块（text/table/image/entry），供前端渲染真表格/真图片/物品卡片。
+
+### 3. `build_kb.py` — 单分类知识库构建（旧工具，兼容保留）
+```bash
+python scripts/build_kb.py --sub-type-id 5 --output-prefix endfield_devices
+```
+
+### 4. `recipe_extract.py` — 从 WIKI 全量 JSON 提取配方
+```bash
+python scripts/recipe_extract.py          # → output/recipes.json（345 个配方，不做激进清洗）
+```
+保留设备制造/容器"盛装"/矿机/原木等全配方，供合成树完整展示"怎么造"。
+循环/自循环等由合成树剪枝规则处理。合成树数据源。
+
+### 5. `recipe_index.py` — 配方索引通用工具
+`load_recipes / build_item_index / find_item_ids_by_name`，供 api_server 与 eval_rag 复用。
+```python
+from recipe_index import load_recipes, build_item_index, find_item_ids_by_name
+```
+
+### 6. `extract_media.py` — 提取图片/链接/引用结构信息
+```bash
+python scripts/extract_media.py          # → output/item_media.json
+```
+背景：build_kb_all / recipe_extract 渲染块式富文本时丢弃了图片 URL、外部链接、entry 数量与链接样式。
+本脚本从 WIKI 全量 JSON 原样提取（**无需重新爬取，数据一直在原始 JSON 里**）：
+- `cover` 条目封面图（1957/1958 覆盖）+ `illustration` 配图
+- `images` blockMap 正文图片 URL（2046 个，bbs.hycdn.cn）
+- `links` inline link 外部链接 url+text（291 个）
+- `refs` inline entry 物品引用 id/name/count/showType（14693 条；showType=`card-big` 卡片 / `link-imgText` 图文链接）
+供前端展示物品图片、引用卡片站内跳转。
+
+## RAG 层工具
+
+### 7. `build_rag.py` — RAG 索引构建 / 增量更新
+```bash
+# 首次全量（清空重建，约 3 分钟）
+python scripts/build_rag.py --inputs "endfield_kb/*.jsonl" --reset
+# 之后增量：只重 embedding 变更条目 + 只重建变更分类 BM25 分片（秒级）
+python scripts/build_rag.py --inputs "endfield_kb/*.jsonl" --incremental
+```
+产物（output/rag/）：`chroma/`（向量库）、`bm25/{分类}.pkl`（按分类分片）、
+`chunks.json`（manifest，含条目级 content_hash 供增量对比）、`report.txt`。
+增量原理：内容 hash 对比 → ChromaDB upsert/delete → 仅重建变更分类 BM25 分片。
+
+### 8. `rag_search.py` — 混合检索（向量 + BM25 分片 → RRF 融合）
+```bash
+python scripts/rag_search.py "天有洪炉需要什么材料" --top-k 5
+```
+模块：`from rag_search import RAGRetriever; r = RAGRetriever(); r.search(query, top_k=5)`
+命中含 meta（分类/名称/ID）、text、score、vector_sim、bm25_score。
+
+### 9. `eval_rag.py` — RAG 检索效果评测（对比结构化配方库）
+```bash
+python scripts/eval_rag.py                # → output/rag_eval_result.json
+```
+实测（2026-08）：Recall@5 = 66.7%（4/6）、MRR = 0.5；结构化配方库对照 100%。
+
+### 10. `test_rag_semantic.py` — 口语化描述 → RAG 定位测试
+验证"中等容量的电池"→中容谷地电池这类语义定位能力。
+
+## 逆向工具（WIKI SPA 逆向用）
+
+### 11. `search_chunks.py` — 在 webpack chunk 中搜索关键词
+```bash
+python scripts/search_chunks.py --chunk-dir chunks --patterns "item/catalog" --out logs/hits.txt
+```
+
+### 12. `extract_module.py` — 提取 webpack 模块完整代码
+```bash
+python scripts/extract_module.py --chunk-dir chunks --module-id 71188 --out-dir logs
+```
+
+## 服务
+
+### 13. `api_server.py` — FastAPI 服务（配方合成树 + RAG 问答）
+```bash
+python -m uvicorn scripts.api_server:app --host 0.0.0.0 --port 8000
+```
+| 端点 | 说明 |
+|---|---|
+| `GET /api/health` | 健康检查 |
+| `GET /api/synthesis?item=重息壤` | 合成树（物品树 / 设备配方卡 / 歧义→候选列表 / 无配方→知识库信息 + 封面图/相关引用） |
+| `GET /api/names` | 全部名称（前端模糊搜索联想） |
+| `POST /api/ask` | RAG 问答（意图识别→路由→检索→LLM 带引用回答），body: `{"query":"重息壤是什么","top_k":5,"gen_answer":true}` |
+
+自动托管 `web/index.html`（深色工业 HUD + 搜索联想 + 配方树/知识问答双模式）。
+
+## RAG 问答工具（阶段 0-5，见 RAG_UPGRADE_PLAN.md）
+
+### 14. `llm_client.py` — 在线 LLM 统一客户端（OpenAI 兼容协议）
+```python
+from llm_client import llm
+llm.chat("重息壤是什么")            # 普通问答 → str
+llm.chat_json("判断意图", ...)      # 强制 JSON → dict（意图识别/测试集生成）
+llm.available()                    # 是否配置了 key
+```
+配置走环境变量 / `.env`（`LLM_API_KEY` / `LLM_BASE_URL` / `LLM_MODEL`），**代码零明文 key**；
+未配置 key 时优雅降级不崩。密钥安全见 `.gitignore` + `.env.example`。
+
+### 15. `intent_router.py` — 意图识别分层（L1 规则 → L3 LLM 兜底）
+```python
+from intent_router import classify_query
+classify_query("重息壤怎么合成")   # → ('配方', 1.0, 'rule')
+```
+意图类别：配方 / 设备 / 知识 / 比较 / 数值。
+
+### 16. `rag_ask.py` — RAG 问答路由（意图 → 枚举/直查/多路检索 → LLM 生成）
+```python
+from rag_ask import ask
+ask("重息壤怎么合成")                  # 配方 → 结构化直查
+ask("诀从一级升到满级要多少材料")        # 知识库实体直取 → LLM 聚合回答
+ask("终末地至今为止的主线任务有哪些")    # 枚举 → 知识库分类过滤 → LLM 分组整理
+ask("解锁武陵地区需要什么条件")          # 多路检索 → LLM 整合开放问题
+ask("重息壤是什么", gen_answer_=True)   # 知识 → RAG 检索 + LLM 带引用回答
+```
+四层路由：
+1. **枚举查询**（"有哪些/列举/所有"）→ 知识库分类内过滤枚举（主线任务=任务分类含"第一章/进程"；
+   干员/武器/活动=直接枚举该分类），LLM 分组整理回答
+2. **结构化直查**：配方/设备意图或纯名称 → 配方库直查（含歧义候选/设备产物反查）
+3. **多路检索**（开放问题）：原查询 + LLM 改写子查询 → 各走 RAG/全文关键词/mention 反查，
+   合并去重后 LLM 整合（"解锁武陵"→ 捞到第二章主线任务链）
+4. **实体直取**：抽到实体（"诀"）→ 直接取该条目全文当上下文，绕开 chunk 切分丢失表格
+LLM 生成带 `[来源N]` 引用的回答，检索相关度低时诚实拒答。
+
+辅助数据：`output/mention_index.json`（"谁提到了X"反查索引，build_mention_index 生成）；
+`PLACE_WORDS` 地名表（武陵/首墩/应龙关…，全文检索定位用）。
+
+### 17. `gen_eval_set.py` — RAG 评测集自动生成（意图×难度矩阵）
+```bash
+python scripts/gen_eval_set.py --per-class 6 --out output/eval/eval_set.jsonl
+```
+在线 LLM 按 5 类意图 × 3 难度自动生成查询，gold 用结构化配方库/知识库自动核对
+（不是让 LLM 自问自答）。未配 key 时降级为规则模板。
+
+### 18. `eval_retrieval.py` — RAG 检索评测（严格命中判定）
+```bash
+python scripts/eval_retrieval.py --out output/eval/baseline.json
+```
+按 意图×难度 分表输出 Recall@k / MRR / Precision@k；命中判定严格（相等或互为简称包含），
+不搞子串放水。基线：Recall@5=72%（配方/设备≈100%，数值类最弱）。
+
+### 19. `gen_jieba_dict.py` — 生成游戏专有名词 jieba 词典
+```bash
+python scripts/gen_jieba_dict.py    # → scripts/dict_zh.txt（1789 词）
+```
+扫描配方库+知识库名称，凡是 jieba 会切碎的名称收进词典；`build_rag.py` / `rag_search.py`
+启动时自动加载，防止"重息壤/向心之引"被切碎导致 BM25 失配。
+
+## 注意
+- 输出一律写 UTF-8 文件，不要只 print 到终端（Windows GBK 乱码）
+- 模型加载必须离线（HF_HUB_OFFLINE + local_files_only）
+- 浏览器访问用 `http://127.0.0.1:8000`（不要用 localhost，IPv6 坑）

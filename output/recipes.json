@@ -1,0 +1,8434 @@
+{
+ "recipes": [
+  {
+   "id": "m1721-r0",
+   "machine_id": "1721",
+   "machine": "气体反应炉",
+   "inputs": [
+    {
+     "item_id": "1704",
+     "name": "息壤气",
+     "count": 1.0
+    },
+    {
+     "item_id": "1706",
+     "name": "气态赫铜",
+     "count": 2.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1707",
+     "name": "气态灼铜",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1719-r1",
+   "machine_id": "1719",
+   "machine": "液气转化机",
+   "inputs": [
+    {
+     "item_id": "1878",
+     "name": "水蒸气",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1719-r2",
+   "machine_id": "1719",
+   "machine": "液气转化机",
+   "inputs": [
+    {
+     "item_id": "1879",
+     "name": "酸气",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1719-r3",
+   "machine_id": "1719",
+   "machine": "液气转化机",
+   "inputs": [
+    {
+     "item_id": "1704",
+     "name": "息壤气",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1719-r4",
+   "machine_id": "1719",
+   "machine": "液气转化机",
+   "inputs": [
+    {
+     "item_id": "1911",
+     "name": "重息壤气",
+     "count": 5.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1365",
+     "name": "液化重息壤",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1719-r5",
+   "machine_id": "1719",
+   "machine": "液气转化机",
+   "inputs": [
+    {
+     "item_id": "1705",
+     "name": "气态赤铜",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1404",
+     "name": "赤铜溶液",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1719-r6",
+   "machine_id": "1719",
+   "machine": "液气转化机",
+   "inputs": [
+    {
+     "item_id": "1706",
+     "name": "气态赫铜",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1405",
+     "name": "赫铜溶液",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1719-r7",
+   "machine_id": "1719",
+   "machine": "液气转化机",
+   "inputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1878",
+     "name": "水蒸气",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1719-r8",
+   "machine_id": "1719",
+   "machine": "液气转化机",
+   "inputs": [
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1879",
+     "name": "酸气",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1719-r9",
+   "machine_id": "1719",
+   "machine": "液气转化机",
+   "inputs": [
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1704",
+     "name": "息壤气",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1719-r10",
+   "machine_id": "1719",
+   "machine": "液气转化机",
+   "inputs": [
+    {
+     "item_id": "1365",
+     "name": "液化重息壤",
+     "count": 2.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1911",
+     "name": "重息壤气",
+     "count": 5.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1719-r11",
+   "machine_id": "1719",
+   "machine": "液气转化机",
+   "inputs": [
+    {
+     "item_id": "1404",
+     "name": "赤铜溶液",
+     "count": 2.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1705",
+     "name": "气态赤铜",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1719-r12",
+   "machine_id": "1719",
+   "machine": "液气转化机",
+   "inputs": [
+    {
+     "item_id": "1405",
+     "name": "赫铜溶液",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1706",
+     "name": "气态赫铜",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1718-r13",
+   "machine_id": "1718",
+   "machine": "固气转化机",
+   "inputs": [
+    {
+     "item_id": "771",
+     "name": "息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1704",
+     "name": "息壤气",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1718-r14",
+   "machine_id": "1718",
+   "machine": "固气转化机",
+   "inputs": [
+    {
+     "item_id": "1364",
+     "name": "重息壤",
+     "count": 2.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1911",
+     "name": "重息壤气",
+     "count": 5.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m1718-r15",
+   "machine_id": "1718",
+   "machine": "固气转化机",
+   "inputs": [
+    {
+     "item_id": "1233",
+     "name": "赤铜块",
+     "count": 2.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1705",
+     "name": "气态赤铜",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1718-r16",
+   "machine_id": "1718",
+   "machine": "固气转化机",
+   "inputs": [
+    {
+     "item_id": "1361",
+     "name": "赫铜块",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1706",
+     "name": "气态赫铜",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1718-r17",
+   "machine_id": "1718",
+   "machine": "固气转化机",
+   "inputs": [
+    {
+     "item_id": "1704",
+     "name": "息壤气",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "771",
+     "name": "息壤",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1718-r18",
+   "machine_id": "1718",
+   "machine": "固气转化机",
+   "inputs": [
+    {
+     "item_id": "1911",
+     "name": "重息壤气",
+     "count": 5.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1364",
+     "name": "重息壤",
+     "count": 2.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m1718-r19",
+   "machine_id": "1718",
+   "machine": "固气转化机",
+   "inputs": [
+    {
+     "item_id": "1705",
+     "name": "气态赤铜",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1233",
+     "name": "赤铜块",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1718-r20",
+   "machine_id": "1718",
+   "machine": "固气转化机",
+   "inputs": [
+    {
+     "item_id": "1706",
+     "name": "气态赫铜",
+     "count": 2.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1361",
+     "name": "赫铜块",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1384-r21",
+   "machine_id": "1384",
+   "machine": "提纯机",
+   "inputs": [
+    {
+     "item_id": "1164",
+     "name": "惰性壤晶废液",
+     "count": 4.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1384-r22",
+   "machine_id": "1384",
+   "machine": "提纯机",
+   "inputs": [
+    {
+     "item_id": "1404",
+     "name": "赤铜溶液",
+     "count": 4.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    },
+    {
+     "item_id": "1405",
+     "name": "赫铜溶液",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1384-r23",
+   "machine_id": "1384",
+   "machine": "提纯机",
+   "inputs": [
+    {
+     "item_id": "1704",
+     "name": "息壤气",
+     "count": 2.0
+    },
+    {
+     "item_id": "1863",
+     "name": "分离芯",
+     "count": 2.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1911",
+     "name": "重息壤气",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1384-r24",
+   "machine_id": "1384",
+   "machine": "提纯机",
+   "inputs": [
+    {
+     "item_id": "1705",
+     "name": "气态赤铜",
+     "count": 2.0
+    },
+    {
+     "item_id": "1863",
+     "name": "分离芯",
+     "count": 2.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1706",
+     "name": "气态赫铜",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1384-r25",
+   "machine_id": "1384",
+   "machine": "提纯机",
+   "inputs": [
+    {
+     "item_id": "1704",
+     "name": "息壤气",
+     "count": 2.0
+    },
+    {
+     "item_id": "1863",
+     "name": "分离芯",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1911",
+     "name": "重息壤气",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1384-r26",
+   "machine_id": "1384",
+   "machine": "提纯机",
+   "inputs": [
+    {
+     "item_id": "1705",
+     "name": "气态赤铜",
+     "count": 2.0
+    },
+    {
+     "item_id": "1863",
+     "name": "分离芯",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1706",
+     "name": "气态赫铜",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1383-r27",
+   "machine_id": "1383",
+   "machine": "扩容反应池",
+   "inputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    },
+    {
+     "item_id": "586",
+     "name": "锦草粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "201",
+     "name": "锦草溶液",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1383-r28",
+   "machine_id": "1383",
+   "machine": "扩容反应池",
+   "inputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    },
+    {
+     "item_id": "587",
+     "name": "芽针粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "769",
+     "name": "芽针溶液",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1383-r29",
+   "machine_id": "1383",
+   "machine": "扩容反应池",
+   "inputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    },
+    {
+     "item_id": "771",
+     "name": "息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1383-r30",
+   "machine_id": "1383",
+   "machine": "扩容反应池",
+   "inputs": [
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    },
+    {
+     "item_id": "1364",
+     "name": "重息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1365",
+     "name": "液化重息壤",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1383-r31",
+   "machine_id": "1383",
+   "machine": "扩容反应池",
+   "inputs": [
+    {
+     "item_id": "1225",
+     "name": "赤铜粉末",
+     "count": 1.0
+    },
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1404",
+     "name": "赤铜溶液",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1383-r32",
+   "machine_id": "1383",
+   "machine": "扩容反应池",
+   "inputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    },
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "1164",
+     "name": "惰性壤晶废液",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1383-r33",
+   "machine_id": "1383",
+   "machine": "扩容反应池",
+   "inputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 2.0
+    },
+    {
+     "item_id": "368",
+     "name": "蓝铁粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    },
+    {
+     "item_id": "1232",
+     "name": "壤晶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1383-r34",
+   "machine_id": "1383",
+   "machine": "扩容反应池",
+   "inputs": [
+    {
+     "item_id": "1405",
+     "name": "赫铜溶液",
+     "count": 2.0
+    },
+    {
+     "item_id": "368",
+     "name": "蓝铁粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    },
+    {
+     "item_id": "1361",
+     "name": "赫铜块",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m1168-r35",
+   "machine_id": "1168",
+   "machine": "水驱矿机",
+   "inputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "48",
+     "name": "源矿",
+     "count": 1.0
+    }
+   ],
+   "duration": 3.0
+  },
+  {
+   "id": "m1168-r36",
+   "machine_id": "1168",
+   "machine": "水驱矿机",
+   "inputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "49",
+     "name": "紫晶矿",
+     "count": 1.0
+    }
+   ],
+   "duration": 3.0
+  },
+  {
+   "id": "m1168-r37",
+   "machine_id": "1168",
+   "machine": "水驱矿机",
+   "inputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "205",
+     "name": "蓝铁矿",
+     "count": 1.0
+    }
+   ],
+   "duration": 3.0
+  },
+  {
+   "id": "m1168-r38",
+   "machine_id": "1168",
+   "machine": "水驱矿机",
+   "inputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1127",
+     "name": "赤铜矿",
+     "count": 1.0
+    }
+   ],
+   "duration": 3.0
+  },
+  {
+   "id": "m752-r39",
+   "machine_id": "752",
+   "machine": "天有洪炉",
+   "inputs": [
+    {
+     "item_id": "22",
+     "name": "驮兽粪便",
+     "count": 1.0
+    },
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "558",
+     "name": "膨地啪",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m752-r40",
+   "machine_id": "752",
+   "machine": "天有洪炉",
+   "inputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    },
+    {
+     "item_id": "542",
+     "name": "稳定碳块",
+     "count": 2.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "771",
+     "name": "息壤",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m752-r41",
+   "machine_id": "752",
+   "machine": "天有洪炉",
+   "inputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 5.0
+    },
+    {
+     "item_id": "771",
+     "name": "息壤",
+     "count": 10.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1364",
+     "name": "重息壤",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m752-r42",
+   "machine_id": "752",
+   "machine": "天有洪炉",
+   "inputs": [
+    {
+     "item_id": "192",
+     "name": "碳块",
+     "count": 1.0
+    },
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "771",
+     "name": "息壤",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r43",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r44",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r45",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1164",
+     "name": "惰性壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r46",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r47",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1365",
+     "name": "液化重息壤",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r48",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1404",
+     "name": "赤铜溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r49",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1405",
+     "name": "赫铜溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r50",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r51",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "201",
+     "name": "锦草溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r52",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "769",
+     "name": "芽针溶液",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r53",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r54",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r55",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r56",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1164",
+     "name": "惰性壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r57",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r58",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1365",
+     "name": "液化重息壤",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r59",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1404",
+     "name": "赤铜溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r60",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1405",
+     "name": "赫铜溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r61",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r62",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "201",
+     "name": "锦草溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r63",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "769",
+     "name": "芽针溶液",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r64",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r65",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r66",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r67",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1164",
+     "name": "惰性壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r68",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r69",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1365",
+     "name": "液化重息壤",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r70",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1404",
+     "name": "赤铜溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r71",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1405",
+     "name": "赫铜溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r72",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r73",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "201",
+     "name": "锦草溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r74",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "769",
+     "name": "芽针溶液",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r75",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r76",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r77",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r78",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1164",
+     "name": "惰性壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r79",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r80",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1365",
+     "name": "液化重息壤",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r81",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1404",
+     "name": "赤铜溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r82",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1405",
+     "name": "赫铜溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r83",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r84",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r85",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    },
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r86",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r87",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1164",
+     "name": "惰性壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r88",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r89",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1365",
+     "name": "液化重息壤",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r90",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1404",
+     "name": "赤铜溶液",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r91",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1405",
+     "name": "赫铜溶液",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r92",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r93",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r94",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r95",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r96",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1164",
+     "name": "惰性壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r97",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r98",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1365",
+     "name": "液化重息壤",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r99",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1404",
+     "name": "赤铜溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r100",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1405",
+     "name": "赫铜溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r101",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r102",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "201",
+     "name": "锦草溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r103",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "769",
+     "name": "芽针溶液",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r104",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r105",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "201",
+     "name": "锦草溶液",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m745-r106",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "769",
+     "name": "芽针溶液",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m766-r107",
+   "machine_id": "766",
+   "machine": "琼叶参田块",
+   "inputs": [
+    {
+     "item_id": "192",
+     "name": "碳块",
+     "count": 1.0
+    },
+    {
+     "item_id": "577",
+     "name": "琼叶参种子",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "766",
+     "name": "琼叶参田块",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m352-r108",
+   "machine_id": "352",
+   "machine": "金石稻田块",
+   "inputs": [
+    {
+     "item_id": "192",
+     "name": "碳块",
+     "count": 1.0
+    },
+    {
+     "item_id": "574",
+     "name": "金石稻种子",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "352",
+     "name": "金石稻田块",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m351-r109",
+   "machine_id": "351",
+   "machine": "苦叶椒田块",
+   "inputs": [
+    {
+     "item_id": "192",
+     "name": "碳块",
+     "count": 1.0
+    },
+    {
+     "item_id": "531",
+     "name": "苦叶椒种子",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "351",
+     "name": "苦叶椒田块",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m350-r110",
+   "machine_id": "350",
+   "machine": "灰芦麦田块",
+   "inputs": [
+    {
+     "item_id": "192",
+     "name": "碳块",
+     "count": 1.0
+    },
+    {
+     "item_id": "199",
+     "name": "灰芦麦种子",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "350",
+     "name": "灰芦麦田块",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m349-r111",
+   "machine_id": "349",
+   "machine": "芽针田块",
+   "inputs": [
+    {
+     "item_id": "192",
+     "name": "碳块",
+     "count": 1.0
+    },
+    {
+     "item_id": "570",
+     "name": "芽针种子",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "349",
+     "name": "芽针田块",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m348-r112",
+   "machine_id": "348",
+   "machine": "锦草田块",
+   "inputs": [
+    {
+     "item_id": "192",
+     "name": "碳块",
+     "count": 1.0
+    },
+    {
+     "item_id": "566",
+     "name": "锦草种子",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "348",
+     "name": "锦草田块",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m347-r113",
+   "machine_id": "347",
+   "machine": "酮化灌木田块",
+   "inputs": [
+    {
+     "item_id": "192",
+     "name": "碳块",
+     "count": 1.0
+    },
+    {
+     "item_id": "202",
+     "name": "酮化树种",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "347",
+     "name": "酮化灌木田块",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m346-r114",
+   "machine_id": "346",
+   "machine": "砂叶田块",
+   "inputs": [
+    {
+     "item_id": "192",
+     "name": "碳块",
+     "count": 1.0
+    },
+    {
+     "item_id": "481",
+     "name": "砂叶种子",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "346",
+     "name": "砂叶田块",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m345-r115",
+   "machine_id": "345",
+   "machine": "柑实田块",
+   "inputs": [
+    {
+     "item_id": "192",
+     "name": "碳块",
+     "count": 1.0
+    },
+    {
+     "item_id": "203",
+     "name": "柑实种子",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "345",
+     "name": "柑实田块",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m344-r116",
+   "machine_id": "344",
+   "machine": "荞花田块",
+   "inputs": [
+    {
+     "item_id": "192",
+     "name": "碳块",
+     "count": 1.0
+    },
+    {
+     "item_id": "204",
+     "name": "荞花种子",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "344",
+     "name": "荞花田块",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m188-r117",
+   "machine_id": "188",
+   "machine": "研磨机",
+   "inputs": [
+    {
+     "item_id": "368",
+     "name": "蓝铁粉末",
+     "count": 2.0
+    },
+    {
+     "item_id": "543",
+     "name": "砂叶粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "547",
+     "name": "致密蓝铁粉末",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m188-r118",
+   "machine_id": "188",
+   "machine": "研磨机",
+   "inputs": [
+    {
+     "item_id": "29",
+     "name": "紫晶粉末",
+     "count": 2.0
+    },
+    {
+     "item_id": "543",
+     "name": "砂叶粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "546",
+     "name": "高晶粉末",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m188-r119",
+   "machine_id": "188",
+   "machine": "研磨机",
+   "inputs": [
+    {
+     "item_id": "47",
+     "name": "源石粉末",
+     "count": 2.0
+    },
+    {
+     "item_id": "543",
+     "name": "砂叶粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "544",
+     "name": "致密源石粉末",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m188-r120",
+   "machine_id": "188",
+   "machine": "研磨机",
+   "inputs": [
+    {
+     "item_id": "195",
+     "name": "碳粉末",
+     "count": 2.0
+    },
+    {
+     "item_id": "543",
+     "name": "砂叶粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "548",
+     "name": "致密碳粉末",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m188-r121",
+   "machine_id": "188",
+   "machine": "研磨机",
+   "inputs": [
+    {
+     "item_id": "38",
+     "name": "晶体外壳粉末",
+     "count": 2.0
+    },
+    {
+     "item_id": "543",
+     "name": "砂叶粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "545",
+     "name": "致密晶体粉末",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m188-r122",
+   "machine_id": "188",
+   "machine": "研磨机",
+   "inputs": [
+    {
+     "item_id": "379",
+     "name": "荞花粉末",
+     "count": 2.0
+    },
+    {
+     "item_id": "543",
+     "name": "砂叶粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "553",
+     "name": "细磨荞花粉末",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m188-r123",
+   "machine_id": "188",
+   "machine": "研磨机",
+   "inputs": [
+    {
+     "item_id": "380",
+     "name": "柑实粉末",
+     "count": 2.0
+    },
+    {
+     "item_id": "543",
+     "name": "砂叶粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "554",
+     "name": "细磨柑实粉末",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m174-r124",
+   "machine_id": "174",
+   "machine": "种植机",
+   "inputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    },
+    {
+     "item_id": "566",
+     "name": "锦草种子",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "494",
+     "name": "锦草",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m174-r125",
+   "machine_id": "174",
+   "machine": "种植机",
+   "inputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    },
+    {
+     "item_id": "570",
+     "name": "芽针种子",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "575",
+     "name": "芽针",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m174-r126",
+   "machine_id": "174",
+   "machine": "种植机",
+   "inputs": [
+    {
+     "item_id": "204",
+     "name": "荞花种子",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "31",
+     "name": "荞花",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m174-r127",
+   "machine_id": "174",
+   "machine": "种植机",
+   "inputs": [
+    {
+     "item_id": "203",
+     "name": "柑实种子",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "42",
+     "name": "柑实",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m174-r128",
+   "machine_id": "174",
+   "machine": "种植机",
+   "inputs": [
+    {
+     "item_id": "481",
+     "name": "砂叶种子",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "367",
+     "name": "砂叶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m174-r129",
+   "machine_id": "174",
+   "machine": "种植机",
+   "inputs": [
+    {
+     "item_id": "202",
+     "name": "酮化树种",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "46",
+     "name": "酮化灌木",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m173-r130",
+   "machine_id": "173",
+   "machine": "采种机",
+   "inputs": [
+    {
+     "item_id": "31",
+     "name": "荞花",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "204",
+     "name": "荞花种子",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m173-r131",
+   "machine_id": "173",
+   "machine": "采种机",
+   "inputs": [
+    {
+     "item_id": "42",
+     "name": "柑实",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "203",
+     "name": "柑实种子",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m173-r132",
+   "machine_id": "173",
+   "machine": "采种机",
+   "inputs": [
+    {
+     "item_id": "367",
+     "name": "砂叶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "481",
+     "name": "砂叶种子",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m173-r133",
+   "machine_id": "173",
+   "machine": "采种机",
+   "inputs": [
+    {
+     "item_id": "46",
+     "name": "酮化灌木",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "202",
+     "name": "酮化树种",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m173-r134",
+   "machine_id": "173",
+   "machine": "采种机",
+   "inputs": [
+    {
+     "item_id": "494",
+     "name": "锦草",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "566",
+     "name": "锦草种子",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m173-r135",
+   "machine_id": "173",
+   "machine": "采种机",
+   "inputs": [
+    {
+     "item_id": "575",
+     "name": "芽针",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "570",
+     "name": "芽针种子",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m173-r136",
+   "machine_id": "173",
+   "machine": "采种机",
+   "inputs": [
+    {
+     "item_id": "200",
+     "name": "灰芦麦",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "199",
+     "name": "灰芦麦种子",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m173-r137",
+   "machine_id": "173",
+   "machine": "采种机",
+   "inputs": [
+    {
+     "item_id": "530",
+     "name": "苦叶椒",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "531",
+     "name": "苦叶椒种子",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m173-r138",
+   "machine_id": "173",
+   "machine": "采种机",
+   "inputs": [
+    {
+     "item_id": "573",
+     "name": "金石稻",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "574",
+     "name": "金石稻种子",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m173-r139",
+   "machine_id": "173",
+   "machine": "采种机",
+   "inputs": [
+    {
+     "item_id": "576",
+     "name": "琼叶参",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "577",
+     "name": "琼叶参种子",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m177-r140",
+   "machine_id": "177",
+   "machine": "封装机",
+   "inputs": [
+    {
+     "item_id": "369",
+     "name": "酮化灌木粉末",
+     "count": 1.0
+    },
+    {
+     "item_id": "377",
+     "name": "紫晶零件",
+     "count": 5.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "196",
+     "name": "工业爆炸物",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m177-r141",
+   "machine_id": "177",
+   "machine": "封装机",
+   "inputs": [
+    {
+     "item_id": "377",
+     "name": "紫晶零件",
+     "count": 5.0
+    },
+    {
+     "item_id": "47",
+     "name": "源石粉末",
+     "count": 10.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "376",
+     "name": "低容谷地电池",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m177-r142",
+   "machine_id": "177",
+   "machine": "封装机",
+   "inputs": [
+    {
+     "item_id": "373",
+     "name": "铁制零件",
+     "count": 10.0
+    },
+    {
+     "item_id": "47",
+     "name": "源石粉末",
+     "count": 15.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "378",
+     "name": "中容谷地电池",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m177-r143",
+   "machine_id": "177",
+   "machine": "封装机",
+   "inputs": [
+    {
+     "item_id": "541",
+     "name": "钢制零件",
+     "count": 10.0
+    },
+    {
+     "item_id": "544",
+     "name": "致密源石粉末",
+     "count": 15.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "549",
+     "name": "高容谷地电池",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m177-r144",
+   "machine_id": "177",
+   "machine": "封装机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 5.0
+    },
+    {
+     "item_id": "373",
+     "name": "铁制零件",
+     "count": 10.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "593",
+     "name": "芽针针剂",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m177-r145",
+   "machine_id": "177",
+   "machine": "封装机",
+   "inputs": [
+    {
+     "item_id": "1128",
+     "name": "赤铜零件",
+     "count": 10.0
+    },
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 5.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1165",
+     "name": "优质芽针针剂",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m177-r146",
+   "machine_id": "177",
+   "machine": "封装机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 5.0
+    },
+    {
+     "item_id": "373",
+     "name": "铁制零件",
+     "count": 10.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "594",
+     "name": "锦草软饮",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m177-r147",
+   "machine_id": "177",
+   "machine": "封装机",
+   "inputs": [
+    {
+     "item_id": "1128",
+     "name": "赤铜零件",
+     "count": 10.0
+    },
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 5.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1166",
+     "name": "优质锦草软饮",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m177-r148",
+   "machine_id": "177",
+   "machine": "封装机",
+   "inputs": [
+    {
+     "item_id": "544",
+     "name": "致密源石粉末",
+     "count": 15.0
+    },
+    {
+     "item_id": "771",
+     "name": "息壤",
+     "count": 5.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "767",
+     "name": "低容武陵电池",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m177-r149",
+   "machine_id": "177",
+   "machine": "封装机",
+   "inputs": [
+    {
+     "item_id": "1232",
+     "name": "壤晶",
+     "count": 5.0
+    },
+    {
+     "item_id": "544",
+     "name": "致密源石粉末",
+     "count": 20.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1167",
+     "name": "中容武陵电池",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m177-r150",
+   "machine_id": "177",
+   "machine": "封装机",
+   "inputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    },
+    {
+     "item_id": "771",
+     "name": "息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1863",
+     "name": "分离芯",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r151",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r152",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r153",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1164",
+     "name": "惰性壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r154",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r155",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1365",
+     "name": "液化重息壤",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r156",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1404",
+     "name": "赤铜溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r157",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1405",
+     "name": "赫铜溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r158",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r159",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "201",
+     "name": "锦草溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r160",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "769",
+     "name": "芽针溶液",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r161",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r162",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r163",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r164",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1164",
+     "name": "惰性壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r165",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r166",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1365",
+     "name": "液化重息壤",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r167",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1404",
+     "name": "赤铜溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r168",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1405",
+     "name": "赫铜溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r169",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r170",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "201",
+     "name": "锦草溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r171",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "769",
+     "name": "芽针溶液",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r172",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r173",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r174",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r175",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1164",
+     "name": "惰性壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r176",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r177",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1365",
+     "name": "液化重息壤",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r178",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1404",
+     "name": "赤铜溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r179",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1405",
+     "name": "赫铜溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r180",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r181",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "201",
+     "name": "锦草溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r182",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "769",
+     "name": "芽针溶液",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r183",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r184",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r185",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r186",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1164",
+     "name": "惰性壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r187",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r188",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1365",
+     "name": "液化重息壤",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r189",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1404",
+     "name": "赤铜溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r190",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1405",
+     "name": "赫铜溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r191",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r192",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r193",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    },
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r194",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r195",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1164",
+     "name": "惰性壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r196",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r197",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1365",
+     "name": "液化重息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r198",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1404",
+     "name": "赤铜溶液",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r199",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1405",
+     "name": "赫铜溶液",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r200",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r201",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r202",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r203",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r204",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1164",
+     "name": "惰性壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r205",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r206",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1365",
+     "name": "液化重息壤",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r207",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1404",
+     "name": "赤铜溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r208",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1405",
+     "name": "赫铜溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r209",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    },
+    {
+     "item_id": "1878",
+     "name": "水蒸气",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r210",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    },
+    {
+     "item_id": "1879",
+     "name": "酸气",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r211",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1704",
+     "name": "息壤气",
+     "count": 1.0
+    },
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r212",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    },
+    {
+     "item_id": "1911",
+     "name": "重息壤气",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r213",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1703",
+     "name": "惰气",
+     "count": 1.0
+    },
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r214",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1705",
+     "name": "气态赤铜",
+     "count": 1.0
+    },
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r215",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1706",
+     "name": "气态赫铜",
+     "count": 1.0
+    },
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r216",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1707",
+     "name": "气态灼铜",
+     "count": 1.0
+    },
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r217",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r218",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "201",
+     "name": "锦草溶液",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r219",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "769",
+     "name": "芽针溶液",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r220",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r221",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "201",
+     "name": "锦草溶液",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r222",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "769",
+     "name": "芽针溶液",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r223",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 5.0
+    },
+    {
+     "item_id": "380",
+     "name": "柑实粉末",
+     "count": 5.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "512",
+     "name": "柑实罐头",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m176-r224",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 10.0
+    },
+    {
+     "item_id": "380",
+     "name": "柑实粉末",
+     "count": 10.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "513",
+     "name": "优质柑实罐头",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m176-r225",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 10.0
+    },
+    {
+     "item_id": "554",
+     "name": "细磨柑实粉末",
+     "count": 10.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "527",
+     "name": "精选柑实罐头",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m176-r226",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 5.0
+    },
+    {
+     "item_id": "379",
+     "name": "荞花粉末",
+     "count": 5.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "510",
+     "name": "荞愈胶囊",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m176-r227",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 10.0
+    },
+    {
+     "item_id": "379",
+     "name": "荞花粉末",
+     "count": 10.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "511",
+     "name": "优质荞愈胶囊",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m176-r228",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 10.0
+    },
+    {
+     "item_id": "553",
+     "name": "细磨荞花粉末",
+     "count": 10.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "526",
+     "name": "精选荞愈胶囊",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m172-r229",
+   "machine_id": "172",
+   "machine": "塑形机",
+   "inputs": [
+    {
+     "item_id": "194",
+     "name": "蓝铁块",
+     "count": 2.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m172-r230",
+   "machine_id": "172",
+   "machine": "塑形机",
+   "inputs": [
+    {
+     "item_id": "193",
+     "name": "紫晶纤维",
+     "count": 2.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m172-r231",
+   "machine_id": "172",
+   "machine": "塑形机",
+   "inputs": [
+    {
+     "item_id": "555",
+     "name": "钢块",
+     "count": 2.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m172-r232",
+   "machine_id": "172",
+   "machine": "塑形机",
+   "inputs": [
+    {
+     "item_id": "556",
+     "name": "高晶纤维",
+     "count": 2.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m172-r233",
+   "machine_id": "172",
+   "machine": "塑形机",
+   "inputs": [
+    {
+     "item_id": "1233",
+     "name": "赤铜块",
+     "count": 2.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m172-r234",
+   "machine_id": "172",
+   "machine": "塑形机",
+   "inputs": [
+    {
+     "item_id": "1361",
+     "name": "赫铜块",
+     "count": 2.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m172-r235",
+   "machine_id": "172",
+   "machine": "塑形机",
+   "inputs": [
+    {
+     "item_id": "1233",
+     "name": "赤铜块",
+     "count": 2.0
+    },
+    {
+     "item_id": "1703",
+     "name": "惰气",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m171-r236",
+   "machine_id": "171",
+   "machine": "配件机",
+   "inputs": [
+    {
+     "item_id": "194",
+     "name": "蓝铁块",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "373",
+     "name": "铁制零件",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m171-r237",
+   "machine_id": "171",
+   "machine": "配件机",
+   "inputs": [
+    {
+     "item_id": "193",
+     "name": "紫晶纤维",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "377",
+     "name": "紫晶零件",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m171-r238",
+   "machine_id": "171",
+   "machine": "配件机",
+   "inputs": [
+    {
+     "item_id": "555",
+     "name": "钢块",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "541",
+     "name": "钢制零件",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m171-r239",
+   "machine_id": "171",
+   "machine": "配件机",
+   "inputs": [
+    {
+     "item_id": "556",
+     "name": "高晶纤维",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "540",
+     "name": "高晶零件",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m171-r240",
+   "machine_id": "171",
+   "machine": "配件机",
+   "inputs": [
+    {
+     "item_id": "1233",
+     "name": "赤铜块",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1128",
+     "name": "赤铜零件",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m175-r241",
+   "machine_id": "175",
+   "machine": "装备原件机",
+   "inputs": [
+    {
+     "item_id": "193",
+     "name": "紫晶纤维",
+     "count": 5.0
+    },
+    {
+     "item_id": "33",
+     "name": "晶体外壳",
+     "count": 5.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "374",
+     "name": "紫晶装备原件",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m175-r242",
+   "machine_id": "175",
+   "machine": "装备原件机",
+   "inputs": [
+    {
+     "item_id": "194",
+     "name": "蓝铁块",
+     "count": 10.0
+    },
+    {
+     "item_id": "33",
+     "name": "晶体外壳",
+     "count": 10.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "375",
+     "name": "蓝铁装备原件",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m175-r243",
+   "machine_id": "175",
+   "machine": "装备原件机",
+   "inputs": [
+    {
+     "item_id": "556",
+     "name": "高晶纤维",
+     "count": 10.0
+    },
+    {
+     "item_id": "557",
+     "name": "密制晶体",
+     "count": 10.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "479",
+     "name": "高晶装备原件",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m175-r244",
+   "machine_id": "175",
+   "machine": "装备原件机",
+   "inputs": [
+    {
+     "item_id": "557",
+     "name": "密制晶体",
+     "count": 10.0
+    },
+    {
+     "item_id": "771",
+     "name": "息壤",
+     "count": 10.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "480",
+     "name": "息壤装备原件",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m175-r245",
+   "machine_id": "175",
+   "machine": "装备原件机",
+   "inputs": [
+    {
+     "item_id": "1128",
+     "name": "赤铜零件",
+     "count": 10.0
+    },
+    {
+     "item_id": "771",
+     "name": "息壤",
+     "count": 10.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1129",
+     "name": "赤铜装备原件",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m175-r246",
+   "machine_id": "175",
+   "machine": "装备原件机",
+   "inputs": [
+    {
+     "item_id": "1362",
+     "name": "赫铜零件",
+     "count": 2.0
+    },
+    {
+     "item_id": "1364",
+     "name": "重息壤",
+     "count": 2.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1363",
+     "name": "赫铜装备原件",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m175-r247",
+   "machine_id": "175",
+   "machine": "装备原件机",
+   "inputs": [
+    {
+     "item_id": "1364",
+     "name": "重息壤",
+     "count": 2.0
+    },
+    {
+     "item_id": "1709",
+     "name": "灼铜零件",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1710",
+     "name": "灼铜装备原件",
+     "count": 1.0
+    }
+   ],
+   "duration": 10.0
+  },
+  {
+   "id": "m54-r248",
+   "machine_id": "54",
+   "machine": "粉碎机",
+   "inputs": [
+    {
+     "item_id": "1233",
+     "name": "赤铜块",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1225",
+     "name": "赤铜粉末",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m54-r249",
+   "machine_id": "54",
+   "machine": "粉碎机",
+   "inputs": [
+    {
+     "item_id": "194",
+     "name": "蓝铁块",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "368",
+     "name": "蓝铁粉末",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m54-r250",
+   "machine_id": "54",
+   "machine": "粉碎机",
+   "inputs": [
+    {
+     "item_id": "193",
+     "name": "紫晶纤维",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "29",
+     "name": "紫晶粉末",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m54-r251",
+   "machine_id": "54",
+   "machine": "粉碎机",
+   "inputs": [
+    {
+     "item_id": "48",
+     "name": "源矿",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "47",
+     "name": "源石粉末",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m54-r252",
+   "machine_id": "54",
+   "machine": "粉碎机",
+   "inputs": [
+    {
+     "item_id": "192",
+     "name": "碳块",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "195",
+     "name": "碳粉末",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m54-r253",
+   "machine_id": "54",
+   "machine": "粉碎机",
+   "inputs": [
+    {
+     "item_id": "33",
+     "name": "晶体外壳",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "38",
+     "name": "晶体外壳粉末",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m54-r254",
+   "machine_id": "54",
+   "machine": "粉碎机",
+   "inputs": [
+    {
+     "item_id": "31",
+     "name": "荞花",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "379",
+     "name": "荞花粉末",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m54-r255",
+   "machine_id": "54",
+   "machine": "粉碎机",
+   "inputs": [
+    {
+     "item_id": "42",
+     "name": "柑实",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "380",
+     "name": "柑实粉末",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m54-r256",
+   "machine_id": "54",
+   "machine": "粉碎机",
+   "inputs": [
+    {
+     "item_id": "367",
+     "name": "砂叶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "543",
+     "name": "砂叶粉末",
+     "count": 3.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m54-r257",
+   "machine_id": "54",
+   "machine": "粉碎机",
+   "inputs": [
+    {
+     "item_id": "46",
+     "name": "酮化灌木",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "369",
+     "name": "酮化灌木粉末",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m54-r258",
+   "machine_id": "54",
+   "machine": "粉碎机",
+   "inputs": [
+    {
+     "item_id": "494",
+     "name": "锦草",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "586",
+     "name": "锦草粉末",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m54-r259",
+   "machine_id": "54",
+   "machine": "粉碎机",
+   "inputs": [
+    {
+     "item_id": "575",
+     "name": "芽针",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "587",
+     "name": "芽针粉末",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r260",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "1127",
+     "name": "赤铜矿",
+     "count": 1.0
+    },
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    },
+    {
+     "item_id": "1233",
+     "name": "赤铜块",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r261",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "205",
+     "name": "蓝铁矿",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "194",
+     "name": "蓝铁块",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r262",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "49",
+     "name": "紫晶矿",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "193",
+     "name": "紫晶纤维",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r263",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "48",
+     "name": "源矿",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "33",
+     "name": "晶体外壳",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r264",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "545",
+     "name": "致密晶体粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "557",
+     "name": "密制晶体",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r265",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "547",
+     "name": "致密蓝铁粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "555",
+     "name": "钢块",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r266",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "546",
+     "name": "高晶粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "556",
+     "name": "高晶纤维",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r267",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "548",
+     "name": "致密碳粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "542",
+     "name": "稳定碳块",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r268",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "544",
+     "name": "致密源石粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "545",
+     "name": "致密晶体粉末",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r269",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "31",
+     "name": "荞花",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "192",
+     "name": "碳块",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r270",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "368",
+     "name": "蓝铁粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "194",
+     "name": "蓝铁块",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r271",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "29",
+     "name": "紫晶粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "193",
+     "name": "紫晶纤维",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r272",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "38",
+     "name": "晶体外壳粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "33",
+     "name": "晶体外壳",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r273",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "47",
+     "name": "源石粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "38",
+     "name": "晶体外壳粉末",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r274",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "42",
+     "name": "柑实",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "192",
+     "name": "碳块",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r275",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "367",
+     "name": "砂叶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "192",
+     "name": "碳块",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r276",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "494",
+     "name": "锦草",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "192",
+     "name": "碳块",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r277",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "575",
+     "name": "芽针",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "192",
+     "name": "碳块",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r278",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "45",
+     "name": "原木",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "192",
+     "name": "碳块",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r279",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "379",
+     "name": "荞花粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "195",
+     "name": "碳粉末",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r280",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "380",
+     "name": "柑实粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "195",
+     "name": "碳粉末",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r281",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "543",
+     "name": "砂叶粉末",
+     "count": 3.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "195",
+     "name": "碳粉末",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r282",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "586",
+     "name": "锦草粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "195",
+     "name": "碳粉末",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r283",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "587",
+     "name": "芽针粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "195",
+     "name": "碳粉末",
+     "count": 2.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r284",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "553",
+     "name": "细磨荞花粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "548",
+     "name": "致密碳粉末",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m53-r285",
+   "machine_id": "53",
+   "machine": "精炼炉",
+   "inputs": [
+    {
+     "item_id": "554",
+     "name": "细磨柑实粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "548",
+     "name": "致密碳粉末",
+     "count": 1.0
+    }
+   ],
+   "duration": 2.0
+  },
+  {
+   "id": "m176-r286",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1911",
+     "name": "重息壤气",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m745-r287",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1911",
+     "name": "重息壤气",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m176-r288",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1879",
+     "name": "酸气",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m745-r289",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1879",
+     "name": "酸气",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m176-r290",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1878",
+     "name": "水蒸气",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m745-r291",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1878",
+     "name": "水蒸气",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m745-r292",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1703",
+     "name": "惰气",
+     "count": 1.0
+    },
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m171-r293",
+   "machine_id": "171",
+   "machine": "配件机",
+   "inputs": [
+    {
+     "item_id": "1708",
+     "name": "灼铜块",
+     "count": 5.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1709",
+     "name": "灼铜零件",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m1718-r294",
+   "machine_id": "1718",
+   "machine": "固气转化机",
+   "inputs": [
+    {
+     "item_id": "1707",
+     "name": "气态灼铜",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1708",
+     "name": "灼铜块",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m1718-r295",
+   "machine_id": "1718",
+   "machine": "固气转化机",
+   "inputs": [
+    {
+     "item_id": "1708",
+     "name": "灼铜块",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1707",
+     "name": "气态灼铜",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m176-r296",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1707",
+     "name": "气态灼铜",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1707",
+     "name": "气态灼铜",
+     "count": 1.0
+    },
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m745-r297",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1707",
+     "name": "气态灼铜",
+     "count": 1.0
+    },
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1707",
+     "name": "气态灼铜",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m176-r298",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1706",
+     "name": "气态赫铜",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m745-r299",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1706",
+     "name": "气态赫铜",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m176-r300",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1705",
+     "name": "气态赤铜",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m745-r301",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1705",
+     "name": "气态赤铜",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m1718-r302",
+   "machine_id": "1718",
+   "machine": "固气转化机",
+   "inputs": [
+    {
+     "item_id": "1404",
+     "name": "赤铜溶液",
+     "count": 2.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1705",
+     "name": "气态赤铜",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m1718-r303",
+   "machine_id": "1718",
+   "machine": "固气转化机",
+   "inputs": [
+    {
+     "item_id": "1705",
+     "name": "气态赤铜",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1404",
+     "name": "赤铜溶液",
+     "count": 2.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m176-r304",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1704",
+     "name": "息壤气",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m745-r305",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1704",
+     "name": "息壤气",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m176-r306",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1703",
+     "name": "惰气",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m745-r307",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1877",
+     "name": "赤铜耐压罐",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1703",
+     "name": "惰气",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m177-r308",
+   "machine_id": "177",
+   "machine": "封装机",
+   "inputs": [
+    {
+     "item_id": "1525",
+     "name": "实验重息壤瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1527",
+     "name": "实验玉铜发散器",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1528",
+     "name": "息壤玉葫芦",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m177-r309",
+   "machine_id": "177",
+   "machine": "封装机",
+   "inputs": [
+    {
+     "item_id": "1361",
+     "name": "赫铜块",
+     "count": 1.0
+    },
+    {
+     "item_id": "1526",
+     "name": "实验重息壤零件",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1527",
+     "name": "实验玉铜发散器",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m171-r310",
+   "machine_id": "171",
+   "machine": "配件机",
+   "inputs": [
+    {
+     "item_id": "1364",
+     "name": "重息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1526",
+     "name": "实验重息壤零件",
+     "count": 2.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m172-r311",
+   "machine_id": "172",
+   "machine": "塑形机",
+   "inputs": [
+    {
+     "item_id": "1364",
+     "name": "重息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1525",
+     "name": "实验重息壤瓶",
+     "count": 2.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m745-r312",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1525",
+     "name": "实验重息壤瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1525",
+     "name": "实验重息壤瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "769",
+     "name": "芽针溶液",
+     "count": 5.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m176-r313",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1525",
+     "name": "实验重息壤瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "769",
+     "name": "芽针溶液",
+     "count": 5.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1525",
+     "name": "实验重息壤瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m172-r314",
+   "machine_id": "172",
+   "machine": "塑形机",
+   "inputs": [
+    {
+     "item_id": "771",
+     "name": "息壤",
+     "count": 2.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1515",
+     "name": "实验息壤瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m177-r315",
+   "machine_id": "177",
+   "machine": "封装机",
+   "inputs": [
+    {
+     "item_id": "1514",
+     "name": "实验息壤零件",
+     "count": 5.0
+    },
+    {
+     "item_id": "1515",
+     "name": "实验息壤瓶",
+     "count": 5.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1513",
+     "name": "息壤葫芦",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m171-r316",
+   "machine_id": "171",
+   "machine": "配件机",
+   "inputs": [
+    {
+     "item_id": "771",
+     "name": "息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1514",
+     "name": "实验息壤零件",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m746-r317",
+   "machine_id": "746",
+   "machine": "反应池",
+   "inputs": [
+    {
+     "item_id": "1405",
+     "name": "赫铜溶液",
+     "count": 2.0
+    },
+    {
+     "item_id": "368",
+     "name": "蓝铁粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    },
+    {
+     "item_id": "1361",
+     "name": "赫铜块",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m746-r318",
+   "machine_id": "746",
+   "machine": "反应池",
+   "inputs": [
+    {
+     "item_id": "1225",
+     "name": "赤铜粉末",
+     "count": 1.0
+    },
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1404",
+     "name": "赤铜溶液",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m746-r319",
+   "machine_id": "746",
+   "machine": "反应池",
+   "inputs": [
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    },
+    {
+     "item_id": "1364",
+     "name": "重息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1365",
+     "name": "液化重息壤",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m171-r320",
+   "machine_id": "171",
+   "machine": "配件机",
+   "inputs": [
+    {
+     "item_id": "1361",
+     "name": "赫铜块",
+     "count": 5.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1362",
+     "name": "赫铜零件",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m176-r321",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m745-r322",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1360",
+     "name": "沉积酸",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m746-r323",
+   "machine_id": "746",
+   "machine": "反应池",
+   "inputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 2.0
+    },
+    {
+     "item_id": "368",
+     "name": "蓝铁粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    },
+    {
+     "item_id": "1232",
+     "name": "壤晶",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m746-r324",
+   "machine_id": "746",
+   "machine": "反应池",
+   "inputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    },
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 1.0
+    },
+    {
+     "item_id": "1164",
+     "name": "惰性壤晶废液",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m176-r325",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1164",
+     "name": "惰性壤晶废液",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m745-r326",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1164",
+     "name": "惰性壤晶废液",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m176-r327",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m745-r328",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m176-r329",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m745-r330",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m176-r331",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m745-r332",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m746-r333",
+   "machine_id": "746",
+   "machine": "反应池",
+   "inputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    },
+    {
+     "item_id": "771",
+     "name": "息壤",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "892",
+     "name": "液化息壤",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m176-r334",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "769",
+     "name": "芽针溶液",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m745-r335",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "769",
+     "name": "芽针溶液",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m746-r336",
+   "machine_id": "746",
+   "machine": "反应池",
+   "inputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    },
+    {
+     "item_id": "587",
+     "name": "芽针粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "769",
+     "name": "芽针溶液",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m177-r337",
+   "machine_id": "177",
+   "machine": "封装机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "373",
+     "name": "铁制零件",
+     "count": 10.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "594",
+     "name": "锦草软饮",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m177-r338",
+   "machine_id": "177",
+   "machine": "封装机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "373",
+     "name": "铁制零件",
+     "count": 10.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "593",
+     "name": "芽针针剂",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m746-r339",
+   "machine_id": "746",
+   "machine": "反应池",
+   "inputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    },
+    {
+     "item_id": "586",
+     "name": "锦草粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "201",
+     "name": "锦草溶液",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m176-r340",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m745-r341",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "381",
+     "name": "清水",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m746-r342",
+   "machine_id": "746",
+   "machine": "反应池",
+   "inputs": [
+    {
+     "item_id": "1163",
+     "name": "壤晶废液",
+     "count": 2.0
+    },
+    {
+     "item_id": "368",
+     "name": "蓝铁粉末",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1162",
+     "name": "污水",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m176-r343",
+   "machine_id": "176",
+   "machine": "灌装机",
+   "inputs": [
+    {
+     "item_id": "201",
+     "name": "锦草溶液",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m745-r344",
+   "machine_id": "745",
+   "machine": "拆解机",
+   "inputs": [
+    {
+     "item_id": "1231",
+     "name": "赤铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "1461",
+     "name": "赫铜瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "370",
+     "name": "紫晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "551",
+     "name": "高晶质瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "552",
+     "name": "钢质瓶",
+     "count": 1.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "201",
+     "name": "锦草溶液",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  }
+ ]
+}

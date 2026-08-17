@@ -1,0 +1,71 @@
+{"query": "重息壤怎么获得", "intent": "配方", "difficulty": "简单", "gold_names": ["重息壤"], "relevance": 2, "source": "auto", "anchor": "重息壤", "core": "重息壤"}
+{"query": "重息壤在哪里刷", "intent": "配方", "difficulty": "中等", "gold_names": ["重息壤"], "relevance": 2, "source": "auto", "anchor": "重息壤", "core": "重息壤"}
+{"query": "重息壤是啥", "intent": "配方", "difficulty": "困难", "gold_names": ["重息壤"], "relevance": 2, "source": "auto", "anchor": "重息壤", "core": "重息壤"}
+{"query": "碳块怎么获得", "intent": "配方", "difficulty": "简单", "gold_names": ["碳块"], "relevance": 2, "source": "auto", "anchor": "碳块", "core": "碳块"}
+{"query": "碳块在哪里刷", "intent": "配方", "difficulty": "中等", "gold_names": ["碳块"], "relevance": 2, "source": "auto", "anchor": "碳块", "core": "碳块"}
+{"query": "碳块哪里多", "intent": "配方", "difficulty": "困难", "gold_names": ["碳块"], "relevance": 2, "source": "auto", "anchor": "碳块", "core": "碳块"}
+{"query": "工业爆炸物怎么合成", "intent": "配方", "difficulty": "简单", "gold_names": ["工业爆炸物"], "relevance": 2, "source": "auto", "anchor": "工业爆炸物", "core": "工业爆炸物"}
+{"query": "工业爆炸物怎么获取", "intent": "配方", "difficulty": "中等", "gold_names": ["工业爆炸物"], "relevance": 2, "source": "auto", "anchor": "工业爆炸物", "core": "工业爆炸物"}
+{"query": "实验重息壤零件怎么获得", "intent": "配方", "difficulty": "简单", "gold_names": ["实验重息壤零件"], "relevance": 2, "source": "auto", "anchor": "实验重息壤零件", "core": "实验重息壤零件"}
+{"query": "实验重息壤零件在哪里刷", "intent": "配方", "difficulty": "中等", "gold_names": ["实验重息壤零件"], "relevance": 2, "source": "auto", "anchor": "实验重息壤零件", "core": "实验重息壤零件"}
+{"query": "紫晶装备原件怎么合成", "intent": "配方", "difficulty": "简单", "gold_names": ["紫晶装备原件"], "relevance": 2, "source": "auto", "anchor": "紫晶装备原件", "core": "紫晶装备"}
+{"query": "紫晶装备原件哪里获取", "intent": "配方", "difficulty": "中等", "gold_names": ["紫晶装备原件"], "relevance": 2, "source": "auto", "anchor": "紫晶装备原件", "core": "紫晶装备"}
+{"query": "紫晶装备怎么弄", "intent": "配方", "difficulty": "困难", "gold_names": ["紫晶装备原件"], "relevance": 2, "source": "auto", "anchor": "紫晶装备原件", "core": "紫晶装备"}
+{"query": "金石稻田块怎么获得", "intent": "配方", "difficulty": "简单", "gold_names": ["金石稻田块"], "relevance": 2, "source": "auto", "anchor": "金石稻田块", "core": "金石稻田块"}
+{"query": "金石稻田块在哪里能找到", "intent": "配方", "difficulty": "中等", "gold_names": ["金石稻田块"], "relevance": 2, "source": "auto", "anchor": "金石稻田块", "core": "金石稻田块"}
+{"query": "金石稻田块是什么东西", "intent": "配方", "difficulty": "困难", "gold_names": ["金石稻田块"], "relevance": 2, "source": "auto", "anchor": "金石稻田块", "core": "金石稻田块"}
+{"query": "荞花田块怎么获得", "intent": "设备", "difficulty": "简单", "gold_names": ["荞花田块"], "relevance": 2, "source": "auto", "anchor": "荞花田块", "core": "荞花田块"}
+{"query": "荞花田块在哪里采集", "intent": "设备", "difficulty": "中等", "gold_names": ["荞花田块"], "relevance": 2, "source": "auto", "anchor": "荞花田块", "core": "荞花田块"}
+{"query": "荞花田块是啥东西", "intent": "设备", "difficulty": "困难", "gold_names": ["荞花田块"], "relevance": 2, "source": "auto", "anchor": "荞花田块", "core": "荞花田块"}
+{"query": "粉碎机怎么合成", "intent": "设备", "difficulty": "简单", "gold_names": ["粉碎机"], "relevance": 2, "source": "auto", "anchor": "粉碎机", "core": "粉碎机"}
+{"query": "怎么制作粉碎机", "intent": "设备", "difficulty": "中等", "gold_names": ["粉碎机"], "relevance": 2, "source": "auto", "anchor": "粉碎机", "core": "粉碎机"}
+{"query": "粉碎机哪来的", "intent": "设备", "difficulty": "困难", "gold_names": ["粉碎机"], "relevance": 2, "source": "auto", "anchor": "粉碎机", "core": "粉碎机"}
+{"query": "水驱矿机怎么合成", "intent": "设备", "difficulty": "简单", "gold_names": ["水驱矿机"], "relevance": 2, "source": "auto", "anchor": "水驱矿机", "core": "水驱矿机"}
+{"query": "水驱矿机在哪里获得", "intent": "设备", "difficulty": "中等", "gold_names": ["水驱矿机"], "relevance": 2, "source": "auto", "anchor": "水驱矿机", "core": "水驱矿机"}
+{"query": "水驱矿机怎么用", "intent": "设备", "difficulty": "困难", "gold_names": ["水驱矿机"], "relevance": 2, "source": "auto", "anchor": "水驱矿机", "core": "水驱矿机"}
+{"query": "琼叶参田块怎么获得", "intent": "设备", "difficulty": "简单", "gold_names": ["琼叶参田块"], "relevance": 2, "source": "auto", "anchor": "琼叶参田块", "core": "琼叶参田块"}
+{"query": "琼叶参田块在哪里能找到", "intent": "设备", "difficulty": "中等", "gold_names": ["琼叶参田块"], "relevance": 2, "source": "auto", "anchor": "琼叶参田块", "core": "琼叶参田块"}
+{"query": "琼叶参田块在哪弄", "intent": "设备", "difficulty": "困难", "gold_names": ["琼叶参田块"], "relevance": 2, "source": "auto", "anchor": "琼叶参田块", "core": "琼叶参田块"}
+{"query": "种植机怎么合成", "intent": "设备", "difficulty": "简单", "gold_names": ["种植机"], "relevance": 2, "source": "auto", "anchor": "种植机", "core": "种植机"}
+{"query": "种植机怎么获得", "intent": "设备", "difficulty": "中等", "gold_names": ["种植机"], "relevance": 2, "source": "auto", "anchor": "种植机", "core": "种植机"}
+{"query": "种植机怎么解锁", "intent": "设备", "difficulty": "困难", "gold_names": ["种植机"], "relevance": 2, "source": "auto", "anchor": "种植机", "core": "种植机"}
+{"query": "精炼炉怎么合成", "intent": "设备", "difficulty": "简单", "gold_names": ["精炼炉"], "relevance": 2, "source": "auto", "anchor": "精炼炉", "core": "精炼炉"}
+{"query": "精炼炉在哪里找", "intent": "设备", "difficulty": "困难", "gold_names": ["精炼炉"], "relevance": 2, "source": "auto", "anchor": "精炼炉", "core": "精炼炉"}
+{"query": "明日方舟终末地定档PV在哪里看", "intent": "知识", "difficulty": "简单", "gold_names": ["游戏定档PV"], "relevance": 2, "source": "auto", "anchor": "游戏定档PV", "core": "定档PV"}
+{"query": "阿伯莉的密档怎么获得", "intent": "知识", "difficulty": "简单", "gold_names": ["阿伯莉的密档"], "relevance": 2, "source": "auto", "anchor": "阿伯莉的密档", "core": "阿伯莉的密档"}
+{"query": "阿伯莉的密档是啥", "intent": "知识", "difficulty": "困难", "gold_names": ["阿伯莉的密档"], "relevance": 2, "source": "auto", "anchor": "阿伯莉的密档", "core": "阿伯莉的密档"}
+{"query": "武库箱·绘涂怎么获得？", "intent": "知识", "difficulty": "简单", "gold_names": ["补充武库箱·绘涂"], "relevance": 2, "source": "auto", "anchor": "补充武库箱·绘涂", "core": "武库箱·绘涂"}
+{"query": "水清顽石现怎么过？", "intent": "知识", "difficulty": "简单", "gold_names": ["第二章 - 进程Ⅲ - 水清顽石现"], "relevance": 2, "source": "auto", "anchor": "第二章 - 进程Ⅲ - 水清顽石现", "core": "水清顽石现"}
+{"query": "第二章进程Ⅲ的水清顽石现关卡攻略", "intent": "知识", "difficulty": "中等", "gold_names": ["第二章 - 进程Ⅲ - 水清顽石现"], "relevance": 2, "source": "auto", "anchor": "第二章 - 进程Ⅲ - 水清顽石现", "core": "水清顽石现"}
+{"query": "第二章进程Ⅲ逐波向水中怎么过", "intent": "知识", "difficulty": "简单", "gold_names": ["第二章 - 进程Ⅲ - 逐波向水中"], "relevance": 2, "source": "auto", "anchor": "第二章 - 进程Ⅲ - 逐波向水中", "core": "逐波向水中"}
+{"query": "逐波向水中任务流程攻略", "intent": "知识", "difficulty": "中等", "gold_names": ["第二章 - 进程Ⅲ - 逐波向水中"], "relevance": 2, "source": "auto", "anchor": "第二章 - 进程Ⅲ - 逐波向水中", "core": "逐波向水中"}
+{"query": "逐波向水中怎么打", "intent": "知识", "difficulty": "困难", "gold_names": ["第二章 - 进程Ⅲ - 逐波向水中"], "relevance": 2, "source": "auto", "anchor": "第二章 - 进程Ⅲ - 逐波向水中", "core": "逐波向水中"}
+{"query": "基础寻访凭证怎么获得", "intent": "知识", "difficulty": "简单", "gold_names": ["基础寻访凭证"], "relevance": 2, "source": "auto", "anchor": "基础寻访凭证", "core": "基础寻访凭证"}
+{"query": "基础寻访凭证的获取方式是什么", "intent": "知识", "difficulty": "中等", "gold_names": ["基础寻访凭证"], "relevance": 2, "source": "auto", "anchor": "基础寻访凭证", "core": "基础寻访凭证"}
+{"query": "负山怎么合成", "intent": "数值", "difficulty": "简单", "gold_names": ["负山"], "relevance": 2, "source": "auto", "anchor": "负山", "core": "负山"}
+{"query": "负山材料怎么获得", "intent": "数值", "difficulty": "中等", "gold_names": ["负山"], "relevance": 2, "source": "auto", "anchor": "负山", "core": "负山"}
+{"query": "负山在哪弄", "intent": "数值", "difficulty": "困难", "gold_names": ["负山"], "relevance": 2, "source": "auto", "anchor": "负山", "core": "负山"}
+{"query": "向心之引怎么合成", "intent": "数值", "difficulty": "简单", "gold_names": ["向心之引"], "relevance": 2, "source": "auto", "anchor": "向心之引", "core": "向心之引"}
+{"query": "向心之引如何获取", "intent": "数值", "difficulty": "中等", "gold_names": ["向心之引"], "relevance": 2, "source": "auto", "anchor": "向心之引", "core": "向心之引"}
+{"query": "向心之引在哪里找", "intent": "数值", "difficulty": "困难", "gold_names": ["向心之引"], "relevance": 2, "source": "auto", "anchor": "向心之引", "core": "向心之引"}
+{"query": "矿场传动轮怎么获得", "intent": "数值", "difficulty": "简单", "gold_names": ["矿场传动轮"], "relevance": 2, "source": "auto", "anchor": "矿场传动轮", "core": "矿场传动轮"}
+{"query": "矿场护腕怎么获得", "intent": "数值", "difficulty": "简单", "gold_names": ["矿场护腕"], "relevance": 2, "source": "auto", "anchor": "矿场护腕", "core": "矿场护腕"}
+{"query": "矿场护腕是啥", "intent": "数值", "difficulty": "困难", "gold_names": ["矿场护腕"], "relevance": 2, "source": "auto", "anchor": "矿场护腕", "core": "矿场护腕"}
+{"query": "同类相食怎么合成", "intent": "数值", "difficulty": "简单", "gold_names": ["同类相食"], "relevance": 2, "source": "auto", "anchor": "同类相食", "core": "同类相食"}
+{"query": "同类相食材料哪里获取", "intent": "数值", "difficulty": "中等", "gold_names": ["同类相食"], "relevance": 2, "source": "auto", "anchor": "同类相食", "core": "同类相食"}
+{"query": "同类相食配方是什么", "intent": "数值", "difficulty": "困难", "gold_names": ["同类相食"], "relevance": 2, "source": "auto", "anchor": "同类相食", "core": "同类相食"}
+{"query": "佩丽卡怎么获得", "intent": "数值", "difficulty": "简单", "gold_names": ["【玩家攻略】佩丽卡"], "relevance": 2, "source": "auto", "anchor": "【玩家攻略】佩丽卡", "core": "佩丽卡"}
+{"query": "佩丽卡角色攻略", "intent": "数值", "difficulty": "中等", "gold_names": ["【玩家攻略】佩丽卡"], "relevance": 2, "source": "auto", "anchor": "【玩家攻略】佩丽卡", "core": "佩丽卡"}
+{"query": "佩丽卡怎么玩", "intent": "数值", "difficulty": "困难", "gold_names": ["【玩家攻略】佩丽卡"], "relevance": 2, "source": "auto", "anchor": "【玩家攻略】佩丽卡", "core": "佩丽卡"}
+{"query": "拍摄生长在小水潭上的古树和晚安大树其二哪个更好", "intent": "比较", "difficulty": "简单", "gold_names": ["拍摄生长在小水潭上的古树", "晚安，大树·其二"], "relevance": 2, "source": "auto", "anchor": "拍摄生长在小水潭上的古树", "core": "古树"}
+{"query": "跨过寰宇深处·二和环卫标兵·其三哪个更好？", "intent": "比较", "difficulty": "简单", "gold_names": ["跨过寰宇深处·二", "环卫标兵·其三"], "relevance": 2, "source": "auto", "anchor": "跨过寰宇深处·二", "core": "跨过寰宇深处"}
+{"query": "跨过寰宇深处和环卫标兵有什么区别？", "intent": "比较", "difficulty": "中等", "gold_names": ["跨过寰宇深处·二", "环卫标兵·其三"], "relevance": 2, "source": "auto", "anchor": "跨过寰宇深处·二", "core": "跨过寰宇深处"}
+{"query": "跨过寰宇深处和环卫标兵哪个更值得练？", "intent": "比较", "difficulty": "困难", "gold_names": ["跨过寰宇深处·二", "环卫标兵·其三"], "relevance": 2, "source": "auto", "anchor": "跨过寰宇深处·二", "core": "跨过寰宇深处"}
+{"query": "风雨欲来·终和刀剑无名·其一哪个更好？", "intent": "比较", "difficulty": "简单", "gold_names": ["风雨欲来·终", "刀剑无名·其一"], "relevance": 2, "source": "auto", "anchor": "风雨欲来·终", "core": "风雨欲来·终"}
+{"query": "环带来客·其一和能量清淤哪个更好？", "intent": "比较", "difficulty": "简单", "gold_names": ["环带来客·其一", "能量清淤"], "relevance": 2, "source": "auto", "anchor": "环带来客·其一", "core": "环带来客"}
+{"query": "环带来客和能量清淤有什么区别？", "intent": "比较", "difficulty": "中等", "gold_names": ["环带来客·其一", "能量清淤"], "relevance": 2, "source": "auto", "anchor": "环带来客·其一", "core": "环带来客"}
+{"query": "环带来客和清淤哪个强？", "intent": "比较", "difficulty": "困难", "gold_names": ["环带来客·其一", "能量清淤"], "relevance": 2, "source": "auto", "anchor": "环带来客·其一", "core": "环带来客"}
+{"query": "再访基地和推开园门有什么区别？", "intent": "比较", "difficulty": "简单", "gold_names": ["再访基地", "第一章 - 进程Ⅲ - 推开园门"], "relevance": 2, "source": "auto", "anchor": "再访基地", "core": "再访基地"}
+{"query": "再访基地和第一章进程Ⅲ的剧情哪个更好？", "intent": "比较", "difficulty": "中等", "gold_names": ["再访基地", "第一章 - 进程Ⅲ - 推开园门"], "relevance": 2, "source": "auto", "anchor": "再访基地", "core": "再访基地"}
+{"query": "古崖论剑和再引春来·其三哪个更好？", "intent": "比较", "difficulty": "简单", "gold_names": ["古崖论剑", "再引春来·其三"], "relevance": 2, "source": "auto", "anchor": "古崖论剑", "core": "古崖论剑"}
+{"query": "古崖论剑和再引春来·其三有什么区别？", "intent": "比较", "difficulty": "中等", "gold_names": ["古崖论剑", "再引春来·其三"], "relevance": 2, "source": "auto", "anchor": "古崖论剑", "core": "古崖论剑"}

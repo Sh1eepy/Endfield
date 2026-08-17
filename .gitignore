@@ -1,0 +1,43 @@
+# ===== 密钥与隐私（绝不提交） =====
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+
+# ===== 运行时产物（大文件/可重建） =====
+output/rag/chroma/
+logs/
+*.log
+
+# 原始抓取与逆向缓存：体积大、可重新采集，不进入普通 Git 历史
+endfield_wiki_full_*.json
+chunks/
+
+# 根目录历史导出物：保留本地只读副本，当前流水线使用 endfield_kb/ 与 output/
+endfield_devices.json
+endfield_devices.jsonl
+endfield_devices.md
+endfield_items.json
+endfield_items.jsonl
+endfield_items.md
+build_kb.py
+wiki_collector.js
+
+# 独立的旧采集工作副本；其内部有自己的交接资料和大文件，不并入主仓库
+wiki数据采集skill/
+
+# ===== 系统/编辑器 =====
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

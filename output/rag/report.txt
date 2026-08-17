@@ -1,0 +1,7 @@
+RAG 索引构建完成
+模式: 全量
+模型: BAAI/bge-small-zh-v1.5
+chunk 总数: 3032
+整条未拆: 1582
+单 chunk 上限: 512 字符
+输出目录: output/rag

@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>终末地 · 合成终端 | 配方树 &amp; 知识问答</title>
+<script src="vendor/d3.min.js"></script>
+<style>
+:root{
+  /* 终末地工业 HUD 配色 */
+  --bg:#0B0E13; --card:#131720; --panel:#131720; --panel2:#1A2029; --panel3:#202835;
+  --border:#2A3342; --border2:#3D4A5F;
+  --accent:#FF8A3D; --accent2:#4DD0E1; --accent3:#FFB74D;
+  --text:#E6EAF2; --sub:#8A94A6; --faint:#5A6478;
+  --ok:#52C41A; --warn:#FFB020; --danger:#FF4D4F;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Microsoft YaHei','PingFang SC','Segoe UI',sans-serif;
+  min-height:100vh; line-height:1.6;
+  background-image:
+    radial-gradient(1000px 600px at 85% -10%, rgba(255,138,61,.05), transparent),
+    radial-gradient(800px 500px at -10% 110%, rgba(77,208,225,.04), transparent),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.012) 0 1px, transparent 1px 3px);
+}
+header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 32px 16px; border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg,#151A23,#10141C);
+  position:sticky; top:0; z-index:50;
+  box-shadow:inset 0 -3px 0 0 rgba(255,138,61,.28);
+}
+header h1{
+  font-size:20px; font-weight:800; letter-spacing:2px;
+  color:var(--text);
+}
+header h1 .hl{color:var(--accent);}
+header .tag{font-size:11px; color:var(--faint); letter-spacing:1px; margin-top:1px;}
+header .status{
+  display:flex; align-items:center; gap:8px; font-size:12px; color:var(--sub);
+  font-family:Consolas,'Courier New',monospace; letter-spacing:.5px;
+}
+header .dot{width:8px; height:8px; border-radius:50%; background:var(--border2);}
+header .dot.on{background:var(--ok); box-shadow:0 0 8px var(--ok);}
+main{max-width:1180px; margin:0 auto; padding:24px 20px 40px;}
+/* ===== 搜索 ===== */
+.search-wrap{
+  position:relative; margin-bottom:20px;
+}
+.mode-tabs{
+  display:inline-flex; gap:2px; background:var(--panel2); border:1px solid var(--border);
+  border-radius:8px; padding:3px; margin-bottom:10px;
+}
+.mode-btn{
+  border:none; background:transparent; padding:6px 16px; border-radius:6px;
+  font-size:13px; color:var(--sub); cursor:pointer; font-family:inherit;
+  transition:all .18s; letter-spacing:.5px;
+}
+.mode-btn:hover{color:var(--text); background:var(--panel3);}
+.mode-btn.active{
+  background:var(--accent); color:#0B0E13; font-weight:700;
+  box-shadow:0 0 12px rgba(255,138,61,.35);
+}
+#in-search{
+  width:100%; padding:15px 20px; font-size:16px; color:var(--text);
+  background:var(--panel2); border:1.5px solid var(--border2); border-radius:10px;
+  outline:none; font-family:inherit; caret-color:var(--accent);
+  box-shadow:0 2px 12px rgba(0,0,0,.35);
+  transition:border-color .2s, box-shadow .2s;
+}
+#in-search::placeholder{color:var(--faint);}
+#in-search:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(255,138,61,.18);}
+#suggest{
+  position:absolute; top:calc(100% + 6px); left:0; right:0;
+  max-height:320px; overflow-y:auto; background:var(--panel2);
+  border:1px solid var(--border); border-radius:10px;
+  box-shadow:0 12px 36px rgba(0,0,0,.5); display:none; z-index:60;
+}
+.sug-item{padding:10px 16px; cursor:pointer; font-size:14px; color:var(--text);}
+.sug-item:hover,.sug-item.active{background:var(--panel3);}
+.sug-item .sub{font-size:11px; color:var(--faint); margin-left:8px;}
+.sug-empty{padding:12px 16px; font-size:13px; color:var(--faint);}
+/* ===== 结果区 ===== */
+.panel{
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  box-shadow:0 2px 18px rgba(0,0,0,.4); overflow:hidden;
+}
+.panel-head{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:13px 20px; border-bottom:1px solid var(--border);
+  background:var(--panel2); font-size:14px; color:var(--sub);
+  letter-spacing:.5px;
+}
+.panel-head b{color:var(--text);}
+#syn-tree{overflow:auto; padding:10px;}
+#syn-tree svg{display:block;}
+#syn-empty{padding:60px 20px; text-align:center; color:var(--faint); font-size:14px;}
+/* 合成树节点（深色工业风） */
+.node-item circle{fill:#1E2733; stroke:var(--accent); stroke-width:1.8;}
+.node-item text{fill:var(--text); font-size:12px; font-weight:600;}
+.node-recipe rect{fill:#15242B; stroke:var(--accent2); stroke-width:1.2; rx:3;}
+.node-recipe text{fill:#7DD3E0; font-size:10.5px;}
+.node-leaf circle{fill:#151A22; stroke:var(--faint); stroke-width:1; stroke-dasharray:3 2;}
+.link{fill:none; stroke:var(--border2); stroke-width:1.4;}
+.link.cnt{stroke:var(--accent2); stroke-width:1.1; stroke-dasharray:2 3;}
+.edge-label{fill:var(--accent3); font-size:9.5px; font-family:Consolas,monospace;}
+/* 结果区顶部：物品头卡 + 相关引用 */
+.item-head{
+  display:flex; align-items:center; gap:14px;
+  padding:14px 20px; border-bottom:1px solid var(--border);
+  background:linear-gradient(90deg,#171C26,#12222A);
+}
+.item-cover{
+  width:58px; height:58px; border-radius:8px; object-fit:cover;
+  border:1px solid var(--border2); background:var(--panel2); flex-shrink:0;
+}
+.item-head-name{font-size:17px; font-weight:700; letter-spacing:.5px;}
+.item-head-tag{font-size:12px; color:var(--accent3); margin-top:2px; letter-spacing:.5px;}
+.refs-block{padding:10px 20px 12px; border-bottom:1px dashed var(--border); background:var(--panel2);}
+.refs-title{font-size:12px; color:var(--sub); margin-bottom:6px;}
+.ref-chip{
+  display:inline-flex; align-items:center; gap:4px;
+  padding:3px 11px; margin:3px 6px 3px 0; font-size:12.5px;
+  color:var(--accent); background:rgba(255,138,61,.08); border:1px solid rgba(255,138,61,.35);
+  border-radius:999px; cursor:pointer; transition:all .15s;
+}
+.ref-chip:hover{background:var(--accent); color:#0B0E13; border-color:var(--accent);}
+.ref-chip .cnt{opacity:.7; font-size:11px;}
+/* 知识库结构化渲染（真表格/真图片/物品卡片） */
+.kb-table{border-collapse:collapse; width:100%; margin:8px 0; font-size:12.5px;}
+.kb-table td{border:1px solid var(--border); padding:4px 9px; color:var(--text); vertical-align:top;}
+.kb-table td.th{background:var(--panel3); font-weight:700; color:var(--accent3);}
+.kb-sec>table:first-child{margin-top:6px;}
+.kb-entry{color:var(--accent2); cursor:pointer; font-weight:600; white-space:nowrap;}
+.kb-entry:hover{text-decoration:underline;}
+.kb-entry .cnt{font-style:normal; opacity:.65; font-size:11px; margin-left:1px;}
+.kb-link{color:var(--accent2); text-decoration:none;}
+.kb-link:hover{text-decoration:underline;}
+.kb-img{max-width:100%; border-radius:6px; margin:8px 0; border:1px solid var(--border);}
+.kb-img-wrap{text-align:center;}
+.kb-inline-img{height:1.25em; vertical-align:-.25em; border-radius:3px; margin:0 1px;}
+/* 设备/知识库卡片 */
+.msg.bot{
+  background:var(--panel2); border:1px solid var(--border); border-radius:8px;
+  padding:10px 14px; font-size:13.5px; line-height:1.7; color:var(--text);
+  margin:8px 0; word-break:break-word; white-space:pre-wrap;
+}
+.src-chip{
+  display:inline-flex; align-items:center; gap:4px; margin:3px 6px 0 0;
+  padding:2px 8px; font-size:11px; border-radius:4px;
+  background:rgba(255,138,61,.08); border:1px solid rgba(255,138,61,.35); color:var(--accent);
+}
+#tip{
+  position:absolute; pointer-events:none; z-index:100; display:none;
+  background:var(--panel2); border:1px solid var(--border2); border-radius:8px;
+  padding:10px 13px; font-size:12px; color:var(--text); line-height:1.7;
+  box-shadow:0 8px 30px rgba(0,0,0,.55); min-width:160px;
+}
+#tip .t-name{font-size:13px; font-weight:700; margin-bottom:4px; color:var(--accent);}
+#tip .t-row{color:var(--sub);}
+/* ===== RAG 问答结果 ===== */
+.ask-answer{
+  font-size:14px; line-height:1.85; color:var(--text);
+  padding:6px 2px; white-space:pre-wrap; word-break:break-word;
+}
+.ask-answer .src-ref{
+  color:var(--accent); font-size:11px; vertical-align:super; cursor:pointer;
+}
+.ask-rejected{color:var(--sub); font-style:italic;}
+.ask-intent-tag{
+  display:inline-block; padding:2px 10px; border-radius:999px;
+  font-size:11px; background:rgba(255,138,61,.1); color:var(--accent);
+  border:1px solid rgba(255,138,61,.4); margin:2px 6px 2px 0; letter-spacing:.5px;
+}
+.ask-sources{margin-top:12px; border-top:1px dashed var(--border); padding-top:10px;}
+.ask-src-title{font-size:12px; color:var(--sub); margin-bottom:6px;}
+.ask-src-chip{
+  display:inline-flex; align-items:center; gap:4px;
+  padding:3px 11px; margin:3px 6px 3px 0; font-size:12px;
+  color:var(--accent2); background:rgba(77,208,225,.08); border:1px solid rgba(77,208,225,.4);
+  border-radius:999px; cursor:pointer; transition:all .15s;
+}
+.ask-src-chip:hover{background:var(--accent2); color:#0B0E13; border-color:var(--accent2);}
+.ask-src-chip .rn{font-size:10px; opacity:.75;}
+.ask-hits{margin-top:12px;}
+.ask-hits details{
+  border:1px solid var(--border); border-radius:8px; margin:6px 0;
+  padding:8px 12px; font-size:12.5px; background:var(--panel2);
+}
+.ask-hits summary{cursor:pointer; color:var(--sub); font-size:12px;}
+.ask-hits .hit-name{color:var(--accent2); font-weight:600;}
+.ask-hits .hit-text{color:var(--text); margin-top:4px; line-height:1.7;}
+.ask-recipe-card{
+  border:1px solid var(--border); border-radius:8px; padding:12px 14px;
+  margin:8px 0; background:var(--panel2);
+}
+.ask-recipe-card .rc-machine{font-weight:700; color:var(--accent); font-size:14px; letter-spacing:.5px;}
+.ask-recipe-card .rc-row{font-size:13px; color:var(--text); margin-top:4px;}
+.ask-recipe-card .rc-row b{color:var(--accent2);}
+.ask-ambig{
+  display:inline-block; margin:4px; padding:6px 12px;
+  border:1px solid var(--border2); border-radius:6px; background:var(--panel2);
+  cursor:pointer; font-size:13px; color:var(--accent2); transition:all .15s;
+}
+.ask-ambig:hover{background:var(--accent); color:#0B0E13; border-color:var(--accent);}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>终末地 <span class="hl">工业</span> · 合成终端</h1>
+    <div class="tag">明日方舟：终末地 WIKI 数据驱动 · 配方链可视化 · RAG 问答</div>
+  </div>
+  <div class="status"><span class="dot" id="api-dot"></span><span id="api-text">后端未连接</span></div>
+</header>
+
+<main>
+  <div class="search-wrap">
+    <div class="mode-tabs" id="mode-tabs">
+      <button class="mode-btn active" data-mode="syn">配方合成树</button>
+      <button class="mode-btn" data-mode="ask">知识问答</button>
+    </div>
+    <input id="in-search" placeholder="输入物品、设备名或直接提问，如：重息壤怎么造、天有洪炉能做什么…" autocomplete="off">
+    <div id="suggest"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <span><b id="tree-title">配方合成树</b></span>
+      <span style="font-size:12px;color:var(--faint)">悬停节点查看详情 · 叶子 = 基础资源（清水/矿物/气体矿物/种子）</span>
+    </div>
+    <div id="syn-tree"><div id="syn-empty">输入名称，展开配方树</div></div>
+  </div>
+</main>
+<div id="tip"></div>
+<script>
+/* ===================== 工具 ===================== */
+const $ = id => document.getElementById(id);
+const tip = $('tip');
+function esc(s) {
+  return String(s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+/* ===================== 后端状态 ===================== */
+fetch('/api/health').then(r => r.json()).then(() => {
+  $('api-dot').classList.add('on');
+  $('api-text').textContent = '后端已连接';
+}).catch(() => { $('api-text').textContent = '后端未连接（先启动 uvicorn）'; });
+
+/* ===================== 模糊搜索联想 ===================== */
+let ALL_NAMES = [];
+let SUG_INDEX = -1;
+
+fetch('/api/names').then(r => r.json()).then(d => { ALL_NAMES = d.names || []; }).catch(() => {});
+
+function renderSuggest(list, q) {
+  const box = $('suggest');
+  if (!list.length) {
+    box.innerHTML = `<div class="sug-empty">没有匹配「${esc(q)}」的名称</div>`;
+    box.style.display = 'block';
+    return;
+  }
+  box.innerHTML = list.map((n, i) => {
+    const hi = n.indexOf(q);
+    const hl = hi >= 0 ? esc(n.slice(0, hi)) + `<b style="color:var(--accent)">${esc(n.slice(hi, hi + q.length))}</b>` + esc(n.slice(hi + q.length)) : esc(n);
+    return `<div class="sug-item${i === SUG_INDEX ? ' active' : ''}" data-name="${esc(n)}">${hl}</div>`;
+  }).join('');
+  box.style.display = 'block';
+}
+function hideSuggest() { $('suggest').style.display = 'none'; SUG_INDEX = -1; }
+
+function onInput() {
+  const q = $('in-search').value.trim();
+  SUG_INDEX = -1;
+  if (!q) { hideSuggest(); return; }
+  const starts = ALL_NAMES.filter(n => n.startsWith(q));
+  const contains = ALL_NAMES.filter(n => n.includes(q) && !n.startsWith(q));
+  renderSuggest([...starts, ...contains].slice(0, 14), q);
+}
+function pickSuggestion(name) {
+  $('in-search').value = name;
+  hideSuggest();
+  CUR_MODE === 'syn' ? loadSyn() : loadAsk();
+}
+$('in-search').addEventListener('input', onInput);
+$('in-search').addEventListener('keydown', ev => {
+  const items = document.querySelectorAll('.sug-item');
+  if (ev.key === 'ArrowDown') { ev.preventDefault(); SUG_INDEX = Math.min(SUG_INDEX + 1, items.length - 1); }
+  else if (ev.key === 'ArrowUp') { ev.preventDefault(); SUG_INDEX = Math.max(SUG_INDEX - 1, 0); }
+  else if (ev.key === 'Enter') {
+    ev.preventDefault();
+    if (items[SUG_INDEX]) { pickSuggestion(items[SUG_INDEX].dataset.name); }
+    else { hideSuggest(); CUR_MODE === 'syn' ? loadSyn() : loadAsk(); }
+    return;
+  }
+  items.forEach((el, i) => el.classList.toggle('active', i === SUG_INDEX));
+});
+$('suggest').addEventListener('mousedown', ev => {
+  const it = ev.target.closest('.sug-item');
+  if (it) pickSuggestion(it.dataset.name);
+});
+document.addEventListener('click', ev => {
+  if (!ev.target.closest('.search-wrap')) hideSuggest();
+});
+
+/* ===================== RAG 问答（/api/ask） ===================== */
+function escRef(answer) {
+  /* 把 [来源N] 标记转成可点击引用角标 */
+  return esc(answer).replace(/\[来源(\d+)\]/g, (m, n) => `<sup class="src-ref" data-src="${n}">[${n}]</sup>`);
+}
+
+function renderAskRecipes(d) {
+  /* 结构化直查结果：配方卡 / 设备配方卡 / 歧义候选 */
+  if (d.route === 'recipe') {
+    return `<div class="msg bot" style="margin-top:10px"><b style="color:var(--accent3)">「${esc(d.item)}」的合成配方</b>` +
+      d.recipes.map(r => `
+        <div class="ask-recipe-card">
+          <div class="rc-machine">${esc(r.machine)} · ${r.duration}s</div>
+          <div class="rc-row"><b>原料</b>：${r.inputs.map(x => `${esc(x.name)}×${x.count}`).join('、')}</div>
+          <div class="rc-row"><b>产物</b>：${r.outputs.map(x => `${esc(x.name)}×${x.count}`).join('、')}</div>
+        </div>`).join('') + `</div>`;
+  }
+  if (d.route === 'device') {
+    return `<div class="msg bot" style="margin-top:10px"><b style="color:var(--accent3)">设备「${esc(d.device)}」能造的配方（${d.recipes.length} 个）</b>` +
+      d.recipes.map(r => `
+        <div class="ask-recipe-card">
+          <div class="rc-machine">${esc(r.machine)} · ${r.duration}s</div>
+          <div class="rc-row"><b>原料</b>：${r.inputs.map(x => `${esc(x.name)}×${x.count}`).join('、')}</div>
+          <div class="rc-row"><b>产物</b>：${r.outputs.map(x => `${esc(x.name)}×${x.count}`).join('、')}</div>
+        </div>`).join('') + `</div>`;
+  }
+  if (d.route === 'device_products') {
+    return `<div class="msg bot" style="margin-top:10px"><b style="color:var(--accent3)">产出「${esc(d.keyword)}」的设备</b><br>` +
+      d.matches.map(m => `<span class="ask-src-chip" data-nm="${esc(m.device)}">${esc(m.device)} → ${esc(m.output)}×${m.count}</span>`).join('') + `</div>`;
+  }
+  if (d.route === 'ambiguous') {
+    return `<div style="color:var(--sub);margin:10px 0">「${esc(d.item)}」匹配多个物品，请选择：</div>` +
+      d.candidates.map(n => `<span class="ask-ambig" data-nm="${esc(n)}">${esc(n)}</span>`).join('');
+  }
+  return '';
+}
+
+function renderAsk(d) {
+  let html = '';
+  html += `<div style="margin:8px 0 4px"><span class="ask-intent-tag">意图：${esc(d.intent || '未知')}</span>` +
+    `<span class="ask-intent-tag" style="background:rgba(77,208,225,.1);color:var(--accent2);border-color:rgba(77,208,225,.4)">${d.route_used === 'structured' ? '结构化直查' : '知识库检索'}</span></div>`;
+
+  // 结构化直查（配方/设备/歧义）
+  if (d.route_used === 'structured') { html += renderAskRecipes(d); }
+  else {
+    // LLM 生成回答
+    if (d.answer) {
+      html += d.rejected
+        ? `<div class="ask-answer ask-rejected">${esc(d.answer)}</div>`
+        : `<div class="ask-answer">${escRef(d.answer)}</div>`;
+    } else {
+      html += `<div class="ask-answer ask-rejected">知识库检索完成，但回答生成暂不可用（未配置 LLM 或调用失败）。</div>`;
+    }
+    // 来源 chips（点击切换该条目的合成树/知识卡）
+    if (d.sources && d.sources.length) {
+      html += `<div class="ask-sources"><div class="ask-src-title">依据来源（点击查看）</div>` +
+        d.sources.map((s, i) => `<span class="ask-src-chip" data-nm="${esc(s.name)}"><span class="rn">[${i + 1}]</span>${esc(s.name)}</span>`).join('') +
+        `</div>`;
+    }
+    // 检索片段折叠
+    if (d.hits && d.hits.length) {
+      html += `<div class="ask-hits"><details><summary>检索片段（${d.hits.length} 条）</summary>` +
+        d.hits.map(h => `<details><summary><span class="hit-name">${esc(h.meta.name)}</span> <span style="color:var(--faint)">(${esc(h.meta.category)})</span></summary>` +
+          `<div class="hit-text">${esc(h.text.slice(0, 260))}</div></details>`).join('') +
+        `</details></div>`;
+    }
+  }
+  $('syn-tree').innerHTML = html;
+  // 绑定点击：来源 chip / 歧义候选 → 切到合成树模式看该物品
+  $('syn-tree').querySelectorAll('[data-nm]').forEach(el => {
+    el.addEventListener('click', () => {
+      $('in-search').value = el.dataset.nm;
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === 'syn'));
+      CUR_MODE = 'syn';
+      $('tree-title').textContent = '配方合成树';
+      hideSuggest();
+      loadSyn();
+    });
+  });
+  // 回答里的引用角标 → 滚动到来源区
+  $('syn-tree').querySelectorAll('.src-ref').forEach(el => {
+    el.addEventListener('click', () => {
+      const chips = document.querySelectorAll('.ask-src-chip');
+      const i = parseInt(el.dataset.src, 10) - 1;
+      if (chips[i]) { chips[i].scrollIntoView({ behavior: 'smooth', block: 'center' }); chips[i].style.boxShadow = '0 0 0 3px rgba(79,70,229,.25)'; }
+    });
+  });
+}
+
+async function loadAsk() {
+  const q = $('in-search').value.trim();
+  if (!q) { $('syn-tree').innerHTML = '<div id="syn-empty">输入问题，AI 结合知识库回答</div>'; return; }
+  $('tree-title').textContent = q + ' · 知识问答';
+  $('syn-tree').innerHTML = '<div id="syn-empty">思考中…（检索 + AI 生成）</div>';
+  try {
+    const res = await fetch('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: q, top_k: 5, gen_answer: true })
+    });
+    const d = await res.json();
+    if (!d.ok) { $('syn-tree').innerHTML = `<div class="msg bot"><span style="color:var(--danger)">${esc(d.error || '问答失败')}</span></div>`; return; }
+    renderAsk(d);
+  } catch (e) { $('syn-tree').innerHTML = `<div class="msg bot"><span style="color:var(--danger)">${esc(e.message)}</span></div>`; }
+}
+
+/* ===================== 配方合成树 ===================== */
+let CUR_MODE = 'syn';
+
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    CUR_MODE = btn.dataset.mode;
+    $('tree-title').textContent = CUR_MODE === 'syn' ? '配方合成树' : '知识问答';
+    $('syn-empty').textContent = CUR_MODE === 'syn' ? '输入名称，展开配方树' : '输入问题，AI 结合知识库回答';
+    $('syn-tree').innerHTML = `<div id="syn-empty">${CUR_MODE === 'syn' ? '输入名称，展开配方树' : '输入问题，AI 结合知识库回答'}</div>`;
+    const q = $('in-search').value.trim();
+    if (q) CUR_MODE === 'syn' ? loadSyn() : loadAsk();
+  });
+});
+function synToD3(node, depth) {
+  const d = { name: node.name, item_id: node.item_id, depth: depth, kind: 'item',
+              leaf: node.leaf, truncated: node.truncated, cover: node.cover, children: [] };
+  (node.recipes || []).forEach(r => {
+    const rn = { name: r.machine, kind: 'recipe', duration: r.duration, children: [] };
+    (r.inputs || []).forEach(x => {
+      const cn = synToD3(x, depth + 1);
+      cn.count = x.count;
+      rn.children.push(cn);
+    });
+    d.children.push(rn);
+  });
+  return d;
+}
+
+function renderTree(tree) {
+  const root = d3.hierarchy(synToD3(tree, 0));
+  const W = 940, H = 620;
+  const layout = d3.tree().size([H - 80, W - 160]);
+  const data = layout(root);
+  data.descendants().forEach((n, i) => { n.data._idx = i; });
+  const svg = d3.select('#syn-tree').html('').append('svg')
+    .attr('viewBox', `0 0 ${W} ${H}`).attr('width', '100%').attr('height', H);
+  const g = svg.append('g').attr('transform', 'translate(50,40)');
+
+  g.selectAll('.link').data(data.links()).enter().append('path')
+    .attr('class', d => d.source.data.kind === 'item' ? 'link cnt' : 'link')
+    .attr('d', d => `M${d.source.y},${d.source.x}C${(d.source.y + d.target.y) / 2},${d.source.x} ${(d.source.y + d.target.y) / 2},${d.target.x} ${d.target.y},${d.target.x}`);
+
+  g.selectAll('.edge-label').data(data.links()).enter().append('text')
+    .attr('class', 'edge-label')
+    .attr('x', d => (d.source.y + d.target.y) / 2 + 2)
+    .attr('y', d => (d.source.x + d.target.x) / 2 - 4)
+    .text(d => d.target.data.count ? '×' + d.target.data.count : '');
+
+  const nodes = g.selectAll('.node').data(data.descendants()).enter().append('g')
+    .attr('class', d => d.data.kind === 'item' ? 'node node-item' : 'node node-recipe')
+    .attr('transform', d => `translate(${d.y},${d.x})`)
+    .on('mouseover', function (ev, d) {
+      tip.innerHTML = `<div class="t-name">${esc(d.data.name)}</div>` +
+        (d.data.duration ? `<div class="t-row">设备耗时 ${d.data.duration}s</div>` : '') +
+        (d.data.count ? `<div class="t-row">需要 ×${d.data.count}</div>` : '') +
+        (d.data.truncated ? '<div class="t-row">…已截断</div>' : '');
+      tip.style.display = 'block';
+      const r = $('syn-tree').getBoundingClientRect();
+      tip.style.left = (ev.clientX - r.left + 12) + 'px';
+      tip.style.top = (ev.clientY - r.top + 12) + 'px';
+    })
+    .on('mouseout', () => tip.style.display = 'none');
+
+  nodes.filter(d => d.data.kind === 'item').append('circle')
+    .attr('r', d => d.data.depth === 0 ? 20 : 15);
+  nodes.filter(d => d.data.kind === 'item').append('text').attr('dy', '0.35em')
+    .attr('text-anchor', 'middle')
+    .text(d => d.data.name.length > 5 ? d.data.name.slice(0, 5) + '…' : d.data.name);
+
+  // 有封面图的物品节点：圆形裁剪小图 + 描边圆，名称移到圆下方
+  nodes.filter(d => d.data.kind === 'item' && d.data.cover).each(function (d) {
+    const el = d3.select(this);
+    const r = d.data.depth === 0 ? 20 : 15;
+    const cid = 'clip-' + d.data._idx;
+    el.append('clipPath').attr('id', cid).append('circle').attr('r', r);
+    el.append('image')
+      .attr('xlink:href', d.data.cover)
+      .attr('referrerpolicy', 'no-referrer')
+      .attr('x', -r).attr('y', -r).attr('width', 2 * r).attr('height', 2 * r)
+      .attr('preserveAspectRatio', 'xMidYMid slice')
+      .attr('clip-path', `url(#${cid})`);
+    el.append('circle').attr('r', r).attr('fill', 'none')
+      .attr('stroke', d.data.leaf ? 'var(--faint)' : 'var(--accent)')
+      .attr('stroke-width', 1.6);
+    el.select('text').attr('dy', d.data.depth === 0 ? '2.8em' : '2.7em')
+      .attr('font-size', 11);
+  });
+
+  nodes.filter(d => d.data.kind === 'recipe').append('rect')
+    .attr('x', -32).attr('y', -9).attr('width', 64).attr('height', 18);
+  nodes.filter(d => d.data.kind === 'recipe').append('text').attr('dy', '0.35em')
+    .attr('text-anchor', 'middle')
+    .text(d => d.data.name.length > 5 ? d.data.name.slice(0, 5) + '…' : d.data.name);
+}
+
+function renderDeviceCards(tree) {
+  $('syn-tree').innerHTML =
+    `<div style="color:var(--sub);margin:8px 0 12px;font-size:14px">设备 <b style="color:var(--accent3)">${esc(tree.name)}</b> 共有 ${tree.recipes.length} 个配方：</div>` +
+    tree.recipes.map(r => `
+      <div class="msg bot">
+        <b style="color:var(--accent2)">${esc(r.machine)}</b> · 耗时 ${r.duration}s<br>
+        <span style="color:var(--sub)">原料：</span>${r.inputs.map(x => `${esc(x.name)}×${x.count}`).join('、') || '—'}<br>
+        <span style="color:var(--sub)">产物：</span>${r.outputs.map(x => `${esc(x.name)}×${x.count}`).join('、')}
+      </div>`).join('');
+}
+
+function renderInline(c) {
+  /* 结构化 inline：text / entry(物品卡片) / link(外链) / img */
+  let html = '';
+  for (const e of (c || [])) {
+    if (e.t === 'text') html += esc(e.x);
+    else if (e.t === 'entry') html +=
+      `<span class="kb-entry" data-name="${esc(e.x)}" title="点击查看合成树">${esc(e.x)}${e.c ? `<em class="cnt">×${e.c}</em>` : ''}</span>`;
+    else if (e.t === 'link') html +=
+      `<a class="kb-link" href="${esc(e.u)}" target="_blank" rel="noopener">${esc(e.x)}</a>`;
+    else if (e.t === 'img') html +=
+      `<img class="kb-inline-img" src="${esc(e.u)}" referrerpolicy="no-referrer" loading="lazy">`;
+  }
+  return html;
+}
+function renderStructBlocks(blocks) {
+  /* 结构化块：para(段落) / img(图片) / table(真表格) */
+  let html = '';
+  for (const b of (blocks || [])) {
+    if (b.t === 'para') {
+      const tx = renderInline(b.c);
+      if (tx) html += `<div class="msg bot">${tx}</div>`;
+    } else if (b.t === 'img') {
+      html += `<div class="kb-img-wrap"><img class="kb-img" src="${esc(b.u)}" referrerpolicy="no-referrer" loading="lazy"></div>`;
+    } else if (b.t === 'table') {
+      html += `<table class="kb-table">` + (b.r || []).map((row, ri) =>
+        `<tr>` + (row || []).map(cell =>
+          `<td${ri === 0 ? ' class="th"' : ''}>${renderInline(cell) || '&nbsp;'}</td>`).join('') + `</tr>`
+      ).join('') + `</table>`;
+    }
+  }
+  return html;
+}
+
+function renderKbCard(kb) {
+  let html = `<div style="color:var(--sub);margin:8px 0 12px;font-size:14px">「<b style="color:var(--accent3)">${esc(kb.name)}</b>」无流水线配方，来自 WIKI 知识库：</div>`;
+  if (kb.category) html += `<span class="src-chip" style="margin-bottom:8px;display:inline-flex">${esc(kb.category)}</span>`;
+  const ss = kb.sections_struct || {};
+  const secs = kb.sections || {};
+  const keys = Object.keys(ss).length ? Object.keys(ss) : Object.keys(secs);
+  const titles = keys.slice(0, 8);
+  titles.forEach(k => {
+    html += `<div class="msg bot kb-sec"><b style="color:var(--accent2)">${esc(k)}</b>`;
+    if (ss[k] && ss[k].length) html += renderStructBlocks(ss[k]);
+    else html += '<br>' + esc(secs[k] || '');
+    html += '</div>';
+  });
+  if (!titles.length && kb.full_text) {
+    html += `<div class="msg bot">${esc(kb.full_text)}</div>`;
+  }
+  $('syn-tree').innerHTML = html;
+  $('syn-tree').querySelectorAll('.kb-entry[data-name]').forEach(el => {
+    el.addEventListener('click', () => {
+      $('in-search').value = el.dataset.name;
+      hideSuggest();
+      loadSyn();
+    });
+  });
+}
+
+function renderHead(d) {
+  /* 结果区顶部：封面图 + 相关引用卡片（点击切换合成树） */
+  const wrap = $('syn-tree');
+  let html = '';
+  if (d.cover) {
+    const tag = d.no_recipe ? '无流水线配方 · 知识库条目'
+      : (d.tree && d.tree.kind === 'device' ? '设备 · 配方卡片' : '配方合成树');
+    html += `<div class="item-head"><img src="${esc(d.cover)}" alt="" class="item-cover" referrerpolicy="no-referrer"><div>` +
+      `<div class="item-head-name">${esc(d.item)}</div>` +
+      `<div class="item-head-tag">${tag}</div></div></div>`;
+  }
+  if (d.refs && d.refs.length) {
+    html += `<div class="refs-block"><div class="refs-title">相关引用（点击切换合成树）</div><div class="refs-list">` +
+      d.refs.map(r =>
+        `<span class="ref-chip" data-name="${esc(r.name)}">${esc(r.name)}` +
+        (r.count ? `<span class="cnt">×${r.count}</span>` : '') + `</span>`
+      ).join('') + `</div></div>`;
+  }
+  if (!html) return;
+  const box = document.createElement('div');
+  box.innerHTML = html;
+  box.querySelectorAll('.ref-chip').forEach(c => c.addEventListener('click', () => {
+    $('in-search').value = c.dataset.name;
+    hideSuggest();
+    loadSyn();
+  }));
+  wrap.prepend(box);
+}
+
+async function loadSyn() {
+  const item = $('in-search').value.trim();
+  if (!item) { $('syn-tree').innerHTML = '<div id="syn-empty">输入名称，展开配方树</div>'; return; }
+  $('tree-title').textContent = item + ' · 配方树';
+  $('syn-tree').innerHTML = '<div id="syn-empty">加载中…</div>';
+  try {
+    const res = await fetch(`/api/synthesis?item=${encodeURIComponent(item)}`);
+    const d = await res.json();
+    if (!d.ok) {
+      $('syn-tree').innerHTML = `<div class="msg bot"><span style="color:var(--danger)">${esc(d.error || '未找到')}</span></div>`;
+      return;
+    }
+    if (d.ambiguous) {
+      $('syn-tree').innerHTML =
+        `<div style="color:var(--sub);margin:8px 0">「${esc(item)}」匹配多个物品，请选择：</div>` +
+        d.candidates.map(n =>
+          `<span class="sug-item" style="display:inline-block;margin:4px;padding:6px 12px;border:1px solid var(--border2);border-radius:6px;background:var(--panel2);cursor:pointer" data-nm="${esc(n)}">${esc(n)}</span>`
+        ).join('');
+      $('syn-tree').querySelectorAll('[data-nm]').forEach(el => {
+        el.addEventListener('click', () => pickSuggestion(el.dataset.nm));
+      });
+      return;
+    }
+    if (d.no_recipe) { renderKbCard(d.kb); }
+    else if (d.tree && d.tree.kind === 'device') { renderDeviceCards(d.tree); }
+    else { renderTree(d.tree); }
+    renderHead(d);
+  } catch (e) { $('syn-tree').innerHTML = `<div class="msg bot"><span style="color:var(--danger)">${esc(e.message)}</span></div>`; }
+}
+
+/* 默认展示重息壤 */
+$('in-search').value = '重息壤';
+loadSyn();
+</script>
+</body>
+</html>
+
+
