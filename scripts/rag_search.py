@@ -19,6 +19,7 @@ import argparse
 import json
 import os
 import pickle
+import re
 import sys
 
 if sys.stdout:
@@ -42,7 +43,8 @@ def _load_userdict():
     dict_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                              "scripts", "dict_zh.txt")
     if os.path.exists(dict_path):
-        jieba.load_userdict(dict_path)
+        with open(dict_path, encoding="utf-8") as f:
+            jieba.load_userdict(f)
     _DICT_LOADED = True
 
 
@@ -105,22 +107,67 @@ class RAGRetriever:
             out.append((i, float(1.0 - d)))  # cosine 距离转相似度
         return out
 
+    # ---------- 条目名称召回 ----------
+    def name_search(self, query, top_n):
+        """按条目名称核心词召回，弥补“定档PV/清淤/佩丽卡怎么玩”等短名查询。"""
+        import jieba
+
+        _load_userdict()
+        q = re.sub(r"[\s·・:：,，。！？?!《》【】()（）\-]", "", query).lower()
+        intent_tokens = {"攻略", "玩家攻略", "角色攻略", "怎么玩", "怎么用", "配队", "养成", "视频", "哪里看", "在哪看", "pv"}
+        q_tokens = {t.strip().lower() for t in jieba.cut(query)
+                    if len(t.strip()) >= 2 and t.strip().lower() not in intent_tokens}
+        wants_guide = any(x in query for x in ("攻略", "怎么玩", "怎么用", "配队", "养成"))
+        wants_video = any(x.lower() in query.lower() for x in ("pv", "视频", "哪里看", "在哪看"))
+        candidates = []
+        for i, meta in enumerate(self.metas):
+            name = str(meta.get("name") or "")
+            category = str(meta.get("category") or "")
+            n = re.sub(r"[\s·・:：,，。！？?!《》【】()（）\-]", "", name).lower()
+            if not n:
+                continue
+            name_tokens = {t.strip().lower() for t in jieba.cut(name)
+                           if len(t.strip()) >= 2 and t.strip().lower() not in intent_tokens}
+            overlap = q_tokens & name_tokens
+            core = n
+            if "攻略" in category:
+                core = core.replace("玩家攻略", "").replace("攻略", "")
+            if "视频" in category and core.startswith("游戏"):
+                core = core[2:]
+            core_match = len(core) >= 2 and core in q
+            contained = n in q or core_match or any(len(t) >= 2 and t in n for t in q_tokens)
+            if not contained and not overlap:
+                continue
+            score = (8.0 if n in q else 0.0) + (20.0 if core_match else 0.0) + sum(len(t) for t in overlap)
+            if wants_guide and "攻略" in category:
+                score += 12.0
+            if wants_video and "视频" in category:
+                score += 6.0
+            candidates.append((i, score))
+        candidates.sort(key=lambda x: (-x[1], len(str(self.metas[x[0]].get("name") or ""))))
+        return candidates[:top_n]
+
     # ---------- RRF 融合 ----------
     @staticmethod
-    def rrf_fuse(ranked_a, ranked_b, k=60):
+    def rrf_fuse(*ranked_lists, k=60):
         scores = {}
-        for rank, (i, _s) in enumerate(ranked_a):
-            scores[i] = scores.get(i, 0.0) + 1.0 / (k + rank + 1)
-        for rank, (i, _s) in enumerate(ranked_b):
-            scores[i] = scores.get(i, 0.0) + 1.0 / (k + rank + 1)
+        for ranked in ranked_lists:
+            for rank, (i, _s) in enumerate(ranked):
+                scores[i] = scores.get(i, 0.0) + 1.0 / (k + rank + 1)
         return sorted(scores.items(), key=lambda x: x[1], reverse=True)
 
     def search(self, query, top_k=5, bm25_top_n=20, vec_top_n=20, fuse_k=60):
         bm25_hits = self.bm25_search(query, bm25_top_n)
         vec_hits = self.vector_search(query, vec_top_n)
+        name_hits = self.name_search(query, max(top_k, 10))
         vec_score = dict(vec_hits)
         bm25_score = dict(bm25_hits)
-        fused = self.rrf_fuse(bm25_hits, vec_hits, k=fuse_k)
+        fused = self.rrf_fuse(bm25_hits, vec_hits, name_hits, k=fuse_k)
+        # 明确的攻略/视频请求中，名称+分类是强证据；只提升名称通道第一名，避免影响普通配方查询。
+        explicit_name_intent = any(x in query for x in ("攻略", "怎么玩", "怎么用", "配队", "养成", "视频", "哪里看", "在哪看")) or "pv" in query.lower()
+        if explicit_name_intent and name_hits:
+            preferred = name_hits[0][0]
+            fused = [(preferred, dict(fused).get(preferred, 0.0))] + [x for x in fused if x[0] != preferred]
         results = []
         for i, score in fused[:top_k]:
             m = self.metas[i]

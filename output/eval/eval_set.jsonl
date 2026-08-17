@@ -54,7 +54,7 @@
 {"query": "同类相食怎么合成", "intent": "数值", "difficulty": "简单", "gold_names": ["同类相食"], "relevance": 2, "source": "auto", "anchor": "同类相食", "core": "同类相食"}
 {"query": "同类相食材料哪里获取", "intent": "数值", "difficulty": "中等", "gold_names": ["同类相食"], "relevance": 2, "source": "auto", "anchor": "同类相食", "core": "同类相食"}
 {"query": "同类相食配方是什么", "intent": "数值", "difficulty": "困难", "gold_names": ["同类相食"], "relevance": 2, "source": "auto", "anchor": "同类相食", "core": "同类相食"}
-{"query": "佩丽卡怎么获得", "intent": "数值", "difficulty": "简单", "gold_names": ["【玩家攻略】佩丽卡"], "relevance": 2, "source": "auto", "anchor": "【玩家攻略】佩丽卡", "core": "佩丽卡"}
+{"query": "佩丽卡怎么获得", "intent": "知识", "difficulty": "简单", "gold_names": ["佩丽卡"], "relevance": 2, "source": "manual_review", "anchor": "佩丽卡", "core": "佩丽卡"}
 {"query": "佩丽卡角色攻略", "intent": "数值", "difficulty": "中等", "gold_names": ["【玩家攻略】佩丽卡"], "relevance": 2, "source": "auto", "anchor": "【玩家攻略】佩丽卡", "core": "佩丽卡"}
 {"query": "佩丽卡怎么玩", "intent": "数值", "difficulty": "困难", "gold_names": ["【玩家攻略】佩丽卡"], "relevance": 2, "source": "auto", "anchor": "【玩家攻略】佩丽卡", "core": "佩丽卡"}
 {"query": "拍摄生长在小水潭上的古树和晚安大树其二哪个更好", "intent": "比较", "difficulty": "简单", "gold_names": ["拍摄生长在小水潭上的古树", "晚安，大树·其二"], "relevance": 2, "source": "auto", "anchor": "拍摄生长在小水潭上的古树", "core": "古树"}

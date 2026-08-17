@@ -13,13 +13,13 @@
 |---|---|---|
 | 全量分类知识库 | `endfield_kb/` | 1958 条按 22 子分类提取 jsonl+md（干员/武器/装备/设备/物品/任务/档案…） |
 | 配方库 | `output/recipes.json` | **345 个配方**（recipe_extract.py 提取，不做激进清洗：含设备制造/容器/矿机/原木），合成树数据源 |
-| RAG 索引 | `output/rag/` | 当前 3032 chunks；ChromaDB 向量 + BM25 按分类分片 + chunks.json manifest |
+| RAG 索引 | `output/rag/` | 当前 3402 chunks；ChromaDB 向量 + BM25 按分类分片 + chunks.json manifest |
 | RAG 增量更新 | `build_rag.py --incremental` | 内容 hash 对比 → 只重 embedding 变更条目 → 只重建变更分类 BM25 分片 |
 | 合成树 API | `api_server.py /api/synthesis` | 物品合成树 / 设备配方卡 / 歧义→候选列表 / 无配方→知识库信息；叶子=基础资源，配方≤2，深度≤10，循环剪枝 |
 | 名称建议 | `api_server.py /api/names` | 全部名称（配方物品+设备+知识库条目，1908 个），前端模糊搜索联想 |
 | 媒体结构库 | `output/item_media.json` | extract_media.py 提取：封面图 1957 / 正文图 2046 / 外链 291 / 引用 14693（含数量与链接样式） |
 | 前端 | `web/index.html` | 深色工业 HUD，配方树/知识问答双模式；搜索联想、节点封面图、引用卡片与结构化知识卡 |
-| 评测 | `eval_retrieval.py` | 71 条查询；当前 Recall@5=92.96%、MRR=89.48%（早期 6 条评测已废弃为基准） |
+| 评测 | `eval_retrieval.py` | 71 条查询；当前 Recall@5=100%、MRR=97.3%（`final_reviewed.json`） |
 
 ## 3. 关键文件地图
 - `RAG_UPGRADE_PLAN.md` → RAG 优化计划与进度；`RAG_DEVLOG.md` → 开发决策/踩坑记录
@@ -48,7 +48,7 @@
 1. ✅ **阶段 1**：统一文档口径、审计敏感文件、建立 Git 基线
 2. ✅ **阶段 2**：已补离线自动化测试；修复空输入和负数深度参数问题
 3. ✅ **阶段 3**：已完成合成树展开/收起、节点跳转、搜索历史与浏览器验收
-4. ⏳ **阶段 4**：双实体召回优化、评测集人工抽检并记录新指标
+4. ✅ **阶段 4**：名称召回、漏索引修复与评测审计完成；Recall@5=100%
 5. ⏳ **阶段 5**：Docker 与部署配置、端到端验收
 
 每个阶段的决策、验证方式和维护方法记录在 `PROJECT_PROGRESS.md`。

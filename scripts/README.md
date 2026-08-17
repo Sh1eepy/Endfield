@@ -65,6 +65,8 @@ python scripts/build_rag.py --inputs "endfield_kb/*.jsonl" --incremental
 产物（output/rag/）：`chroma/`（向量库）、`bm25/{分类}.pkl`（按分类分片）、
 `chunks.json`（manifest，含条目级 content_hash 供增量对比）、`report.txt`。
 增量原理：内容 hash 对比 → ChromaDB upsert/delete → 仅重建变更分类 BM25 分片。
+增量运行还会核对 manifest 与每个 BM25 分片的 chunk 键；分片缺失、陈旧或损坏时自动自愈。
+长条目若没有 `sections`，会回退切分 `full_text`，避免玩家攻略等条目静默漏索引。
 
 ### 8. `rag_search.py` — 混合检索（向量 + BM25 分片 → RRF 融合）
 ```bash
@@ -161,7 +163,7 @@ python scripts/gen_eval_set.py --per-class 6 --out output/eval/eval_set.jsonl
 python scripts/eval_retrieval.py --out output/eval/baseline.json
 ```
 按 意图×难度 分表输出 Recall@k / MRR / Precision@k；命中判定严格（相等或互为简称包含），
-不搞子串放水。基线：Recall@5=72%（配方/设备≈100%，数值类最弱）。
+不搞子串放水。基线 Recall@5=72%；当前人工审计版 `final_reviewed.json` 为 Recall@5=100%、MRR=97.3%。
 
 ### 19. `gen_jieba_dict.py` — 生成游戏专有名词 jieba 词典
 ```bash

@@ -141,6 +141,9 @@ def split_chunks(record, max_chars):
             cur = (cur + "\n" + part).strip() if cur else part
     if cur:
         chunks.append(cur)
+    if not chunks:
+        # 部分长条目（如玩家攻略）只有 full_text、没有 sections；必须回退切全文，不能静默丢失。
+        chunks = split_section_text(full, max_chars)
     return chunks
 
 
@@ -183,12 +186,42 @@ def write_bm25_shards(chunks, bm25_dir, categories=None):
         categories = set(by_cat.keys())
     for cat in sorted(categories):
         ccs = by_cat.get(cat, [])
+        shard_path = os.path.join(bm25_dir, f"{cat}.pkl")
+        if not ccs:
+            if os.path.exists(shard_path):
+                os.remove(shard_path)
+            continue
         tokenized = [tokenize(c["text"]) for c in ccs]
         bm25 = BM25Okapi(tokenized)
-        with open(os.path.join(bm25_dir, f"{cat}.pkl"), "wb") as f:
+        with open(shard_path, "wb") as f:
             pickle.dump({"bm25": bm25, "chunk_texts": [c["text"] for c in ccs],
                          "metas": [c["meta"] for c in ccs]}, f)
     return by_cat
+
+
+def inconsistent_bm25_categories(chunks, bm25_dir):
+    """找出与最新 manifest 不一致、缺失或损坏的 BM25 分类分片。"""
+    expected = {}
+    for c in chunks:
+        m = c["meta"]
+        expected.setdefault(m["category"], set()).add((str(m["item_id"]), int(m["chunk_index"])))
+    existing = set()
+    broken = set()
+    if os.path.isdir(bm25_dir):
+        for path in glob.glob(os.path.join(bm25_dir, "*.pkl")):
+            cat = os.path.splitext(os.path.basename(path))[0]
+            existing.add(cat)
+            try:
+                with open(path, "rb") as f:
+                    data = pickle.load(f)
+                actual = {(str(m["item_id"]), int(m["chunk_index"])) for m in data.get("metas", [])}
+                if actual != expected.get(cat, set()):
+                    broken.add(cat)
+            except (OSError, ValueError, KeyError, TypeError, pickle.UnpicklingError):
+                broken.add(cat)
+    return broken | (set(expected) - existing) | (existing - set(expected))
+
+
 def main():
     import argparse
 
@@ -274,14 +307,16 @@ def main():
         json.dump(all_chunks, f, ensure_ascii=False, indent=1)
 
     # ---- BM25 分片（增量只重建变更分类）----
+    bm25_dir = os.path.join(out_dir, "bm25")
     if incremental:
         changed_cats = {k[0] for k in changed_keys} | {k[0] for k in deleted_keys}
+        changed_cats |= inconsistent_bm25_categories(all_chunks, bm25_dir)
     else:
         changed_cats = None
     if changed_cats is not None and not changed_cats:
         print("BM25 无变更分类，跳过")
     else:
-        write_bm25_shards(all_chunks, os.path.join(out_dir, "bm25"), categories=changed_cats)
+        write_bm25_shards(all_chunks, bm25_dir, categories=changed_cats)
         print(f"BM25 分片更新: {sorted(changed_cats or {c['meta']['category'] for c in all_chunks})}")
 
     # ---- 报告 ----
