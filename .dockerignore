@@ -1,0 +1,17 @@
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+.vscode
+.idea
+__pycache__
+*.py[cod]
+.pytest_cache
+logs
+chunks
+wiki数据采集skill
+endfield_wiki_full_*.json
+endfield_devices.*
+endfield_items.*
+output/rag/chroma

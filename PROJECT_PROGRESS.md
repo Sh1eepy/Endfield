@@ -11,7 +11,7 @@
 | 2 | 后端/API/合成树自动化测试 | ✅ 完成 |
 | 3 | 前端交互完善与验证 | ✅ 完成 |
 | 4 | RAG 弱项优化与评测集抽检 | ✅ 完成 |
-| 5 | Docker、部署配置与端到端验收 | 待开始 |
+| 5 | Docker、部署配置与端到端验收 | ✅ 配置与本地验收完成；镜像/云发布待外部环境 |
 
 ## 阶段 1：文档与 Git 基线
 
@@ -102,3 +102,24 @@
 - 71 条严格评测：Recall@5 从 92.96% 提升到 100%，MRR 从 89.48% 提升到 97.3%，结果存于 `output/eval/final_reviewed.json`。
 - 知识库更新后运行 `build_rag.py --incremental`；即使内容 hash 未变化，也会修复不一致分片。
 - 当前数据集已满召回，不引入 reranker；未来扩充并人工审核评测集后，如排序质量下降再评估。
+
+## 阶段 5：容器化、部署配置与端到端验收
+
+### 重要决策
+
+1. 推荐 Railway 单服务部署：FastAPI 同时托管 API 和前端，避免拆分 Vercel 后新增 API 地址和跨域复杂度。
+2. `.env` 永不进入 Docker build context；LLM Key 只能在 `docker run --env-file` 或 Railway Variables 中注入。
+3. Docker 构建阶段下载 embedding 模型并全量重建 RAG，运行阶段设置 Hugging Face 离线模式，保证部署产物完整可复现。
+4. 当前机器没有 Docker，不能声称镜像已构建；云发布还需要 GitHub remote 与 Railway 项目权限。
+
+### 已完成
+
+- 新增 `requirements.txt`、`Dockerfile`、`.dockerignore`、`railway.json` 和 `DEPLOYMENT.md`。
+- Docker 使用 Railway 注入的 `PORT`，提供 `/api/health` 容器健康检查。
+- 新增部署配置安全测试，确保不复制 `.env`/本地 Chroma，不在 Dockerfile 写入 API Key。
+
+### 验收结果
+
+- 21 个离线 `unittest` 全部通过；Python、前端 JavaScript、Railway JSON 静态检查通过。
+- 本地运行服务实测：`/api/health` 为 ok；“重息壤”合成树成功；`/api/names` 返回 1908；前端根路径 HTTP 200。
+- Docker 实际构建与 Railway 公网发布未在本机执行，原因是 Docker 未安装且尚未配置远程仓库/云项目。安装 Docker Desktop 后按 `DEPLOYMENT.md` 执行，或将仓库推送 GitHub 后交由 Railway 构建。

@@ -188,3 +188,7 @@ python -m compileall -q scripts tests
 
 覆盖健康检查、物品树、设备卡、歧义候选、知识库回退、空输入、循环/自循环剪枝、
 名称缓存、问答入口参数传递，以及全部真实配方树的叶子与深度不变量。
+
+## 部署
+
+根目录提供 `Dockerfile`、`requirements.txt` 和 `railway.json`。完整构建会下载 embedding 模型并在镜像内重建 RAG，运行阶段保持离线。密钥只能通过运行环境注入，详见 `DEPLOYMENT.md`。

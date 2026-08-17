@@ -1,0 +1,8 @@
+fastapi==0.141.1
+uvicorn[standard]==0.52.1
+pydantic==2.13.4
+chromadb==1.5.9
+sentence-transformers==5.7.0
+rank-bm25==0.2.2
+jieba==0.42.1
+httpx==0.28.1
