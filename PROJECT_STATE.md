@@ -18,7 +18,7 @@
 | 合成树 API | `api_server.py /api/synthesis` | 物品合成树 / 设备配方卡 / 歧义→候选列表 / 无配方→知识库信息；叶子=基础资源，配方≤2，深度≤10，循环剪枝 |
 | 名称建议 | `api_server.py /api/names` | 全部名称（配方物品+设备+知识库条目，1908 个），前端模糊搜索联想 |
 | 媒体结构库 | `output/item_media.json` | extract_media.py 提取：封面图 1957 / 正文图 2046 / 外链 291 / 引用 14693（含数量与链接样式） |
-| 前端 | `web/index.html` | 终末地工业档案 v2：黑/骨白/工业黄原创视觉，配方树/知识问答双模式，响应式布局与状态动效 |
+| 前端 | `web/index.html` | 白色工业制图 v3：纵向真实图片配方树、空查询入口、树工具栏、滚动几何动效与响应式布局 |
 | 评测 | `eval_retrieval.py` | 71 条查询；当前 Recall@5=100%、MRR=97.3%（`final_reviewed.json`） |
 
 ## 3. 关键文件地图
@@ -36,7 +36,7 @@
 - `scripts/gen_eval_set.py` → 评测集自动生成；`scripts/eval_retrieval.py` → 检索评测
 - `scripts/gen_jieba_dict.py` + `scripts/dict_zh.txt` → 游戏专有名词词典
 - `output/eval/` → 评测集与历次评测结果；`output/mention_index.json` → mention 反查索引
-- `web/index.html` → 前端（双模式：配方合成树 + 知识问答，深色工业 HUD）
+- `web/index.html` → 前端（白色工业制图 v3；纵向真实图片配方树 + 知识问答）
 - `.env` → 可选（LLM 相关配置，私密勿提交）；`.gitignore` + `.env.example` → 密钥安全
 
 ## 4. 关键技术结论

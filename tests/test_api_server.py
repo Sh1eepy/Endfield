@@ -89,6 +89,10 @@ class ApiSmokeTests(unittest.TestCase):
         self.assertTrue(result["ok"])
         self.assertEqual(result["item"], "重息壤")
         self.assertTrue(result["tree"].get("recipes"))
+        self.assertTrue(
+            any(recipe.get("cover") for recipe in result["tree"]["recipes"]),
+            "真实设备节点应带封面图",
+        )
 
     def test_ambiguous_name_returns_candidates(self):
         result = api_server.synthesis("灼铜")

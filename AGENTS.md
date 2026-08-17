@@ -27,7 +27,7 @@ endfield_wiki_full_*.json (147MB, 1958条, 块式富文本)
       GET  /api/synthesis?item=重息壤   合成树（物品树 / 设备配方卡 / 歧义→候选列表 / 无配方→知识库信息 + 封面图/相关引用）
       GET  /api/names                   全部名称（前端模糊搜索联想）
       GET  /api/health                  健康检查
-  → web/index.html (深色工业 HUD；配方合成树 + 知识问答双模式)
+  → web/index.html (白色工业制图；纵向图片配方树 + 知识问答双模式)
 ```
 
 ## 3. 环境（重要，已确认）

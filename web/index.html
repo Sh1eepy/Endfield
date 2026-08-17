@@ -296,17 +296,38 @@ body::before{
 .hero .eyebrow,.hero h1,.hero-copy,.hero-stats,.command-shell{animation:heroRise .7s both cubic-bezier(.2,.8,.2,1)}
 .hero h1{animation-delay:.06s}.hero-copy{animation-delay:.14s}.hero-stats{animation-delay:.19s}.command-shell{animation-delay:.23s}
 @keyframes heroRise{from{opacity:0;transform:translateY(18px);filter:blur(5px)}to{opacity:1;transform:none;filter:none}}
+
+/* ===== v3 / white technical drawing system ===== */
+:root{--bg:#f5f4ee;--card:#fff;--panel:#fff;--panel2:#f0efe8;--panel3:#e7e6df;--border:#d5d4cc;--border2:#aaa99f;--accent:#f0cf16;--accent2:#232722;--accent3:#796a00;--text:#171916;--sub:#61665d;--faint:#969a91;--ink:#111310;--paper:#fff;--yellow:#f0cf16}
+body{color:var(--text);background:linear-gradient(90deg,rgba(20,24,19,.055) 1px,transparent 1px) 0 0/72px 72px,linear-gradient(rgba(20,24,19,.045) 1px,transparent 1px) 0 0/72px 72px,radial-gradient(circle at 82% 6%,rgba(240,207,22,.2),transparent 29%),#f5f4ee}
+body::before{opacity:.35;background:repeating-linear-gradient(118deg,transparent 0 110px,rgba(20,24,19,.025) 111px 112px)}
+.ambient::before{background:linear-gradient(90deg,transparent,rgba(240,207,22,.12),rgba(240,207,22,.34),transparent);filter:blur(4px);transform:translateY(calc(var(--scroll-y,0) * -.08px)) rotate(17deg)}
+.ambient::after{color:rgba(18,20,17,.13);transform:translateY(calc(var(--scroll-y,0) * .06px)) rotate(90deg)}
+.geo{position:absolute;border:1px solid rgba(25,28,23,.12);transition:transform .12s linear}.geo-a{width:280px;height:280px;right:7vw;top:18vh;transform:translateY(calc(var(--scroll-y,0) * -.12px)) rotate(45deg)}.geo-b{width:120px;height:420px;left:3vw;top:65vh;background:repeating-linear-gradient(135deg,rgba(240,207,22,.38) 0 12px,transparent 12px 24px);border:0;opacity:.2;transform:translateY(calc(var(--scroll-y,0) * -.18px)) skewX(-12deg)}.geo-c{width:520px;height:1px;right:-80px;top:48vh;background:#b8b7ae;transform:translateY(calc(var(--scroll-y,0) * .09px)) rotate(-18deg)}
+.topbar{background:rgba(250,249,244,.88);border-color:rgba(18,20,17,.15);box-shadow:0 8px 28px rgba(20,22,18,.05)}.brand-mark{background:var(--yellow)}.brand-cn{color:var(--ink)}.brand-en,.top-code{color:#74786f}.status{background:#fff;border-color:#d9d8d0}.status .dot.on{background:#6da900;box-shadow:0 0 10px rgba(109,169,0,.35)}
+.hero::after{background:linear-gradient(90deg,var(--ink),rgba(20,22,18,.12) 60%,transparent)}.hero h1{color:var(--ink)}.hero h1 span{color:var(--yellow);-webkit-text-stroke:1px rgba(90,78,0,.12)}.hero-copy{color:#5b6057}.hero-copy b{color:var(--ink)}.hero-stats{border-color:#d2d1c8}.stat{border-color:#d2d1c8}.stat b{color:var(--ink)}.stat span{color:#858980}
+.hero-actions{display:flex;gap:9px;margin-top:26px;flex-wrap:wrap}.action-btn{appearance:none;border:1px solid var(--ink);background:var(--ink);color:#fff;padding:11px 16px;font:700 10px/1 Consolas,monospace;letter-spacing:.12em;cursor:pointer;transition:transform .2s,box-shadow .2s,background .2s}.action-btn:hover{transform:translateY(-2px);box-shadow:5px 5px 0 var(--yellow)}.action-btn.secondary{background:transparent;color:var(--ink)}.action-btn.secondary:hover{background:var(--yellow)}
+.command-shell{background:rgba(255,255,255,.94);border-color:#cac9c1;box-shadow:0 28px 70px rgba(31,34,27,.09)}.command-head{border-color:#dddcd4}.mode-btn{color:#888c84}.mode-btn:hover{background:#f1f0e9;color:var(--ink)}.mode-btn.active{color:var(--ink)}.mode-note{color:#858980}.query-row{background:linear-gradient(100deg,rgba(240,207,22,.13),transparent 35%)}#in-search{color:var(--ink)}#in-search::placeholder{color:#9b9e96}.enter-key{color:#6f736b;border-color:#bdbcb4}#suggest{background:#fff;border-color:#b9b8af;box-shadow:0 25px 55px rgba(25,28,22,.16)}.sug-item{color:var(--ink);border-color:#ecebe5}.sug-item:hover,.sug-item.active{background:var(--yellow)}.history-chip,.history-clear{color:#686c64;border-color:#c5c4bc}.history-chip:hover{background:var(--ink);border-color:var(--ink);color:#fff}
+.side-rail{background:rgba(255,255,255,.7);border-color:#d2d1c9;color:#777b73}.rail-item{border-color:#deddd6}.rail-item b{color:var(--ink)}.legend-dot.recipe{border-color:var(--ink)}.legend-dot.base{background:#a7aaa3}
+.panel{background:rgba(255,255,255,.94);border-color:#cbc9c0;box-shadow:0 24px 70px rgba(32,35,28,.08)}.panel-head{background:#f1f0e9;border-color:#d7d6ce}.panel-head b{color:var(--ink)}.panel-guide{color:#787c74!important}
+.tree-toolbar{display:flex;align-items:center;gap:5px;margin-left:auto;margin-right:16px}.tool-btn{appearance:none;border:1px solid #c7c6be;background:#fff;color:#555a52;min-width:30px;height:28px;padding:0 9px;font:700 10px/1 Consolas,monospace;white-space:nowrap;cursor:pointer;transition:.18s}.tool-btn:hover{background:var(--yellow);border-color:#c1a900;color:var(--ink);transform:translateY(-1px)}.tool-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;background:#f4f3ed}
+#syn-tree{background:linear-gradient(90deg,rgba(20,23,18,.025) 1px,transparent 1px) 0 0/36px 36px,linear-gradient(rgba(20,23,18,.025) 1px,transparent 1px) 0 0/36px 36px;scrollbar-color:#bbb9af #eee}
+#syn-tree svg{min-width:100%}.link{stroke:#a8aba3}.link.cnt{stroke:#8d7c0e}.edge-label{fill:#665b0b}.node-card{cursor:pointer}.node-card-bg{fill:#fff;stroke:#242822;stroke-width:1.2;filter:drop-shadow(0 5px 7px rgba(25,28,22,.12))}.node-card:hover .node-card-bg{stroke:var(--yellow);stroke-width:3}.node-card-image{pointer-events:none}.node-card-label{fill:#20231f;font-size:11px;font-weight:750;pointer-events:none}.node-card-sub{fill:#777b73;font:600 8px/1 Consolas,monospace;letter-spacing:.08em;pointer-events:none}.node-card-fallback{fill:#e7e5dc;font:800 10px/1 Consolas,monospace;pointer-events:none}.collapse-mark{fill:#191c18}.item-head{background:linear-gradient(90deg,rgba(240,207,22,.2),transparent 48%);border-color:var(--yellow)}.refs-block{background:#f7f6f1;border-color:#d8d7cf}.ref-chip{color:#4d470e;background:#fff9cf;border-color:#d5bf28}.ref-chip:hover{background:var(--yellow);color:var(--ink)}.msg.bot,.ask-recipe-card,.ask-hits details{background:#f8f7f2;border-color:#d7d6ce;color:var(--ink)}.ask-answer{color:var(--ink)}.ask-src-chip{color:#31382f;background:#f1f3ed;border-color:#aab1a5}.ask-src-chip:hover{background:var(--ink);color:#fff}.kb-table td{border-color:#d4d3cb;color:var(--ink)}.kb-table td.th{background:#ecebe5;color:#554b00}
+.empty-console{max-width:720px;margin:65px auto;padding:34px;border:1px solid #d2d1c9;background:rgba(255,255,255,.78);text-align:left;position:relative}.empty-console::before{content:"";position:absolute;left:-1px;top:-1px;width:84px;height:4px;background:var(--yellow)}.empty-code{font:700 9px/1 Consolas,monospace;letter-spacing:.18em;color:#867600}.empty-console h2{font-size:26px;margin:14px 0 8px;color:var(--ink)}.empty-console p{font-size:13px;color:#71766d}.demo-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}.demo-btn{border:1px solid #c5c4bc;background:#fff;padding:9px 12px;font-size:12px;color:#30342e;cursor:pointer;transition:.18s}.demo-btn:hover{background:var(--yellow);border-color:#bda700;transform:translateY(-2px)}
+#syn-empty::after{background:linear-gradient(90deg,transparent,#ad990f,transparent)}
+.footer-line{border-color:#cfcec5;color:#858980}
+body.is-scrolled .topbar{height:60px;background:rgba(250,249,244,.96)}
 .item-head{background:linear-gradient(90deg,rgba(242,211,33,.11),transparent 45%);border-left:3px solid var(--yellow)}.item-cover{border-radius:0;clip-path:polygon(0 0,100% 0,100% 78%,78% 100%,0 100%)}
 .refs-block,.msg.bot,.ask-recipe-card,.ask-hits details{border-radius:0}.ref-chip,.ask-src-chip,.ask-intent-tag,.ask-ambig,.src-chip{border-radius:0}
 .node-item circle{fill:#171a15;stroke:var(--yellow)}.node-recipe rect{fill:#121b16;stroke:var(--accent2)}.node-recipe text{fill:var(--accent2)}.link{stroke:#485044}.edge-label{fill:var(--yellow)}
 .footer-line{display:flex;justify-content:space-between;margin-top:22px;padding-top:14px;border-top:1px solid var(--border);font:600 9px/1 Consolas,monospace;letter-spacing:.12em;color:var(--faint)}
-@media(max-width:850px){.top-code,.hero-stats,.side-rail{display:none}.topbar{height:64px;padding:0 18px}.site-main{padding:0 14px 38px}.hero{display:block;min-height:280px;padding:62px 4px 36px}.hero h1{font-size:clamp(40px,13vw,68px)}.workspace{display:block}.query-row{grid-template-columns:auto 1fr;padding:20px 16px}.enter-key{display:none}.command-head{align-items:flex-start;gap:12px}.mode-note{display:none}.panel{min-height:520px}.panel-guide{display:none}}
+@media(max-width:850px){.top-code,.hero-stats,.side-rail{display:none}.topbar{height:64px;padding:0 18px}.site-main{padding:0 14px 38px}.hero{display:block;min-height:280px;padding:62px 4px 36px}.hero h1{font-size:clamp(40px,13vw,68px)}.workspace{display:block}.query-row{grid-template-columns:auto 1fr;padding:20px 16px}.enter-key{display:none}.command-head{align-items:flex-start;gap:12px}.mode-note{display:none}.panel{min-height:520px}.panel-head{flex-wrap:wrap;gap:10px}.panel-guide{display:none}.tree-toolbar{order:3;width:100%;margin:0}.tool-btn{flex:1}.empty-console{margin:45px 0;padding:28px 22px}}
 @media(max-width:520px){.brand-en{display:none}.top-meta{gap:8px}.status{padding:7px}.status span:last-child{font-size:0}.status span:last-child::after{content:"API";font-size:10px}.mode-btn{padding:10px 12px 10px 26px}.query-prefix{display:none}.query-row{grid-template-columns:1fr}.hero-copy{font-size:13px}.footer-line span:last-child{display:none}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
-<div class="ambient" aria-hidden="true"></div>
+<div class="ambient" aria-hidden="true"><i class="geo geo-a"></i><i class="geo geo-b"></i><i class="geo geo-c"></i></div>
 <header class="topbar">
   <div class="brand"><div class="brand-mark">E</div><div><div class="brand-cn">终末地工业 · 合成档案</div><div class="brand-en">ENDFIELD SYNTHESIS ARCHIVE</div></div></div>
   <div class="top-meta"><span class="top-code">TALOS-II / DATA TERMINAL 07</span><div class="status"><span class="dot" id="api-dot"></span><span id="api-text">后端未连接</span></div></div>
@@ -314,7 +335,7 @@ body::before{
 
 <main class="site-main">
   <section class="hero">
-    <div><div class="eyebrow">INDUSTRIAL RECIPE DATABASE / 01</div><h1>拆解每一种<span>制造路径</span></h1><p class="hero-copy"><b>从目标物品反向追踪至基础资源。</b> 345 条真实配方、完整设备链路与 WIKI 知识库，被整理成一套可搜索、可展开的工业档案。</p></div>
+    <div><div class="eyebrow">INDUSTRIAL RECIPE DATABASE / 01</div><h1>从上到下<span>看清制造</span></h1><p class="hero-copy"><b>每个物品和设备都以真实封面呈现。</b> 345 条配方被展开为纵向生产流程，保持清晰尺寸，也允许随时折叠、缩放与跳转。</p><div class="hero-actions"><button class="action-btn" data-demo="重息壤" data-demo-mode="syn">查看示例配方</button><button class="action-btn secondary" data-demo="佩丽卡怎么玩" data-demo-mode="ask">试试知识问答</button></div></div>
     <div class="hero-stats"><div class="stat"><b>345</b><span>VERIFIED<br>RECIPES</span></div><div class="stat"><b>1,958</b><span>WIKI<br>ENTRIES</span></div><div class="stat"><b>100%</b><span>RECALL<br>AT 5</span></div></div>
   </section>
 
@@ -335,9 +356,10 @@ body::before{
   <div class="panel">
     <div class="panel-head">
       <span><i class="panel-kicker">OUTPUT</i><b id="tree-title">配方合成树</b></span>
+      <div class="tree-toolbar" id="tree-toolbar"><button class="tool-btn" data-tree-action="collapse" title="收起所有分支">收起</button><button class="tool-btn" data-tree-action="expand" title="展开所有分支">展开</button><button class="tool-btn" data-tree-action="zoom-out" title="缩小">−</button><button class="tool-btn" data-tree-action="zoom-reset" title="重置缩放">100%</button><button class="tool-btn" data-tree-action="zoom-in" title="放大">＋</button></div>
       <span class="panel-guide" style="font-size:12px;color:var(--faint)">圆点展开/收起 · 点击物品名跳转 · 叶子 = 基础资源</span>
     </div>
-    <div id="syn-tree"><div id="syn-empty">输入名称，展开配方树</div></div>
+    <div id="syn-tree"></div>
   </div>
   </section>
   <div class="footer-line"><span>© ENDFIELD SYNTHESIS ARCHIVE / COMMUNITY TOOL</span><span>DATA INTEGRITY: VERIFIED · LOCAL INDEX: ONLINE</span></div>
@@ -555,7 +577,7 @@ function renderAsk(d) {
 
 async function loadAsk() {
   const q = $('in-search').value.trim();
-  if (!q) { $('syn-tree').innerHTML = '<div id="syn-empty">输入问题，AI 结合知识库回答</div>'; return; }
+  if (!q) { renderEmptyState('ask'); return; }
   $('tree-title').textContent = q + ' · 知识问答';
   $('syn-tree').innerHTML = '<div id="syn-empty">思考中…（检索 + AI 生成）</div>';
   try {
@@ -573,6 +595,42 @@ async function loadAsk() {
 
 /* ===================== 配方合成树 ===================== */
 let CUR_MODE = 'syn';
+let TREE_CONTROLLER = null;
+
+function setTreeTools(enabled) {
+  document.querySelectorAll('[data-tree-action]').forEach(btn => { btn.disabled = !enabled; });
+}
+function renderEmptyState(mode = CUR_MODE) {
+  TREE_CONTROLLER = null;
+  setTreeTools(false);
+  const ask = mode === 'ask';
+  $('tree-title').textContent = ask ? '知识问答' : '配方合成树';
+  $('syn-tree').innerHTML = `<div class="empty-console"><div class="empty-code">${ask ? 'KNOWLEDGE QUERY / READY' : 'SYNTHESIS QUERY / READY'}</div>` +
+    `<h2>${ask ? '你想了解什么？' : '选择一个目标物品'}</h2>` +
+    `<p>${ask ? '可以询问角色、任务、材料数值、地区解锁或两个物品之间的区别。' : '系统会从目标物品开始，纵向展开设备、原料，直到基础资源。'}</p>` +
+    `<div class="demo-list">${(ask ? ['佩丽卡怎么玩','解锁武陵需要什么条件','主线任务有哪些'] : ['重息壤','碳块','工业爆炸物']).map(q => `<button class="demo-btn" data-demo="${q}" data-demo-mode="${ask ? 'ask' : 'syn'}">${q}</button>`).join('')}</div></div>`;
+}
+
+$('tree-toolbar').addEventListener('click', ev => {
+  const btn = ev.target.closest('[data-tree-action]');
+  if (!btn || !TREE_CONTROLLER) return;
+  const action = btn.dataset.treeAction;
+  if (action === 'collapse') TREE_CONTROLLER.collapse();
+  else if (action === 'expand') TREE_CONTROLLER.expand();
+  else if (action === 'zoom-in') TREE_CONTROLLER.zoom(.1);
+  else if (action === 'zoom-out') TREE_CONTROLLER.zoom(-.1);
+  else if (action === 'zoom-reset') TREE_CONTROLLER.reset();
+});
+
+document.addEventListener('click', ev => {
+  const demo = ev.target.closest('[data-demo]');
+  if (!demo) return;
+  CUR_MODE = demo.dataset.demoMode === 'ask' ? 'ask' : 'syn';
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === CUR_MODE));
+  $('in-search').value = demo.dataset.demo;
+  hideSuggest();
+  CUR_MODE === 'syn' ? loadSyn() : loadAsk();
+});
 
 document.querySelectorAll('.mode-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -580,9 +638,9 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
     btn.classList.add('active');
     CUR_MODE = btn.dataset.mode;
     $('tree-title').textContent = CUR_MODE === 'syn' ? '配方合成树' : '知识问答';
-    $('syn-tree').innerHTML = `<div id="syn-empty">${CUR_MODE === 'syn' ? '输入名称，展开配方树' : '输入问题，AI 结合知识库回答'}</div>`;
     const q = $('in-search').value.trim();
     if (q) CUR_MODE === 'syn' ? loadSyn() : loadAsk();
+    else renderEmptyState(CUR_MODE);
   });
 });
 function synToD3(node, depth, key = 'root') {
@@ -590,7 +648,7 @@ function synToD3(node, depth, key = 'root') {
               leaf: node.leaf, truncated: node.truncated, cover: node.cover, key, children: [] };
   (node.recipes || []).forEach((r, ri) => {
     const recipeKey = `${key}/r${ri}`;
-    const rn = { name: r.machine, kind: 'recipe', duration: r.duration, key: recipeKey, children: [] };
+    const rn = { name: r.machine, kind: 'recipe', duration: r.duration, cover: r.cover, machine_id: r.machine_id, key: recipeKey, children: [] };
     (r.inputs || []).forEach((x, xi) => {
       const cn = synToD3(x, depth + 1, `${recipeKey}/i${xi}:${x.item_id || x.name}`);
       cn.count = x.count;
@@ -604,7 +662,7 @@ function synToD3(node, depth, key = 'root') {
 function renderTree(tree) {
   const source = synToD3(tree, 0);
   const collapsed = new Set();
-  const W = 940, H = 620;
+  let scale = 1;
   function visible(node) {
     const copy = { ...node };
     copy._hasChildren = Boolean(node.children && node.children.length);
@@ -613,26 +671,34 @@ function renderTree(tree) {
   }
   function draw() {
     const root = d3.hierarchy(visible(source));
-    const layout = d3.tree().size([H - 80, W - 160]);
+    const layout = d3.tree().nodeSize([116, 148]).separation((a, b) => a.parent === b.parent ? 1 : 1.12);
     const data = layout(root);
     data.descendants().forEach((n, i) => { n.data._idx = i; });
+    const nodesData = data.descendants();
+    const minX = d3.min(nodesData, d => d.x) || 0;
+    const maxX = d3.max(nodesData, d => d.x) || 0;
+    const maxY = d3.max(nodesData, d => d.y) || 0;
+    const W = Math.max(920, maxX - minX + 190);
+    const H = Math.max(540, maxY + 190);
     const svg = d3.select('#syn-tree').html('').append('svg')
-      .attr('viewBox', `0 0 ${W} ${H}`).attr('width', '100%').attr('height', H);
-    const g = svg.append('g').attr('transform', 'translate(50,40)');
+      .attr('viewBox', `0 0 ${W} ${H}`)
+      .style('width', `${W * scale}px`).style('height', `${H * scale}px`)
+      .attr('aria-label', `${tree.name}纵向配方树`);
+    const g = svg.append('g').attr('transform', `translate(${85 - minX},62)`);
 
-  g.selectAll('.link').data(data.links()).enter().append('path')
-    .attr('class', d => d.source.data.kind === 'item' ? 'link cnt' : 'link')
-    .attr('d', d => `M${d.source.y},${d.source.x}C${(d.source.y + d.target.y) / 2},${d.source.x} ${(d.source.y + d.target.y) / 2},${d.target.x} ${d.target.y},${d.target.x}`);
+    g.selectAll('.link').data(data.links()).enter().append('path')
+      .attr('class', d => d.source.data.kind === 'item' ? 'link cnt' : 'link')
+      .attr('d', d => `M${d.source.x},${d.source.y}C${d.source.x},${(d.source.y + d.target.y) / 2} ${d.target.x},${(d.source.y + d.target.y) / 2} ${d.target.x},${d.target.y}`);
 
-  g.selectAll('.edge-label').data(data.links()).enter().append('text')
-    .attr('class', 'edge-label')
-    .attr('x', d => (d.source.y + d.target.y) / 2 + 2)
-    .attr('y', d => (d.source.x + d.target.x) / 2 - 4)
-    .text(d => d.target.data.count ? '×' + d.target.data.count : '');
+    g.selectAll('.edge-label').data(data.links()).enter().append('text')
+      .attr('class', 'edge-label').attr('text-anchor', 'middle')
+      .attr('x', d => (d.source.x + d.target.x) / 2 + 13)
+      .attr('y', d => (d.source.y + d.target.y) / 2 - 5)
+      .text(d => d.target.data.count ? '×' + d.target.data.count : '');
 
     const nodes = g.selectAll('.node').data(data.descendants()).enter().append('g')
-    .attr('class', d => d.data.kind === 'item' ? `node node-item${d.data._hasChildren ? ' has-children' : ''}` : 'node node-recipe')
-    .attr('transform', d => `translate(${d.y},${d.x})`)
+    .attr('class', d => `node node-card ${d.data.kind === 'item' ? 'node-item' : 'node-recipe'}`)
+    .attr('transform', d => `translate(${d.x},${d.y})`)
     .on('mouseover', function (ev, d) {
       tip.innerHTML = `<div class="t-name">${esc(d.data.name)}</div>` +
         (d.data.duration ? `<div class="t-row">设备耗时 ${d.data.duration}s</div>` : '') +
@@ -643,55 +709,51 @@ function renderTree(tree) {
       tip.style.left = (ev.clientX - r.left + 12) + 'px';
       tip.style.top = (ev.clientY - r.top + 12) + 'px';
     })
-    .on('mouseout', () => tip.style.display = 'none')
-    .on('click', (ev, d) => {
-      if (d.data.kind !== 'item' || !d.data._hasChildren) return;
-      collapsed.has(d.data.key) ? collapsed.delete(d.data.key) : collapsed.add(d.data.key);
-      tip.style.display = 'none';
-      draw();
+    .on('mouseout', () => tip.style.display = 'none');
+
+    nodes.each(function (d) {
+      const el = d3.select(this);
+      const isMachine = d.data.kind === 'recipe';
+      const w = isMachine ? 104 : 92, h = 92;
+      const cardPath = `M${-w/2},-44 H${w/2-12} L${w/2},-32 V44 H${-w/2+12} L${-w/2},32 Z`;
+      const toggle = el.append('g').attr('class', 'node-toggle');
+      toggle.append('path').attr('class', 'node-card-bg').attr('d', cardPath);
+      if (d.data.cover) {
+        const cid = `card-clip-${d.data._idx}`;
+        el.append('clipPath').attr('id', cid).append('rect').attr('x', -w/2+7).attr('y', -37).attr('width', w-14).attr('height', 56).attr('rx', 3);
+        toggle.append('image').attr('class', 'node-card-image').attr('href', d.data.cover).attr('xlink:href', d.data.cover)
+          .attr('referrerpolicy', 'no-referrer').attr('x', -w/2+7).attr('y', -37).attr('width', w-14).attr('height', 56)
+          .attr('preserveAspectRatio', 'xMidYMid meet').attr('clip-path', `url(#${cid})`);
+      } else {
+        toggle.append('text').attr('class', 'node-card-fallback').attr('text-anchor', 'middle').attr('y', -5)
+          .text(isMachine ? 'MACHINE' : 'ITEM');
+      }
+      toggle.on('click', ev => {
+        ev.stopPropagation();
+        if (!d.data._hasChildren) return;
+        collapsed.has(d.data.key) ? collapsed.delete(d.data.key) : collapsed.add(d.data.key);
+        tip.style.display = 'none'; draw();
+      });
+      el.append('text').attr('class', 'node-card-label').attr('text-anchor', 'middle').attr('y', 57)
+        .text(d.data.name.length > 8 ? d.data.name.slice(0, 8) + '…' : d.data.name)
+        .on('click', (ev) => {
+          ev.stopPropagation();
+          if (isMachine) return;
+          $('in-search').value = d.data.name; hideSuggest(); loadSyn();
+        });
+      el.append('text').attr('class', 'node-card-sub').attr('text-anchor', 'middle').attr('y', 70)
+        .text(isMachine ? `${d.data.duration || 0}s // DEVICE` : (d.data.leaf ? 'BASE RESOURCE' : 'ITEM NODE'));
+      if (d.data._hasChildren) el.append('text').attr('class', 'collapse-mark').attr('x', w/2-8).attr('y', -31).attr('text-anchor', 'middle')
+        .text(collapsed.has(d.data.key) ? '+' : '−');
     });
-
-  nodes.filter(d => d.data.kind === 'item').append('circle')
-    .attr('r', d => d.data.depth === 0 ? 20 : 15);
-  nodes.filter(d => d.data.kind === 'item').append('text').attr('dy', '0.35em')
-    .attr('class', 'node-label')
-    .attr('text-anchor', 'middle')
-    .text(d => d.data.name.length > 5 ? d.data.name.slice(0, 5) + '…' : d.data.name)
-    .on('click', (ev, d) => {
-      ev.stopPropagation();
-      $('in-search').value = d.data.name;
-      hideSuggest();
-      loadSyn();
-    });
-  nodes.filter(d => d.data.kind === 'item' && d.data._hasChildren).append('text')
-    .attr('class', 'collapse-mark').attr('x', d => d.data.depth === 0 ? 16 : 12).attr('y', -10)
-    .text(d => collapsed.has(d.data.key) ? '+' : '−');
-
-  // 有封面图的物品节点：圆形裁剪小图 + 描边圆，名称移到圆下方
-  nodes.filter(d => d.data.kind === 'item' && d.data.cover).each(function (d) {
-    const el = d3.select(this);
-    const r = d.data.depth === 0 ? 20 : 15;
-    const cid = 'clip-' + d.data._idx;
-    el.append('clipPath').attr('id', cid).append('circle').attr('r', r);
-    el.append('image')
-      .attr('xlink:href', d.data.cover)
-      .attr('referrerpolicy', 'no-referrer')
-      .attr('x', -r).attr('y', -r).attr('width', 2 * r).attr('height', 2 * r)
-      .attr('preserveAspectRatio', 'xMidYMid slice')
-      .attr('clip-path', `url(#${cid})`);
-    el.append('circle').attr('r', r).attr('fill', 'none')
-      .attr('stroke', d.data.leaf ? 'var(--faint)' : 'var(--accent)')
-      .attr('stroke-width', 1.6);
-    el.select('text').attr('dy', d.data.depth === 0 ? '2.8em' : '2.7em')
-      .attr('font-size', 11);
-  });
-
-  nodes.filter(d => d.data.kind === 'recipe').append('rect')
-    .attr('x', -32).attr('y', -9).attr('width', 64).attr('height', 18);
-  nodes.filter(d => d.data.kind === 'recipe').append('text').attr('dy', '0.35em')
-    .attr('text-anchor', 'middle')
-    .text(d => d.data.name.length > 5 ? d.data.name.slice(0, 5) + '…' : d.data.name);
   }
+  TREE_CONTROLLER = {
+    collapse(){ collapsed.add(source.key); draw(); },
+    expand(){ collapsed.clear(); draw(); },
+    zoom(delta){ scale = Math.max(.7, Math.min(1.35, scale + delta)); draw(); },
+    reset(){ scale = 1; draw(); }
+  };
+  setTreeTools(true);
   draw();
 }
 
@@ -796,7 +858,9 @@ function renderHead(d) {
 
 async function loadSyn() {
   const item = $('in-search').value.trim();
-  if (!item) { $('syn-tree').innerHTML = '<div id="syn-empty">输入名称，展开配方树</div>'; return; }
+  if (!item) { renderEmptyState('syn'); return; }
+  TREE_CONTROLLER = null;
+  setTreeTools(false);
   $('tree-title').textContent = item + ' · 配方树';
   $('syn-tree').innerHTML = '<div id="syn-empty">加载中…</div>';
   try {
@@ -825,9 +889,21 @@ async function loadSyn() {
   } catch (e) { $('syn-tree').innerHTML = `<div class="msg bot"><span style="color:var(--danger)">${esc(e.message)}</span></div>`; }
 }
 
-/* 默认展示重息壤 */
-$('in-search').value = '重息壤';
-loadSyn();
+/* 默认保持空查询，展示可交互入口。 */
+$('in-search').value = '';
+renderEmptyState('syn');
+
+let SCROLL_TICKING = false;
+window.addEventListener('scroll', () => {
+  if (SCROLL_TICKING) return;
+  SCROLL_TICKING = true;
+  requestAnimationFrame(() => {
+    const y = window.scrollY || 0;
+    document.documentElement.style.setProperty('--scroll-y', y);
+    document.body.classList.toggle('is-scrolled', y > 54);
+    SCROLL_TICKING = false;
+  });
+}, { passive: true });
 </script>
 </body>
 </html>

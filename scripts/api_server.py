@@ -178,6 +178,9 @@ def build_synthesis_tree(item_id, recipes, item_index, max_depth=10, media=None)
                   "machine_id": str(r.get("machine_id") or ""),
                   "duration": r.get("duration", 1.0),
                   "inputs": []}
+            machine_cover = _media_cover(media, rc["machine_id"])
+            if machine_cover:
+                rc["cover"] = machine_cover
             ok = True
             for x in r["inputs"]:
                 child = expand(x["item_id"], depth + 1, path | {iid})

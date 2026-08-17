@@ -18,6 +18,12 @@ class FrontendContractTests(unittest.TestCase):
         self.assertIn("@keyframes contentIn", HTML)
         self.assertIn("prefers-reduced-motion", HTML)
 
+    def test_vertical_image_tree_and_empty_default_are_present(self):
+        self.assertIn("nodeSize([116, 148])", HTML)
+        self.assertIn("node-card-image", HTML)
+        self.assertIn("renderEmptyState('syn')", HTML)
+        self.assertNotIn("$('in-search').value = '重息壤'", HTML)
+
     def test_search_has_accessible_name(self):
         self.assertIn('aria-label="搜索物品、设备或知识问题"', HTML)
 
