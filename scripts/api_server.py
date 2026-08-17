@@ -214,6 +214,10 @@ def _kb_summary(kb):
 
 @app.get("/api/synthesis")
 def synthesis(item: str, max_depth: int = 10):
+    if not item or not item.strip():
+        return {"ok": False, "error": "请输入物品或设备名称"}
+    if max_depth < 0:
+        return {"ok": False, "error": "max_depth 不能小于 0"}
     recipes = load_recipes(os.path.join(ROOT, "output", "recipes.json"))
     item_index = build_item_index(recipes)
     media = _load_item_media()

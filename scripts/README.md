@@ -174,3 +174,15 @@ python scripts/gen_jieba_dict.py    # → scripts/dict_zh.txt（1789 词）
 - 输出一律写 UTF-8 文件，不要只 print 到终端（Windows GBK 乱码）
 - 模型加载必须离线（HF_HUB_OFFLINE + local_files_only）
 - 浏览器访问用 `http://127.0.0.1:8000`（不要用 localhost，IPv6 坑）
+
+## 离线回归测试
+
+测试使用 Python 标准库 `unittest`，不需要安装 pytest，也不会调用真实 LLM：
+
+```bash
+python -m unittest discover -s tests -v
+python -m compileall -q scripts tests
+```
+
+覆盖健康检查、物品树、设备卡、歧义候选、知识库回退、空输入、循环/自循环剪枝、
+名称缓存、问答入口参数传递，以及全部真实配方树的叶子与深度不变量。
