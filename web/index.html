@@ -320,14 +320,38 @@ body.is-scrolled .topbar{height:60px;background:rgba(250,249,244,.96)}
 .item-head{background:linear-gradient(90deg,rgba(242,211,33,.11),transparent 45%);border-left:3px solid var(--yellow)}.item-cover{border-radius:0;clip-path:polygon(0 0,100% 0,100% 78%,78% 100%,0 100%)}
 .refs-block,.msg.bot,.ask-recipe-card,.ask-hits details{border-radius:0}.ref-chip,.ask-src-chip,.ask-intent-tag,.ask-ambig,.src-chip{border-radius:0}
 .node-item circle{fill:#171a15;stroke:var(--yellow)}.node-recipe rect{fill:#121b16;stroke:var(--accent2)}.node-recipe text{fill:var(--accent2)}.link{stroke:#485044}.edge-label{fill:var(--yellow)}
+
+/* ===== v4 / kinetic shape language ===== */
+.entry-curtain{position:fixed;inset:0;z-index:9999;pointer-events:none;background:var(--ink);display:grid;place-items:center;animation:curtainExit 1.05s .32s cubic-bezier(.76,0,.24,1) both}
+.entry-curtain::before{content:"";width:112px;height:112px;border:2px solid var(--yellow);border-radius:50%;box-shadow:0 0 0 18px rgba(240,207,22,.08),0 0 0 42px rgba(255,255,255,.04);animation:bootOrbit .9s cubic-bezier(.2,.8,.2,1) both}
+.entry-curtain::after{content:"SYNTHESIS / ONLINE";position:absolute;color:#fff;font:700 9px/1 Consolas,monospace;letter-spacing:.22em;animation:bootText .75s both}
+@keyframes curtainExit{0%,58%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(100%);visibility:hidden}}
+@keyframes bootOrbit{from{opacity:0;transform:scale(.25) rotate(-140deg);border-radius:18%}to{opacity:1;transform:scale(1) rotate(45deg);border-radius:50%}}
+@keyframes bootText{from{opacity:0;letter-spacing:.55em}to{opacity:1;letter-spacing:.22em}}
+.geo-d{width:430px;height:430px;left:-160px;top:9vh;border-radius:50%;border:52px solid rgba(240,207,22,.08);transform:translateY(calc(var(--scroll-y,0) * .13px)) rotate(calc(12deg + var(--scroll-y,0) * .015deg))}
+.geo-e{width:360px;height:120px;right:10vw;top:72vh;border:0;background:rgba(17,19,16,.035);clip-path:polygon(0 45%,12% 12%,28% 54%,45% 5%,62% 64%,79% 18%,100% 50%,100% 82%,80% 48%,64% 94%,46% 38%,29% 87%,12% 48%,0 78%);transform:translateY(calc(var(--scroll-y,0) * -.21px)) rotate(calc(-8deg + var(--scroll-y,0) * .01deg))}
+.geo-f{width:190px;height:190px;right:22vw;top:112vh;background:rgba(240,207,22,.08);border:0;clip-path:polygon(50% 0,93% 25%,84% 76%,45% 100%,4% 70%,11% 20%);transform:translateY(calc(var(--scroll-y,0) * -.16px)) rotate(calc(8deg + var(--scroll-y,0) * .025deg))}
+.hero::before{content:"";position:absolute;width:150px;height:150px;right:23%;top:72px;border:1px solid rgba(18,20,17,.1);border-radius:50%;box-shadow:28px 18px 0 rgba(240,207,22,.1);animation:heroHalo 8s ease-in-out infinite alternate}
+@keyframes heroHalo{to{transform:translate(18px,-12px) rotate(35deg);border-radius:34% 66% 54% 46%}}
+.stat{position:relative;padding:13px 14px 10px;border:1px solid #d2d1c8!important;background:rgba(255,255,255,.58);transition:transform .3s,background .3s}.stat:nth-child(1){clip-path:polygon(0 0,92% 0,100% 28%,100% 100%,0 100%)}.stat:nth-child(2){border-radius:28px 4px 28px 4px}.stat:nth-child(3){clip-path:polygon(8% 0,100% 0,100% 100%,0 100%,0 28%)}.stat:hover{transform:translateX(-7px) rotate(-1deg);background:#fff}
+.history-chip:nth-of-type(3n+1),.ref-chip:nth-child(3n+1),.ask-src-chip:nth-child(3n+1){border-radius:999px}.history-chip:nth-of-type(3n+2),.ref-chip:nth-child(3n+2),.ask-src-chip:nth-child(3n+2){clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);padding-inline:15px}.history-chip:nth-of-type(3n),.ref-chip:nth-child(3n),.ask-src-chip:nth-child(3n){border-radius:3px 15px 3px 15px}
+.ask-recipe-card:nth-child(odd),.ask-hits details:nth-child(odd){border-radius:24px 4px 24px 4px}.ask-recipe-card:nth-child(even),.ask-hits details:nth-child(even){clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px))}
+.demo-btn:nth-child(1){border-radius:999px}.demo-btn:nth-child(2){clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);padding-inline:18px}.demo-btn:nth-child(3){border-radius:4px 16px 4px 16px}
+.brand-mark{animation:brandFloat 5s ease-in-out infinite}.action-btn{position:relative;overflow:hidden}.action-btn::after{content:"";position:absolute;inset:-40% -20%;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.5),transparent 62%);transform:translateX(-120%) rotate(8deg);transition:transform .55s}.action-btn:hover::after{transform:translateX(120%) rotate(8deg)}
+@keyframes brandFloat{50%{transform:translateY(-3px) rotate(5deg);border-radius:45% 18% 42% 24%}}
+.reveal-on-scroll{opacity:0;transform:translateY(34px) rotate(.7deg);filter:blur(7px);transition:opacity .72s ease,transform .8s cubic-bezier(.2,.8,.2,1),filter .72s ease}.reveal-on-scroll.is-visible{opacity:1;transform:none;filter:none}.workspace.reveal-on-scroll{transform:translateY(48px) rotate(-.45deg)}.workspace.reveal-on-scroll.is-visible{transform:none}
+.panel::before{content:"";position:absolute;right:8%;bottom:6%;width:110px;height:110px;border-radius:50%;background:repeating-radial-gradient(circle,rgba(240,207,22,.13) 0 2px,transparent 3px 13px);pointer-events:none;animation:panelPulse 7s ease-in-out infinite}
+@keyframes panelPulse{50%{transform:scale(1.22) rotate(18deg);opacity:.45}}
 .footer-line{display:flex;justify-content:space-between;margin-top:22px;padding-top:14px;border-top:1px solid var(--border);font:600 9px/1 Consolas,monospace;letter-spacing:.12em;color:var(--faint)}
 @media(max-width:850px){.top-code,.hero-stats,.side-rail{display:none}.topbar{height:64px;padding:0 18px}.site-main{padding:0 14px 38px}.hero{display:block;min-height:280px;padding:62px 4px 36px}.hero h1{font-size:clamp(40px,13vw,68px)}.workspace{display:block}.query-row{grid-template-columns:auto 1fr;padding:20px 16px}.enter-key{display:none}.command-head{align-items:flex-start;gap:12px}.mode-note{display:none}.panel{min-height:520px}.panel-head{flex-wrap:wrap;gap:10px}.panel-guide{display:none}.tree-toolbar{order:3;width:100%;margin:0}.tool-btn{flex:1}.empty-console{margin:45px 0;padding:28px 22px}}
 @media(max-width:520px){.brand-en{display:none}.top-meta{gap:8px}.status{padding:7px}.status span:last-child{font-size:0}.status span:last-child::after{content:"API";font-size:10px}.mode-btn{padding:10px 12px 10px 26px}.query-prefix{display:none}.query-row{grid-template-columns:1fr}.hero-copy{font-size:13px}.footer-line span:last-child{display:none}}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+@media(max-width:850px){.hero::before{width:86px;height:86px;right:4%;top:48px}.geo-d{width:260px;height:260px}.geo-e{right:-120px}.entry-curtain::before{width:86px;height:86px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.entry-curtain{display:none}.reveal-on-scroll{opacity:1!important;transform:none!important;filter:none!important}}
 </style>
 </head>
 <body>
-<div class="ambient" aria-hidden="true"><i class="geo geo-a"></i><i class="geo geo-b"></i><i class="geo geo-c"></i></div>
+<div class="entry-curtain" aria-hidden="true"></div>
+<div class="ambient" aria-hidden="true"><i class="geo geo-a"></i><i class="geo geo-b"></i><i class="geo geo-c"></i><i class="geo geo-d"></i><i class="geo geo-e"></i><i class="geo geo-f"></i></div>
 <header class="topbar">
   <div class="brand"><div class="brand-mark">E</div><div><div class="brand-cn">终末地工业 · 合成档案</div><div class="brand-en">ENDFIELD SYNTHESIS ARCHIVE</div></div></div>
   <div class="top-meta"><span class="top-code">TALOS-II / DATA TERMINAL 07</span><div class="status"><span class="dot" id="api-dot"></span><span id="api-text">后端未连接</span></div></div>
@@ -892,6 +916,22 @@ async function loadSyn() {
 /* 默认保持空查询，展示可交互入口。 */
 $('in-search').value = '';
 renderEmptyState('syn');
+
+/* 分区进入视口时播放一次；纯装饰元素不参与焦点和交互。 */
+const revealTargets = document.querySelectorAll('.search-wrap, .workspace, .footer-line');
+revealTargets.forEach(el => el.classList.add('reveal-on-scroll'));
+if ('IntersectionObserver' in window) {
+  const revealObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('is-visible');
+      revealObserver.unobserve(entry.target);
+    });
+  }, { threshold: .08, rootMargin: '0px 0px -5% 0px' });
+  revealTargets.forEach(el => revealObserver.observe(el));
+} else {
+  revealTargets.forEach(el => el.classList.add('is-visible'));
+}
 
 let SCROLL_TICKING = false;
 window.addEventListener('scroll', () => {

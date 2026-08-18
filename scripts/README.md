@@ -110,6 +110,9 @@ python -m uvicorn scripts.api_server:app --host 0.0.0.0 --port 8000
 | `POST /api/ask` | RAG 问答（意图识别→路由→检索→LLM 带引用回答），body: `{"query":"重息壤是什么","top_k":5,"gen_answer":true}` |
 
 自动托管 `web/index.html`（白色工业制图 + 纵向真实图片配方树 + 知识问答双模式）。
+当前界面采用多轮廓卡片语言（圆角胶囊、斜切多边形、不对称圆角），背景由圆环、波浪带、
+多边形叠层构成；包含开机式入场动画、滚动视差与分区淡入，并兼容
+`prefers-reduced-motion` 减少动态效果设置。
 
 ## RAG 问答工具（阶段 0-5，见 RAG_UPGRADE_PLAN.md）
 
