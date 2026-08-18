@@ -6,6 +6,8 @@
 <title>终末地 · 合成终端 | 配方树 &amp; 知识问答</title>
 <script src="vendor/d3.min.js"></script>
 <style>
+@font-face{font-family:"Endfield CN";src:url("/assets/fonts/NotoSansSC-Variable.ttf") format("truetype");font-weight:100 900;font-display:swap}
+@font-face{font-family:"Endfield Tech";src:url("/assets/fonts/Oxanium-Variable.ttf") format("truetype");font-weight:200 800;font-display:swap}
 :root{
   /* 终末地工业 HUD 配色 */
   --bg:#0B0E13; --card:#131720; --panel:#131720; --panel2:#1A2029; --panel3:#202835;
@@ -358,28 +360,40 @@ body::before{opacity:.55;background:linear-gradient(125deg,transparent 0 38%,rgb
 .node-card-bg{filter:drop-shadow(4px 5px 0 rgba(23,55,209,.16)) drop-shadow(8px 10px 8px rgba(25,28,22,.1))}.node-card:hover .node-card-bg{filter:drop-shadow(6px 8px 0 rgba(23,55,209,.23)) drop-shadow(12px 15px 10px rgba(25,28,22,.12))}.kb-table{filter:drop-shadow(7px 9px 0 rgba(23,55,209,.12))}.kb-table td{border-color:#aaa99f}.kb-table tr:first-child td{border-top:2px solid var(--klein)}.kb-table tr:last-child td{border-bottom:2px solid var(--yellow)}
 @keyframes polygonDrift{0%{transform:translate3d(0,0,0) rotateX(48deg) rotateZ(0)}50%{transform:translate3d(18px,-24px,48px) rotateX(62deg) rotateZ(14deg)}100%{transform:translate3d(-12px,12px,10px) rotateX(42deg) rotateZ(-8deg)}}
 .geo-g{animation:polygonDrift 13s ease-in-out infinite alternate}.hero::before{box-shadow:28px 18px 0 rgba(240,207,22,.12),44px 32px 0 rgba(23,55,209,.07);transform-style:preserve-3d}
+
+/* ===== v6 / local type + character system ===== */
+body{font-family:"Endfield CN","Microsoft YaHei UI",sans-serif;font-size:15px}.brand-en,.top-code,.eyebrow,.mode-btn,.mode-note,.query-prefix,.enter-key,.rail-title,.panel-kicker,.empty-code,.footer-line,.stat span{font-family:"Endfield Tech",Consolas,monospace}.hero h1,.brand-cn,.panel-head b,.empty-console h2{font-family:"Endfield CN",sans-serif}.hero h1{font-weight:900}.brand-cn{font-size:18px}.mode-btn{font-size:12px}.mode-note,.top-code{font-size:10px}.rail-title{font-size:11px}.rail-item b{font-size:13px}.rail-item span,.rail-legend{font-size:12px}.panel-head b{font-size:16px}.panel-guide{font-size:13px!important}.tool-btn{font-size:11px}.history-label{font-size:12px}.history-chip,.history-clear,.demo-btn{font-size:13px}.empty-console p{font-size:14px;line-height:1.75}.footer-line{font-size:10px}
+.command-shell,.side-rail,.panel{clip-path:polygon(24px 0,76% 0,calc(76% + 13px) 8px,100% 8px,calc(100% - 20px) 100%,26% 100%,calc(26% - 13px) calc(100% - 8px),0 calc(100% - 8px));overflow:visible}.command-shell::after,.side-rail::after{content:"";position:absolute;inset:7px;clip-path:inherit;border:1px solid rgba(23,55,209,.18);pointer-events:none}.side-rail,.panel,.search-wrap{isolation:isolate}.panel{clip-path:polygon(28px 0,72% 0,calc(72% + 15px) 9px,100% 9px,calc(100% - 24px) 100%,22% 100%,calc(22% - 15px) calc(100% - 9px),0 calc(100% - 9px))}
+.entry-curtain{background:linear-gradient(125deg,#090b0a 0 54%,#111a3d 54% 72%,#f0cf16 72%)}.entry-curtain::before{width:300px;height:180px;border:1px solid rgba(255,255,255,.28);border-radius:0;clip-path:polygon(14% 0,100% 0,86% 100%,0 100%);box-shadow:18px 20px 0 rgba(23,55,209,.7),-15px -12px 0 rgba(240,207,22,.72);animation:bootOrbit .9s cubic-bezier(.2,.8,.2,1) both}.entry-curtain::after{content:"SYSTEM BOOT / TALOS-II";top:calc(50% + 126px)}.entry-logo-plate{position:absolute;width:220px;height:126px;display:grid;place-items:center;background:#fff;clip-path:polygon(14% 0,100% 0,86% 100%,0 100%);animation:logoBoot 1s cubic-bezier(.2,.8,.2,1) both}.entry-logo-plate img{width:74%;height:74%;object-fit:contain}.entry-logo-plate::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(240,207,22,.42),transparent 62%);transform:translateX(-120%);animation:logoSweep 1s .2s ease both}@keyframes logoBoot{from{opacity:0;transform:translateX(-70px) rotate(-12deg) scale(.65)}to{opacity:1;transform:none}}@keyframes logoSweep{to{transform:translateX(120%)}}
+.brand-mark{width:82px;height:42px;background:#fff;clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);padding:3px 10px;box-shadow:5px 5px 0 var(--yellow);animation:none}.brand-mark img{width:100%;height:100%;object-fit:contain}.hero-logo{position:absolute;right:3%;top:54px;width:142px;height:82px;object-fit:contain;opacity:.9;filter:drop-shadow(8px 9px 0 rgba(23,55,209,.14));transform:rotate(-3deg);animation:heroLogoFloat 7s ease-in-out infinite alternate}@keyframes heroLogoFloat{to{transform:translateY(10px) rotate(2deg)}}
+.frame-mascot{position:absolute;z-index:8;pointer-events:none;object-fit:contain;filter:drop-shadow(7px 9px 0 rgba(23,55,209,.18));transform-origin:bottom center}.mascot-search{width:104px;right:20px;top:50px;transform:rotate(4deg);opacity:.92}.mascot-rail{width:106px;left:34px;bottom:4px;transform:rotate(-4deg)}.mascot-panel{width:112px;right:34px;top:52px;transform:rotate(5deg);opacity:.9}.command-head,.query-row,.search-history,.panel-head,#syn-tree,.rail-item,.rail-title{position:relative;z-index:9}.query-row{padding-right:132px}.panel-head{padding-right:150px}.side-rail{padding-bottom:104px}
+.bg-mascot{position:absolute;pointer-events:none;object-fit:contain;opacity:.075;filter:grayscale(.15) drop-shadow(14px 18px 0 rgba(23,55,209,.14));will-change:transform}.bg-char-1{width:190px;left:3vw;top:14vh;animation:charDriftA 17s ease-in-out infinite alternate}.bg-char-2{width:160px;right:5vw;top:63vh;animation:charDriftB 21s ease-in-out infinite alternate}.bg-char-3{width:210px;left:8vw;top:124vh;animation:charDriftB 19s ease-in-out infinite alternate-reverse}.bg-char-4{width:170px;right:10vw;top:176vh;animation:charDriftA 23s ease-in-out infinite alternate-reverse}.bg-char-5{width:150px;left:42vw;top:225vh;animation:charDriftB 20s ease-in-out infinite alternate}@keyframes charDriftA{from{transform:translate3d(-10px,-8px,0) rotate(-4deg)}to{transform:translate3d(24px,18px,0) rotate(5deg)}}@keyframes charDriftB{from{transform:translate3d(12px,-14px,0) rotate(5deg)}to{transform:translate3d(-22px,20px,0) rotate(-4deg)}}
+.frame-mascot{z-index:10}
 .footer-line{display:flex;justify-content:space-between;margin-top:22px;padding-top:14px;border-top:1px solid var(--border);font:600 9px/1 Consolas,monospace;letter-spacing:.12em;color:var(--faint)}
 @media(max-width:850px){.top-code,.hero-stats,.side-rail{display:none}.topbar{height:64px;padding:0 18px}.site-main{padding:0 14px 38px}.hero{display:block;min-height:280px;padding:62px 4px 36px}.hero h1{font-size:clamp(40px,13vw,68px)}.workspace{display:block}.query-row{grid-template-columns:auto 1fr;padding:20px 16px}.enter-key{display:none}.command-head{align-items:flex-start;gap:12px}.mode-note{display:none}.panel{min-height:520px}.panel-head{flex-wrap:wrap;gap:10px}.panel-guide{display:none}.tree-toolbar{order:3;width:100%;margin:0}.tool-btn{flex:1}.empty-console{margin:45px 0;padding:28px 22px}}
 @media(max-width:520px){.brand-en{display:none}.top-meta{gap:8px}.status{padding:7px}.status span:last-child{font-size:0}.status span:last-child::after{content:"API";font-size:10px}.mode-btn{padding:10px 12px 10px 26px}.query-prefix{display:none}.query-row{grid-template-columns:1fr}.hero-copy{font-size:13px}.footer-line span:last-child{display:none}}
 @media(max-width:850px){.hero::before{width:86px;height:86px;right:4%;top:48px}.geo-d{width:260px;height:260px}.geo-e{right:-120px}.entry-curtain::before{width:86px;height:86px}}
+@media(max-width:850px){.brand-mark{width:56px}.hero-logo{width:92px;top:38px;right:0;opacity:.3}.mascot-search{width:70px;right:8px;top:58px;opacity:.52}.mascot-panel,.mascot-rail{display:none}.query-row{padding-right:82px}.panel-head{padding-right:20px}.bg-mascot{opacity:.045}.bg-char-3,.bg-char-4,.bg-char-5{display:none}.command-shell,.panel{clip-path:polygon(16px 0,78% 0,calc(78% + 8px) 5px,100% 5px,calc(100% - 14px) 100%,20% 100%,calc(20% - 8px) calc(100% - 5px),0 calc(100% - 5px))}.entry-logo-plate{width:180px;height:104px}.entry-curtain::before{width:240px;height:150px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.entry-curtain{display:none}.reveal-on-scroll{opacity:1!important;transform:none!important;filter:none!important}}
 </style>
 </head>
 <body>
-<div class="entry-curtain" aria-hidden="true"></div>
-<div class="ambient" aria-hidden="true"><i class="geo geo-a"></i><i class="geo geo-b"></i><i class="geo geo-c"></i><i class="geo geo-d"></i><i class="geo geo-e"></i><i class="geo geo-f"></i><i class="geo geo-g"></i><i class="geo geo-h"></i></div>
+<div class="entry-curtain" aria-hidden="true"><div class="entry-logo-plate"><img src="/assets/mascots/endfield-logo.png" alt=""></div></div>
+<div class="ambient" aria-hidden="true"><i class="geo geo-a"></i><i class="geo geo-b"></i><i class="geo geo-c"></i><i class="geo geo-d"></i><i class="geo geo-e"></i><i class="geo geo-f"></i><i class="geo geo-g"></i><i class="geo geo-h"></i><img class="bg-mascot bg-char-1" src="/assets/mascots/mascot-02.png" alt=""><img class="bg-mascot bg-char-2" src="/assets/mascots/mascot-04.png" alt=""><img class="bg-mascot bg-char-3" src="/assets/mascots/mascot-05.png" alt=""><img class="bg-mascot bg-char-4" src="/assets/mascots/mascot-06.png" alt=""><img class="bg-mascot bg-char-5" src="/assets/mascots/mascot-07.png" alt=""></div>
 <header class="topbar">
-  <div class="brand"><div class="brand-mark">E</div><div><div class="brand-cn">终末地工业 · 合成档案</div><div class="brand-en">ENDFIELD SYNTHESIS ARCHIVE</div></div></div>
+  <div class="brand"><div class="brand-mark"><img src="/assets/mascots/endfield-logo.png" alt="终末地"></div><div><div class="brand-cn">终末地工业 · 合成档案</div><div class="brand-en">ENDFIELD SYNTHESIS ARCHIVE</div></div></div>
   <div class="top-meta"><span class="top-code">TALOS-II / DATA TERMINAL 07</span><div class="status"><span class="dot" id="api-dot"></span><span id="api-text">后端未连接</span></div></div>
 </header>
 
 <main class="site-main">
   <section class="hero">
+    <img class="hero-logo" src="/assets/mascots/endfield-logo.png" alt="明日方舟：终末地">
     <div><div class="eyebrow">INDUSTRIAL RECIPE DATABASE / 01</div><h1>从上到下<span>看清制造</span></h1><p class="hero-copy"><b>每个物品和设备都以真实封面呈现。</b> 345 条配方被展开为纵向生产流程，保持清晰尺寸，也允许随时折叠、缩放与跳转。</p><div class="hero-actions"><button class="action-btn" data-demo="重息壤" data-demo-mode="syn">查看示例配方</button><button class="action-btn secondary" data-demo="佩丽卡怎么玩" data-demo-mode="ask">试试知识问答</button></div></div>
     <div class="hero-stats"><div class="stat"><b>345</b><span>VERIFIED<br>RECIPES</span></div><div class="stat"><b>1,958</b><span>WIKI<br>ENTRIES</span></div><div class="stat"><b>100%</b><span>RECALL<br>AT 5</span></div></div>
   </section>
 
   <div class="search-wrap command-shell">
+    <img class="frame-mascot mascot-search" src="/assets/mascots/mascot-01.png" alt="">
     <div class="command-head"><div class="mode-tabs" id="mode-tabs">
       <button class="mode-btn active" data-mode="syn" data-index="01">配方合成树</button>
       <button class="mode-btn" data-mode="ask" data-index="02">知识问答</button>
@@ -392,8 +406,9 @@ body::before{opacity:.55;background:linear-gradient(125deg,transparent 0 38%,rgb
     <div id="search-history" class="search-history"></div>
   </div>
 
-  <section class="workspace"><aside class="side-rail"><div class="rail-title">ARCHIVE INDEX</div><div class="rail-item"><b>OPERATION</b><span>输入名称后展开完整生产链，圆点可折叠分支。</span></div><div class="rail-item"><b>NODE LEGEND</b><div class="rail-legend"><i class="legend-dot"></i><span>可制造物品</span><i class="legend-dot recipe"></i><span>生产设备</span><i class="legend-dot base"></i><span>基础资源</span></div></div><div class="rail-item"><b>DATA SOURCE</b><span>终末地官方 WIKI<br>本地离线索引</span></div></aside>
+  <section class="workspace"><aside class="side-rail"><div class="rail-title">ARCHIVE INDEX</div><div class="rail-item"><b>OPERATION</b><span>输入名称后展开完整生产链，圆点可折叠分支。</span></div><div class="rail-item"><b>NODE LEGEND</b><div class="rail-legend"><i class="legend-dot"></i><span>可制造物品</span><i class="legend-dot recipe"></i><span>生产设备</span><i class="legend-dot base"></i><span>基础资源</span></div></div><div class="rail-item"><b>DATA SOURCE</b><span>终末地官方 WIKI<br>本地离线索引</span></div><img class="frame-mascot mascot-rail" src="/assets/mascots/mascot-08.png" alt=""></aside>
   <div class="panel">
+    <img class="frame-mascot mascot-panel" src="/assets/mascots/mascot-03.png" alt="">
     <div class="panel-head">
       <span><i class="panel-kicker">OUTPUT</i><b id="tree-title">配方合成树</b></span>
       <div class="tree-toolbar" id="tree-toolbar"><button class="tool-btn" data-tree-action="collapse" title="收起所有分支">收起</button><button class="tool-btn" data-tree-action="expand" title="展开所有分支">展开</button><button class="tool-btn" data-tree-action="zoom-out" title="缩小">−</button><button class="tool-btn" data-tree-action="zoom-reset" title="重置缩放">100%</button><button class="tool-btn" data-tree-action="zoom-in" title="放大">＋</button></div>
@@ -461,8 +476,10 @@ $('search-history').addEventListener('click', ev => {
   if (chip) {
     const entry = getHistory()[Number(chip.dataset.history)];
     if (!entry) return;
-    $('in-search').value = entry.q;
+    MODE_QUERIES[CUR_MODE] = $('in-search').value;
     CUR_MODE = entry.mode === 'ask' ? 'ask' : 'syn';
+    MODE_QUERIES[CUR_MODE] = entry.q;
+    $('in-search').value = entry.q;
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === CUR_MODE));
     hideSuggest();
     CUR_MODE === 'syn' ? loadSyn() : loadAsk();
@@ -493,6 +510,7 @@ function renderSuggest(list, q) {
 function hideSuggest() { $('suggest').style.display = 'none'; SUG_INDEX = -1; }
 
 function onInput() {
+  MODE_QUERIES[CUR_MODE] = $('in-search').value;
   const q = $('in-search').value.trim();
   SUG_INDEX = -1;
   if (!q) { hideSuggest(); return; }
@@ -502,6 +520,7 @@ function onInput() {
 }
 function pickSuggestion(name) {
   $('in-search').value = name;
+  MODE_QUERIES[CUR_MODE] = name;
   hideSuggest();
   CUR_MODE === 'syn' ? loadSyn() : loadAsk();
 }
@@ -597,9 +616,11 @@ function renderAsk(d) {
   // 绑定点击：来源 chip / 歧义候选 → 切到合成树模式看该物品
   $('syn-tree').querySelectorAll('[data-nm]').forEach(el => {
     el.addEventListener('click', () => {
+      MODE_QUERIES[CUR_MODE] = $('in-search').value;
       $('in-search').value = el.dataset.nm;
       document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === 'syn'));
       CUR_MODE = 'syn';
+      MODE_QUERIES.syn = el.dataset.nm;
       $('tree-title').textContent = '配方合成树';
       hideSuggest();
       loadSyn();
@@ -635,6 +656,7 @@ async function loadAsk() {
 
 /* ===================== 配方合成树 ===================== */
 let CUR_MODE = 'syn';
+const MODE_QUERIES = { syn: '', ask: '' };
 let TREE_CONTROLLER = null;
 
 function setTreeTools(enabled) {
@@ -665,18 +687,23 @@ $('tree-toolbar').addEventListener('click', ev => {
 document.addEventListener('click', ev => {
   const demo = ev.target.closest('[data-demo]');
   if (!demo) return;
+  MODE_QUERIES[CUR_MODE] = $('in-search').value;
   CUR_MODE = demo.dataset.demoMode === 'ask' ? 'ask' : 'syn';
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === CUR_MODE));
   $('in-search').value = demo.dataset.demo;
+  MODE_QUERIES[CUR_MODE] = demo.dataset.demo;
   hideSuggest();
   CUR_MODE === 'syn' ? loadSyn() : loadAsk();
 });
 
 document.querySelectorAll('.mode-btn').forEach(btn => {
   btn.addEventListener('click', () => {
+    MODE_QUERIES[CUR_MODE] = $('in-search').value;
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     CUR_MODE = btn.dataset.mode;
+    $('in-search').value = MODE_QUERIES[CUR_MODE];
+    hideSuggest();
     $('tree-title').textContent = CUR_MODE === 'syn' ? '配方合成树' : '知识问答';
     const q = $('in-search').value.trim();
     if (q) CUR_MODE === 'syn' ? loadSyn() : loadAsk();
@@ -779,7 +806,7 @@ function renderTree(tree) {
         .on('click', (ev) => {
           ev.stopPropagation();
           if (isMachine) return;
-          $('in-search').value = d.data.name; hideSuggest(); loadSyn();
+          $('in-search').value = d.data.name; MODE_QUERIES.syn = d.data.name; hideSuggest(); loadSyn();
         });
       el.append('text').attr('class', 'node-card-sub').attr('text-anchor', 'middle').attr('y', 70)
         .text(isMachine ? `${d.data.duration || 0}s // DEVICE` : (d.data.leaf ? 'BASE RESOURCE' : 'ITEM NODE'));
@@ -861,6 +888,7 @@ function renderKbCard(kb) {
   $('syn-tree').querySelectorAll('.kb-entry[data-name]').forEach(el => {
     el.addEventListener('click', () => {
       $('in-search').value = el.dataset.name;
+      MODE_QUERIES.syn = el.dataset.name;
       hideSuggest();
       loadSyn();
     });
@@ -890,6 +918,7 @@ function renderHead(d) {
   box.innerHTML = html;
   box.querySelectorAll('.ref-chip').forEach(c => c.addEventListener('click', () => {
     $('in-search').value = c.dataset.name;
+    MODE_QUERIES.syn = c.dataset.name;
     hideSuggest();
     loadSyn();
   }));
@@ -931,6 +960,7 @@ async function loadSyn() {
 
 /* 默认保持空查询，展示可交互入口。 */
 $('in-search').value = '';
+MODE_QUERIES.syn = '';
 renderEmptyState('syn');
 
 /* 分区进入视口时播放一次；纯装饰元素不参与焦点和交互。 */

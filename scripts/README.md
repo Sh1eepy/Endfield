@@ -53,6 +53,15 @@ python scripts/extract_media.py          # → output/item_media.json
 - `refs` inline entry 物品引用 id/name/count/showType（14693 条；showType=`card-big` 卡片 / `link-imgText` 图文链接）
 供前端展示物品图片、引用卡片站内跳转。
 
+### 6.1 `remove_edge_background.py` — 边缘连通白底转透明
+
+用于角色贴纸等白底图片的确定性抠图，只移除与画布边缘连通的近白色区域，保留角色内部
+封闭的白色脸部、眼睛和衣物。原图不覆盖，输出 RGBA PNG：
+
+```bash
+python scripts/remove_edge_background.py input.jpg web/assets/mascots/output.png
+```
+
 ## RAG 层工具
 
 ### 7. `build_rag.py` — RAG 索引构建 / 增量更新
@@ -115,6 +124,8 @@ python -m uvicorn scripts.api_server:app --host 0.0.0.0 --port 8000
 `prefers-reduced-motion` 减少动态效果设置。
 主工作区使用平行斜切边界与 3D 景深，背景不使用网格；克莱因蓝用于表格边缘和立体投影，
 与工业黄形成局部撞色。字体层级按标题、说明与元数据分别强化，搜索输入尺寸保持稳定。
+前端本地内置 Noto Sans SC（中文）与 Oxanium（英文/数字），许可证随字体保存；配方与问答
+分别保留独立输入。透明小人作为框边贴纸和低透明分散背景，终末地图标用于开场、顶栏与首屏。
 
 ## RAG 问答工具（阶段 0-5，见 RAG_UPGRADE_PLAN.md）
 
