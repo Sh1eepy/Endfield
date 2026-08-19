@@ -130,6 +130,7 @@ python -m uvicorn scripts.api_server:app --host 0.0.0.0 --port 8000
 | `GET /api/synthesis?item=重息壤` | 合成树（物品树 / 设备配方卡 / 歧义→候选列表 / 无配方→知识库信息 + 封面图/相关引用） |
 | `GET /api/names` | 全部名称（前端模糊搜索联想） |
 | `POST /api/ask` | RAG 问答（意图识别→路由→检索→LLM 带引用回答），body: `{"query":"重息壤是什么","top_k":5,"gen_answer":true}` |
+| `GET /api/media?url=...` | WIKI CDN 图片/音频白名单同源代理（类型与 25MB 上限校验） |
 
 自动托管 `web/index.html`（白色工业制图 + 纵向真实图片配方树 + 知识问答双模式）。
 当前界面采用多轮廓卡片语言（圆角胶囊、斜切多边形、不对称圆角），背景由圆环、波浪带、

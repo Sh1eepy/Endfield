@@ -20,12 +20,46 @@ def clean_audio(item):
             "profile": str(item.get("profile") or ""), "url": url}
 
 
-def build_operator(entry, id2name):
+def build_cover_map(catalog):
+    covers = {}
+    for entry in catalog:
+        item = entry.get("item") or {}
+        detail_item = (entry.get("detail") or {}).get("item") or {}
+        item_id = str(detail_item.get("itemId") or item.get("itemId") or "")
+        brief = detail_item.get("brief") or item.get("brief") or {}
+        if item_id and isinstance(brief, dict) and brief.get("cover"):
+            covers[item_id] = str(brief["cover"])
+    return covers
+
+
+def attach_entry_images(blocks, covers):
+    for block in blocks:
+        sequences = []
+        if block.get("c"):
+            sequences.append(block["c"])
+        for row in block.get("r") or []:
+            sequences.extend(row)
+        for sequence in sequences:
+            for inline in sequence:
+                if inline.get("t") == "entry" and covers.get(str(inline.get("id") or "")):
+                    inline["img"] = covers[str(inline["id"])]
+    return blocks
+
+
+def clean_intro(intro):
+    if not isinstance(intro, dict):
+        return None
+    out = {key: str(intro.get(key) or "") for key in ("name", "type", "imgUrl", "description")}
+    return out if any(out.values()) else None
+
+
+def build_operator(entry, id2name, covers):
     item = entry.get("item") or {}
     detail_item = (entry.get("detail") or {}).get("item") or {}
     doc = detail_item.get("document") or {}
     docmap = doc.get("documentMap") or {}
-    rendered = {key: render_document_struct(value, id2name) for key, value in docmap.items()}
+    rendered = {key: attach_entry_images(render_document_struct(value, id2name), covers)
+                for key, value in docmap.items()}
     widgets = doc.get("widgetCommonMap") or {}
     chapters = []
     for chapter in doc.get("chapterGroup") or []:
@@ -38,12 +72,14 @@ def build_operator(entry, id2name):
             tabs = []
             for tab_id, tab in tabs_by_id.items():
                 label = tab_labels.get(str(tab_id), {})
+                intro = clean_intro(tab.get("intro"))
                 audios = [a for a in (clean_audio(x) for x in tab.get("audioList") or []) if a]
                 content_id = tab.get("content")
                 tabs.append({
                     "id": str(tab_id),
-                    "title": str(label.get("title") or widget_ref.get("title") or "详情"),
+                    "title": str(label.get("title") or (intro or {}).get("name") or widget_ref.get("title") or "详情"),
                     "icon": str(label.get("icon") or ""),
+                    "intro": intro,
                     "blocks": rendered.get(content_id, []) if content_id else [],
                     "audios": audios,
                 })
@@ -79,11 +115,12 @@ def main():
     with open(fname, encoding="utf-8") as f:
         data = json.load(f)
     id2name = build_id2name(data["catalog"])
+    covers = build_cover_map(data["catalog"])
     operators = {}
     for entry in data["catalog"]:
         if entry.get("subTypeName") != "干员":
             continue
-        operator = build_operator(entry, id2name)
+        operator = build_operator(entry, id2name, covers)
         operators[operator["item_id"]] = operator
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
     with open(args.out, "w", encoding="utf-8") as f:

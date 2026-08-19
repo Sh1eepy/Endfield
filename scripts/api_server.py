@@ -19,7 +19,8 @@ import os
 import sys
 import time
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -78,6 +79,32 @@ def health_deep():
 def rag_metrics():
     from rag_monitor import monitor
     return monitor.snapshot()
+
+
+@app.get("/api/media")
+def media_proxy(url: str):
+    """同源代理 WIKI 图片/音频；严格白名单，避免浏览器跨域与防盗链差异。"""
+    from urllib.parse import urlparse
+    import httpx
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or parsed.hostname != "bbs.hycdn.cn":
+        raise HTTPException(status_code=400, detail="仅允许 WIKI CDN 媒体")
+    if not (parsed.path.startswith("/image/") or parsed.path.startswith("/audio/")):
+        raise HTTPException(status_code=400, detail="不支持的媒体路径")
+    try:
+        upstream = httpx.get(url, headers={"Referer": "https://wiki.skland.com/",
+                                           "User-Agent": "EndfieldArchive/1.0"},
+                             timeout=25, follow_redirects=True)
+        upstream.raise_for_status()
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"媒体上游不可用:{type(exc).__name__}") from exc
+    if len(upstream.content) > 25 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="媒体文件过大")
+    content_type = upstream.headers.get("content-type", "application/octet-stream").split(";")[0]
+    if not (content_type.startswith("image/") or content_type.startswith("audio/")):
+        raise HTTPException(status_code=415, detail="上游不是图片或音频")
+    return Response(upstream.content, media_type=content_type,
+                    headers={"Cache-Control": "public, max-age=86400"})
 
 
 # ===================== WIKI 合成树 =====================

@@ -74,6 +74,10 @@ class ApiSmokeTests(unittest.TestCase):
     def test_health(self):
         self.assertEqual(api_server.health()["status"], "ok")
 
+    def test_media_proxy_rejects_non_wiki_hosts_without_network(self):
+        with self.assertRaises(api_server.HTTPException):
+            api_server.media_proxy("https://example.com/image/a.png")
+
     def test_deep_health_reports_index_and_llm_without_network(self):
         result = api_server.health_deep()
         self.assertIn(result["status"], {"ok", "degraded"})

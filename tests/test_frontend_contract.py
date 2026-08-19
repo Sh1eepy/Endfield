@@ -29,7 +29,8 @@ class FrontendContractTests(unittest.TestCase):
 
     def test_operator_dossier_supports_tabs_styles_media_and_audio(self):
         for token in ("renderOperatorDetail", "operator-chapter-nav", "data-op-tab",
-                      "tone-rank-yellow", "operator-audio-list", "new Audio("):
+                      "tone-rank-yellow", "operator-audio-list", "new Audio(",
+                      "operator-scroll-status", "operator-video", "mediaSrc("):
             self.assertIn(token, HTML)
 
 

@@ -192,6 +192,11 @@ def render_block_struct(bv, blockmap, id2name):
                            "alt": ((bv.get("image") or {}).get("description") or "").strip()})
     elif kind == "horizontalLine":
         blocks.append({"t": "hr"})
+    elif kind == "externalVideo":
+        video = bv.get("externalVideo") or {}
+        if video.get("id"):
+            blocks.append({"t": "video", "id": str(video["id"]),
+                           "kind": str(video.get("kind") or "skland")})
     elif kind == "list":
         lst = bv.get("list") or {}
         for iid in lst.get("itemIds") or []:

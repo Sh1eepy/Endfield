@@ -27,6 +27,8 @@ class OperatorDetailsTests(unittest.TestCase):
         raw = json.dumps(self.data, ensure_ascii=False)
         self.assertIn('"color": "light_rank_yellow"', raw)
         self.assertIn('"t": "img"', raw)
+        self.assertIn('"t": "video"', raw)
+        self.assertIn('"img": "https://bbs.hycdn.cn/image/', raw)
         self.assertIn('"url": "https://bbs.hycdn.cn/audio/', raw)
 
 
