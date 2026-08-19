@@ -566,7 +566,8 @@ def enum_lookup(query, limit=40):
                 if any(k in n for k in keywords) and n not in matched:
                     matched.append(n)
         if matched:
-            return {"label": label, "names": sorted(matched)[:limit]}
+            return {"label": label, "category": category,
+                    "names": sorted(matched)[:limit]}
     return None
 
 
@@ -680,7 +681,8 @@ def ask(query, top_k=5, gen_answer_=False):
                   "route_used": "enum", "enum": enum,
                   "names": enum["names"], "count": len(enum["names"])}
         if gen_answer_ and llm.available():
-            names_list = "、".join(enum["names"][:40])
+            enum_names = enum["names"][:40]
+            names_list = "\n".join(f"[来源{i + 1}] {name}" for i, name in enumerate(enum_names))
             try:
                 ans = llm.chat(
                     f"知识库中{enum['label']}相关条目如下：\n{names_list}\n\n"
@@ -688,6 +690,10 @@ def ask(query, top_k=5, gen_answer_=False):
                     system=GEN_SYSTEM, temperature=0.3, max_tokens=800)
                 result["answer"] = ans
                 result["rejected"] = False
+                result["sources"] = [
+                    {"name": name, "category": enum["category"], "score": 1.0}
+                    for name in enum_names
+                ]
             except Exception:
                 pass
         return result

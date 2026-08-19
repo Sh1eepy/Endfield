@@ -17,6 +17,7 @@ api_server.py — 终末地配方合成树 API（FastAPI）
 import json
 import os
 import sys
+import time
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -60,6 +61,23 @@ app.add_middleware(
 @app.get("/api/health")
 def health():
     return {"status": "ok", "service": "endfield-wiki-agent"}
+
+
+@app.get("/api/health/deep")
+def health_deep():
+    """无外网、无费用的索引深度检查；LLM 只报告脱敏配置状态。"""
+    from rag_audit import audit_index
+    from llm_client import llm
+    result = audit_index()
+    result["service"] = "endfield-wiki-agent"
+    result["llm"] = llm.config_summary()
+    return result
+
+
+@app.get("/api/metrics")
+def rag_metrics():
+    from rag_monitor import monitor
+    return monitor.snapshot()
 
 
 # ===================== WIKI 合成树 =====================
@@ -338,7 +356,15 @@ def ask_endpoint(req: AskRequest):
     请求体: {"query": "重息壤是什么", "top_k": 5, "gen_answer": true}
     """
     from rag_ask import ask
-    return ask(req.query, top_k=req.top_k, gen_answer_=req.gen_answer)
+    from rag_monitor import monitor
+    started = time.perf_counter()
+    try:
+        result = ask(req.query, top_k=req.top_k, gen_answer_=req.gen_answer)
+        monitor.observe(result, (time.perf_counter() - started) * 1000, req.gen_answer)
+        return result
+    except Exception as exc:
+        monitor.observe(None, (time.perf_counter() - started) * 1000, req.gen_answer, error=exc)
+        raise
 
 
 # ---- 静态前端（web/ 目录），放在最后挂载以免覆盖 /api/* ----

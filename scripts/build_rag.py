@@ -37,7 +37,8 @@ import sys
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
 os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
-sys.stdout.reconfigure(encoding="utf-8")
+if sys.stdout:
+    sys.stdout.reconfigure(encoding="utf-8")
 
 import jieba
 from rank_bm25 import BM25Okapi
@@ -332,6 +333,14 @@ def main():
     print("\n".join(report))
     with open(os.path.join(out_dir, "report.txt"), "w", encoding="utf-8") as f:
         f.write("\n".join(report))
+
+    # 统一落盘机器可读审计结果，供发布门禁与深度健康检查使用。
+    from rag_audit import audit_index
+    status = audit_index(out_dir)
+    with open(os.path.join(out_dir, "build_status.json"), "w", encoding="utf-8") as f:
+        json.dump(status, f, ensure_ascii=False, indent=2)
+    if not status["consistent"]:
+        print("索引审计警告: " + "; ".join(status["issues"]))
 
 
 if __name__ == "__main__":

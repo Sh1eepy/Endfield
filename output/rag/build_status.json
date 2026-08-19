@@ -1,0 +1,13 @@
+{
+  "status": "ok",
+  "consistent": true,
+  "checked_at": "2026-08-19T03:42:49.137019+00:00",
+  "index_built_at": "2026-08-17T09:21:27.081114+00:00",
+  "source_fingerprint": "9c41f2ec52aaa77db8be84a01ba639e9550a258e6964b47f303419fa3d3ae0f9",
+  "kb_entries": 1958,
+  "manifest_entries": 1958,
+  "manifest_chunks": 3402,
+  "chroma_chunks": 3402,
+  "bm25_inconsistent_categories": [],
+  "issues": []
+}

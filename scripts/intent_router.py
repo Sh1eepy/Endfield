@@ -102,7 +102,7 @@ def classify_batch(queries):
     out = {}
     llm_qs = []
     for q in queries:
-        intent, conf, method = _rule_classify(q)
+        intent, conf = _rule_classify(q)
         if intent:
             out[q] = (intent, conf, "rule")
         else:
@@ -111,17 +111,19 @@ def classify_batch(queries):
     if llm_qs and llm.available():
         try:
             d = llm.chat_json(
-                "对以下每条查询判断意图类别（配方/设备/知识/比较/数值），输出 JSON 字典，键为查询原文。\n查询列表：\n" +
-                "\n".join(f"- {q}" for q in llm_qs),
-                system="你是意图分类器，只输出 JSON。", temperature=0.1, max_tokens=600)
+                "对每条查询判断意图。只输出形如 "
+                '{"results":[{"index":0,"intent":"知识","confidence":0.9}]} 的JSON。\n'
+                "类别只能是：配方、设备、知识、比较、数值。\n查询列表：\n" +
+                "\n".join(f"{i}. {q}" for i, q in enumerate(llm_qs)),
+                system="你是意图分类器，必须按输入index逐条返回，只输出JSON。", temperature=0.1, max_tokens=1200)
+            for item in d.get("results", []):
+                idx = item.get("index")
+                intent = str(item.get("intent") or "").strip()
+                if isinstance(idx, int) and 0 <= idx < len(llm_qs) and intent in {"配方", "设备", "知识", "比较", "数值"}:
+                    out[llm_qs[idx]] = (intent, float(item.get("confidence") or CONF_LLM), "llm")
+        except Exception as exc:
             for q in llm_qs:
-                item = d.get(q)
-                if isinstance(item, dict):
-                    intent = str(item.get("intent") or "").strip()
-                    if intent in {"配方", "设备", "知识", "比较", "数值"}:
-                        out[q] = (intent, float(item.get("confidence") or CONF_LLM), "llm")
-        except Exception:
-            pass
+                out[q] = (None, 0.0, "llm_failed:" + type(exc).__name__)
     return out
 
 

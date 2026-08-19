@@ -1,0 +1,6 @@
+{"query":"重息壤是什么？","required_terms":["重息壤","息壤"],"acceptable_sources":["重息壤"],"should_refuse":false}
+{"query":"佩丽卡怎么玩？","required_terms":["佩丽卡"],"acceptable_sources":["佩丽卡(干员)","佩丽卡玩家攻略"],"should_refuse":false}
+{"query":"解锁武陵需要做什么任务？","required_terms":["武陵","任务"],"acceptable_sources":["第二章-进程Ⅰ-初探武陵"],"should_refuse":false}
+{"query":"终末地目前有哪些主线任务？","required_terms":["主线","任务"],"acceptable_sources":[],"should_refuse":false}
+{"query":"不存在的材料量子香蕉怎么合成？","required_terms":[],"acceptable_sources":[],"should_refuse":true}
+{"query":"资料里完全没有的火星城市什么时候开放？","required_terms":[],"acceptable_sources":[],"should_refuse":true}

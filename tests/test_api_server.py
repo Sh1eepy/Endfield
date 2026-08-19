@@ -74,6 +74,21 @@ class ApiSmokeTests(unittest.TestCase):
     def test_health(self):
         self.assertEqual(api_server.health()["status"], "ok")
 
+    def test_deep_health_reports_index_and_llm_without_network(self):
+        result = api_server.health_deep()
+        self.assertIn(result["status"], {"ok", "degraded"})
+        self.assertGreater(result["manifest_chunks"], 0)
+        self.assertIn("key_configured", result["llm"])
+
+    def test_metrics_count_ask_requests(self):
+        from rag_monitor import monitor
+        before = monitor.snapshot()["counts"].get("requests", 0)
+        with patch("rag_ask.ask", return_value={"ok": True, "route_used": "rag", "hits": []}):
+            api_server.ask_endpoint(api_server.AskRequest(query="测试", gen_answer=True))
+        snap = monitor.snapshot()
+        self.assertEqual(snap["counts"]["requests"], before + 1)
+        self.assertGreaterEqual(snap["counts"]["empty_retrieval"], 1)
+
     def test_blank_query_is_rejected(self):
         result = api_server.synthesis("   ")
         self.assertFalse(result["ok"])

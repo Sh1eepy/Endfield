@@ -191,6 +191,29 @@ python scripts/gen_jieba_dict.py    # → scripts/dict_zh.txt（1789 词）
 扫描配方库+知识库名称，凡是 jieba 会切碎的名称收进词典；`build_rag.py` / `rag_search.py`
 启动时自动加载，防止"重息壤/向心之引"被切碎导致 BM25 失配。
 
+### 20. RAG 审计、监控与端到端评测
+
+```bash
+# 核对知识库、manifest、Chroma、BM25 分片和 mention 索引
+python scripts/rag_audit.py --fail-on-error
+
+# 25 条独立意图/路由集；加 --allow-llm 才调用在线意图兜底
+python scripts/eval_pipeline.py --allow-llm
+
+# 6 条答案/拒答小型黄金集；--judge 会产生在线调用
+python scripts/eval_answers.py --judge
+
+# 汇总索引、召回、路由和答案指标，任一低于阈值即返回非零退出码
+python scripts/quality_gate.py
+```
+
+新增 API：`GET /api/health/deep` 做索引全链路一致性检查（LLM 仅检查配置，不产生费用）；
+`GET /api/metrics` 返回当前进程的请求数、错误率、路由分布、空检索率、LLM 降级率与
+p50/p95/max 延迟。指标是进程内滚动数据，服务重启会清零；生产部署可再接 Prometheus。
+
+GitHub Actions 的 `rag-quality.yml` 会执行无网络单元测试和落盘指标门禁。在线 LLM 评判结果
+由维护者显式刷新后提交，CI 不读取密钥、也不产生模型费用。
+
 ## 注意
 - 输出一律写 UTF-8 文件，不要只 print 到终端（Windows GBK 乱码）
 - 模型加载必须离线（HF_HUB_OFFLINE + local_files_only）

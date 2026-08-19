@@ -1,0 +1,262 @@
+{
+  "summary": {
+    "n": 25,
+    "intent_accuracy": 0.92,
+    "classified_rate": 1.0,
+    "accuracy_on_classified": 0.92,
+    "route_accuracy": 0.92,
+    "llm_enabled": true
+  },
+  "details": [
+    {
+      "query": "重息壤怎么合成",
+      "gold_intent": "配方",
+      "pred_intent": "配方",
+      "intent_method": "rule",
+      "confidence": 1.0,
+      "route_used": "structured",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "制造碳块需要哪些材料",
+      "gold_intent": "配方",
+      "pred_intent": "配方",
+      "intent_method": "rule",
+      "confidence": 1.0,
+      "route_used": "structured",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "工业爆炸物的配方是什么",
+      "gold_intent": "配方",
+      "pred_intent": "配方",
+      "intent_method": "rule",
+      "confidence": 1.0,
+      "route_used": "structured",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "中容谷地电池用什么机器生产",
+      "gold_intent": "配方",
+      "pred_intent": "设备",
+      "intent_method": "rule",
+      "confidence": 1.0,
+      "route_used": "structured",
+      "intent_ok": false,
+      "route_ok": true
+    },
+    {
+      "query": "紫晶装备原件怎么造",
+      "gold_intent": "配方",
+      "pred_intent": "配方",
+      "intent_method": "rule",
+      "confidence": 1.0,
+      "route_used": "structured",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "粉碎机能生产什么",
+      "gold_intent": "设备",
+      "pred_intent": "设备",
+      "intent_method": "rule",
+      "confidence": 1.0,
+      "route_used": "structured",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "天有洪炉是什么设备",
+      "gold_intent": "设备",
+      "pred_intent": "设备",
+      "intent_method": "rule",
+      "confidence": 1.0,
+      "route_used": "structured",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "种植机可以加工哪些东西",
+      "gold_intent": "设备",
+      "pred_intent": "设备",
+      "intent_method": "llm",
+      "confidence": 0.9,
+      "route_used": "structured",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "精炼炉有什么用途",
+      "gold_intent": "设备",
+      "pred_intent": "设备",
+      "intent_method": "rule",
+      "confidence": 1.0,
+      "route_used": "structured",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "水驱矿机能干什么",
+      "gold_intent": "设备",
+      "pred_intent": "设备",
+      "intent_method": "rule",
+      "confidence": 1.0,
+      "route_used": "structured",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "重息壤是什么",
+      "gold_intent": "知识",
+      "pred_intent": "知识",
+      "intent_method": "rule",
+      "confidence": 1.0,
+      "route_used": "rag",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "介绍一下佩丽卡的背景",
+      "gold_intent": "知识",
+      "pred_intent": "知识",
+      "intent_method": "rule",
+      "confidence": 1.0,
+      "route_used": "rag",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "武陵地区有什么特点",
+      "gold_intent": "知识",
+      "pred_intent": "知识",
+      "intent_method": "llm",
+      "confidence": 0.9,
+      "route_used": "rag",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "向心之引的背景资料是什么",
+      "gold_intent": "知识",
+      "pred_intent": "知识",
+      "intent_method": "rule",
+      "confidence": 1.0,
+      "route_used": "rag",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "阿伯莉的密档讲了什么",
+      "gold_intent": "知识",
+      "pred_intent": "知识",
+      "intent_method": "llm",
+      "confidence": 0.9,
+      "route_used": "rag",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "负山和向心之引有什么区别",
+      "gold_intent": "比较",
+      "pred_intent": "比较",
+      "intent_method": "rule",
+      "confidence": 1.0,
+      "route_used": "rag",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "佩丽卡与陈千语哪个更适合新手",
+      "gold_intent": "比较",
+      "pred_intent": "比较",
+      "intent_method": "rule",
+      "confidence": 1.0,
+      "route_used": "rag",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "矿场传动轮和矿场护腕哪个好",
+      "gold_intent": "比较",
+      "pred_intent": "比较",
+      "intent_method": "rule",
+      "confidence": 1.0,
+      "route_used": "rag",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "碳块与重息壤用途有什么不同",
+      "gold_intent": "比较",
+      "pred_intent": "比较",
+      "intent_method": "llm",
+      "confidence": 0.9,
+      "route_used": "structured",
+      "intent_ok": true,
+      "route_ok": false
+    },
+    {
+      "query": "粉碎机和精炼炉的功能有什么区别",
+      "gold_intent": "比较",
+      "pred_intent": "比较",
+      "intent_method": "rule",
+      "confidence": 1.0,
+      "route_used": "rag",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "佩丽卡满级属性是多少",
+      "gold_intent": "数值",
+      "pred_intent": "数值",
+      "intent_method": "rule",
+      "confidence": 1.0,
+      "route_used": "rag",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "负山强化到满级需要多少材料",
+      "gold_intent": "数值",
+      "pred_intent": "数值",
+      "intent_method": "rule",
+      "confidence": 1.0,
+      "route_used": "rag",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "向心之引的技能倍率是多少",
+      "gold_intent": "数值",
+      "pred_intent": "数值",
+      "intent_method": "rule",
+      "confidence": 1.0,
+      "route_used": "rag",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "诀精英化总共需要多少折金票",
+      "gold_intent": "数值",
+      "pred_intent": "数值",
+      "intent_method": "llm",
+      "confidence": 0.9,
+      "route_used": "rag",
+      "intent_ok": true,
+      "route_ok": true
+    },
+    {
+      "query": "工业爆炸物一次生产几个",
+      "gold_intent": "数值",
+      "pred_intent": "配方",
+      "intent_method": "rule",
+      "confidence": 1.0,
+      "route_used": "structured",
+      "intent_ok": false,
+      "route_ok": false
+    }
+  ]
+}

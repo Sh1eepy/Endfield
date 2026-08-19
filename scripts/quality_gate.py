@@ -1,0 +1,59 @@
+# -*- coding: utf-8 -*-
+"""离线质量门禁：检查索引一致性和已落盘评测指标。"""
+import argparse
+import json
+import os
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def load(path):
+    return json.load(open(os.path.join(ROOT, path), encoding="utf-8"))
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--min-recall", type=float, default=.98)
+    ap.add_argument("--min-mrr", type=float, default=.93)
+    ap.add_argument("--min-intent", type=float, default=.85)
+    ap.add_argument("--min-route", type=float, default=.90)
+    ap.add_argument("--min-refusal", type=float, default=.90)
+    ap.add_argument("--min-citation", type=float, default=.90)
+    ap.add_argument("--min-source-overlap", type=float, default=.60)
+    ap.add_argument("--min-judge-faithfulness", type=float, default=1.50)
+    args = ap.parse_args()
+    failures = []
+    status = load("output/rag/build_status.json")
+    retrieval = load("output/eval/final_reviewed.json")["summary"]["overall"]
+    if not status.get("consistent"):
+        failures.append("index_inconsistent:" + ";".join(status.get("issues", [])))
+    if retrieval["recall"] < args.min_recall:
+        failures.append(f"recall:{retrieval['recall']}<{args.min_recall}")
+    if retrieval["mrr"] < args.min_mrr:
+        failures.append(f"mrr:{retrieval['mrr']}<{args.min_mrr}")
+    pipeline_path = os.path.join(ROOT, "output/eval/pipeline_result.json")
+    if os.path.exists(pipeline_path):
+        p = json.load(open(pipeline_path, encoding="utf-8"))["summary"]
+        # 正式意图门禁只接受包含 LLM 兜底的完整评测；离线规则报告用于暴露覆盖缺口。
+        if p.get("llm_enabled") and p["intent_accuracy"] < args.min_intent:
+            failures.append(f"intent_accuracy:{p['intent_accuracy']}<{args.min_intent}")
+        if p["route_accuracy"] < args.min_route:
+            failures.append(f"route_accuracy:{p['route_accuracy']}<{args.min_route}")
+    answer_path = os.path.join(ROOT, "output/eval/answer_result.json")
+    if os.path.exists(answer_path):
+        a = json.load(open(answer_path, encoding="utf-8"))["summary"]
+        for key, threshold in (("refusal_correct", args.min_refusal),
+                               ("citation_present", args.min_citation),
+                               ("source_overlap", args.min_source_overlap)):
+            if a[key] < threshold:
+                failures.append(f"{key}:{a[key]}<{threshold}")
+        faithfulness = (a.get("judge") or {}).get("faithfulness")
+        if faithfulness is not None and faithfulness < args.min_judge_faithfulness:
+            failures.append(f"judge_faithfulness:{faithfulness}<{args.min_judge_faithfulness}")
+    print(json.dumps({"passed": not failures, "failures": failures}, ensure_ascii=False, indent=2))
+    if failures:
+        raise SystemExit(1)
+
+
+if __name__ == "__main__":
+    main()
