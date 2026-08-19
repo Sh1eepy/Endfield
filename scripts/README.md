@@ -65,6 +65,16 @@ python scripts/extract_media.py          # → output/item_media.json
 python scripts/remove_edge_background.py input.jpg web/assets/mascots/output.png
 ```
 
+### 6.2 `build_operator_details.py` — 构建干员详情结构库
+
+```bash
+python scripts/build_operator_details.py   # → output/operator_details.json
+```
+
+从原始 WIKI 组件完整提取干员基本信息、章节/页签、富文本颜色与粗体、表格、图片、技能动态图、
+潜能与明信片、档案、官方演示以及多语种语音。详情数据不进入 RAG 切片，直接由前端结构化渲染，
+避免 Top-K 或文本切片破坏表格和媒体关系。`inspect_wiki_entry.py 名称` 可审计单条原始组件结构。
+
 ## RAG 层工具
 
 ### 7. `build_rag.py` — RAG 索引构建 / 增量更新

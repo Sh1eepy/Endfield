@@ -143,7 +143,14 @@ def render_inline_struct(els, id2name):
         if k == "text":
             t = (el.get("text") or {}).get("text") or ""
             if t:
-                out.append({"t": "text", "x": t})
+                item = {"t": "text", "x": t}
+                if el.get("bold"):
+                    item["b"] = True
+                if el.get("italic"):
+                    item["i"] = True
+                if el.get("color"):
+                    item["color"] = str(el["color"])
+                out.append(item)
         elif k == "entry":
             ent = el.get("entry") or {}
             eid = str(ent.get("id") or "")
@@ -175,11 +182,16 @@ def render_block_struct(bv, blockmap, id2name):
     if kind == "text":
         els = render_inline_struct((bv.get("text") or {}).get("inlineElements") or [], id2name)
         if els:
-            blocks.append({"t": "para", "c": els})
+            blocks.append({"t": "para", "c": els,
+                           "kind": (bv.get("text") or {}).get("kind", "body"),
+                           "align": bv.get("align", "left")})
     elif kind == "image":
         u = ((bv.get("image") or {}).get("url") or "").strip()
         if u:
-            blocks.append({"t": "img", "u": u})
+            blocks.append({"t": "img", "u": u,
+                           "alt": ((bv.get("image") or {}).get("description") or "").strip()})
+    elif kind == "horizontalLine":
+        blocks.append({"t": "hr"})
     elif kind == "list":
         lst = bv.get("list") or {}
         for iid in lst.get("itemIds") or []:
@@ -403,4 +415,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

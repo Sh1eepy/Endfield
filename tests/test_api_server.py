@@ -127,6 +127,17 @@ class ApiSmokeTests(unittest.TestCase):
         self.assertTrue(result["no_recipe"])
         self.assertEqual(result["kb"]["name"], "诀")
 
+    def test_operator_detail_contains_tabs_media_and_audio(self):
+        result = api_server.synthesis("佩丽卡")
+        self.assertTrue(result["ok"])
+        detail = result["kb"]["operator_detail"]
+        chapter_names = {x["title"] for x in detail["chapters"]}
+        self.assertIn("能力扩延", chapter_names)
+        self.assertIn("语音记录", chapter_names)
+        widgets = [w for c in detail["chapters"] for w in c["widgets"]]
+        self.assertTrue(any(w["title"] == "干员信息" and w["facts"] for w in widgets))
+        self.assertTrue(any(a.get("url") for w in widgets for t in w["tabs"] for a in t["audios"]))
+
     def test_names_are_sorted_unique_and_cached(self):
         first = api_server.names()
         second = api_server.names()

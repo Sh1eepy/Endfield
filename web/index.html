@@ -375,6 +375,19 @@ body{font-family:"Endfield CN","Microsoft YaHei UI",sans-serif;font-size:15px}.b
 @media(max-width:850px){.hero::before{width:86px;height:86px;right:4%;top:48px}.geo-d{width:260px;height:260px}.geo-e{right:-120px}.entry-curtain::before{width:86px;height:86px}}
 @media(max-width:850px){.brand-mark{width:56px}.hero-logo{width:92px;top:38px;right:0;opacity:.3}.mascot-search{width:70px;right:8px;top:58px;opacity:.52}.mascot-panel,.mascot-rail{display:none}.query-row{padding-right:82px}.panel-head{padding-right:20px}.bg-mascot{opacity:.045}.bg-char-3,.bg-char-4,.bg-char-5{display:none}.command-shell,.panel{clip-path:polygon(16px 0,78% 0,calc(78% + 8px) 5px,100% 5px,calc(100% - 14px) 100%,20% 100%,calc(20% - 8px) calc(100% - 5px),0 calc(100% - 5px))}.entry-logo-plate{width:180px;height:104px}.entry-curtain::before{width:240px;height:150px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.entry-curtain{display:none}.reveal-on-scroll{opacity:1!important;transform:none!important;filter:none!important}}
+
+/* ===== v7 / operator intelligence dossier ===== */
+.operator-dossier{--op-blue:#1737d1;--op-gold:#b79200;display:grid;gap:18px;padding-bottom:30px}
+.operator-hero{min-height:210px;display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,36%);position:relative;overflow:hidden;background:linear-gradient(118deg,#11140f 0 58%,#1737d1 58% 59%,#f0cf16 59%);color:#fff;clip-path:polygon(0 0,100% 0,100% calc(100% - 24px),calc(100% - 24px) 100%,0 100%);box-shadow:10px 13px 0 rgba(23,55,209,.17)}
+.operator-hero-copy{padding:28px 30px;position:relative;z-index:2}.operator-code{font:800 10px/1 "Endfield Tech",monospace;letter-spacing:.2em;color:#f0cf16}.operator-name{font-size:clamp(34px,6vw,66px);font-weight:950;line-height:1;margin:15px 0 12px;letter-spacing:-.06em}.operator-caption{max-width:660px;color:#dfe2da;font-size:14px;line-height:1.8}.operator-visual{width:100%;height:100%;min-height:210px;object-fit:contain;object-position:center bottom;filter:drop-shadow(-16px 0 0 rgba(255,255,255,.13));animation:operatorFloat 7s ease-in-out infinite alternate}@keyframes operatorFloat{to{transform:translate3d(7px,-5px,0) scale(1.025)}}
+.operator-chapter-nav,.operator-tabs{display:flex;gap:7px;overflow-x:auto;padding:4px 2px 9px;scrollbar-width:thin}.operator-nav-btn,.operator-tab-btn{flex:0 0 auto;border:1px solid #aaa99f;background:#fff;color:#343831;padding:9px 14px;font:800 12px/1.2 "Endfield CN",sans-serif;cursor:pointer;transition:.22s;clip-path:polygon(7px 0,100% 0,calc(100% - 7px) 100%,0 100%)}.operator-nav-btn:hover,.operator-tab-btn:hover{transform:translateY(-2px);border-color:var(--op-blue);box-shadow:3px 4px 0 rgba(23,55,209,.14)}.operator-nav-btn.active{background:#151812;color:#fff;border-color:#151812;box-shadow:inset 0 -4px 0 #f0cf16,5px 6px 0 rgba(23,55,209,.2)}.operator-tab-btn.active{background:#f0cf16;color:#111;border-color:#bfa700}.operator-tab-btn img{width:30px;height:30px;display:block;object-fit:contain;margin:auto}.operator-tab-btn.has-icon{min-width:52px;padding:5px 10px}
+.operator-chapter{display:none}.operator-chapter.active{display:grid;gap:16px;animation:operatorPanelIn .42s cubic-bezier(.2,.8,.2,1)}@keyframes operatorPanelIn{from{opacity:0;transform:translateX(22px) rotate(.25deg);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
+.operator-widget{position:relative;border:1px solid #bbb9af;background:rgba(255,255,255,.88);padding:18px 19px 20px;box-shadow:inset 0 -2px 0 var(--op-blue),8px 10px 0 rgba(23,55,209,.08);clip-path:polygon(13px 0,100% 0,100% calc(100% - 13px),calc(100% - 13px) 100%,0 100%,0 13px)}.operator-widget::before{content:"";position:absolute;left:0;top:0;width:74px;height:4px;background:#f0cf16}.operator-widget-title{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}.operator-widget-title h3{font-size:21px;font-weight:950;color:#171a15}.operator-widget-title span{font:700 9px/1 "Endfield Tech",monospace;letter-spacing:.16em;color:#73786f}
+.operator-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));border-top:1px solid #d5d4cc;border-left:1px solid #d5d4cc}.operator-fact{min-height:76px;padding:11px 13px;background:linear-gradient(135deg,#fff,#f3f2ec);border-right:1px solid #d5d4cc;border-bottom:1px solid #d5d4cc}.operator-fact-label{font:800 10px/1.2 "Endfield Tech",sans-serif;letter-spacing:.12em;color:#777c73;text-transform:uppercase}.operator-fact-value{font-size:16px;font-weight:850;color:#171a15;margin-top:8px;line-height:1.4}.operator-pane{display:none}.operator-pane.active{display:block;animation:operatorPanelIn .32s ease}.operator-pane .kb-table-wrap{overflow-x:auto;padding:0 7px 10px 0}.operator-pane .kb-table{min-width:680px;background:#fff}.operator-pane .kb-table td{padding:9px 11px;white-space:normal}.operator-pane .kb-table td.th{position:sticky;top:0;background:#e9e8e1}.operator-pane .kb-table td:first-child{font-weight:800;background:#f2f1eb;min-width:118px}.operator-pane .kb-entry{display:inline-flex;margin:3px 7px 3px 0;padding:3px 7px;background:#eef1ff;border-left:2px solid var(--op-blue);white-space:normal}.operator-pane .kb-img-wrap{margin:13px 0}.operator-pane .kb-img{max-height:620px;background:#eeede7;box-shadow:7px 9px 0 rgba(23,55,209,.13);border-radius:0}.operator-pane .kb-paragraph{margin:8px 0;padding:9px 12px;border-left:2px solid #d1d0c8;background:rgba(247,246,241,.8);font-size:14px;line-height:1.85}.operator-pane .kb-heading3{font-size:18px;font-weight:900;border-left:5px solid #f0cf16}.operator-pane .kb-center{text-align:center}.operator-pane .kb-hr{height:1px;background:linear-gradient(90deg,#f0cf16,var(--op-blue),transparent);margin:14px 0;border:0}
+.tone-rank-yellow,.tone-function-yellow{color:#a68100!important;font-weight:900;text-shadow:0 1px 0 #fff3a6}.tone-rank-orange,.tone-function-orange{color:#d05a16!important;font-weight:850}.tone-rank-blue,.tone-function-blue,.tone-function-blueness{color:#1737d1!important;font-weight:800}.tone-rank-green,.tone-function-green{color:#15815a!important}.tone-rank-purple{color:#7d38a8!important}.tone-function-red{color:#bd2637!important}.tone-function-turquoise{color:#00878d!important}.tone-function-sandstone{color:#8a6041!important}.tone-text-tertiary,.tone-text-quaternary{color:#777c73!important}
+.operator-audio-list{display:grid;gap:8px}.operator-audio{display:grid;grid-template-columns:auto minmax(110px,.35fr) 1fr;align-items:center;gap:12px;padding:10px 12px;border:1px solid #d1d0c8;background:linear-gradient(100deg,#fff 0 64%,rgba(23,55,209,.05));transition:.2s}.operator-audio:hover{transform:translateX(3px);border-color:#1737d1}.audio-play{width:38px;height:38px;border:0;background:#171a15;color:#f0cf16;cursor:pointer;clip-path:polygon(18% 0,100% 0,82% 100%,0 100%);font-size:15px}.audio-play.playing{background:#1737d1;color:#fff;animation:audioPulse 1.2s ease-in-out infinite}@keyframes audioPulse{50%{filter:drop-shadow(0 0 7px rgba(23,55,209,.55))}}.audio-title{font-weight:850;color:#191c18}.audio-profile{color:#686d64;font-size:13px;line-height:1.55}.operator-empty{color:#858a81;font-size:13px;padding:16px;border:1px dashed #c7c6bd}
+@media(max-width:700px){.operator-hero{grid-template-columns:1fr}.operator-visual{position:absolute;right:-15%;bottom:0;width:58%;opacity:.28}.operator-hero-copy{padding:24px 20px}.operator-caption{max-width:80%}.operator-widget{padding:16px 12px}.operator-facts{grid-template-columns:1fr 1fr}.operator-audio{grid-template-columns:auto 1fr}.audio-profile{grid-column:1/-1;padding-left:50px}}
+@media(max-width:460px){.operator-facts{grid-template-columns:1fr}.operator-name{font-size:40px}.operator-caption{max-width:100%}.operator-visual{display:none}}
 </style>
 </head>
 <body>
@@ -839,7 +852,14 @@ function renderInline(c) {
   /* 结构化 inline：text / entry(物品卡片) / link(外链) / img */
   let html = '';
   for (const e of (c || [])) {
-    if (e.t === 'text') html += esc(e.x);
+    if (e.t === 'text') {
+      const tone = String(e.color || '').replace(/^light_/, '').replaceAll('_', '-');
+      const cls = tone ? ` class="tone-${esc(tone)}"` : '';
+      let tx = esc(e.x);
+      if (e.b) tx = `<strong>${tx}</strong>`;
+      if (e.i) tx = `<em>${tx}</em>`;
+      html += `<span${cls}>${tx}</span>`;
+    }
     else if (e.t === 'entry') html +=
       `<span class="kb-entry" data-name="${esc(e.x)}" title="点击查看合成树">${esc(e.x)}${e.c ? `<em class="cnt">×${e.c}</em>` : ''}</span>`;
     else if (e.t === 'link') html +=
@@ -855,20 +875,107 @@ function renderStructBlocks(blocks) {
   for (const b of (blocks || [])) {
     if (b.t === 'para') {
       const tx = renderInline(b.c);
-      if (tx) html += `<div class="msg bot">${tx}</div>`;
+      const kind = b.kind === 'heading3' ? ' kb-heading3' : '';
+      const align = b.align === 'center' ? ' kb-center' : '';
+      if (tx) html += `<div class="kb-paragraph${kind}${align}">${tx}</div>`;
     } else if (b.t === 'img') {
-      html += `<div class="kb-img-wrap"><img class="kb-img" src="${esc(b.u)}" referrerpolicy="no-referrer" loading="lazy"></div>`;
+      html += `<figure class="kb-img-wrap"><img class="kb-img" src="${esc(b.u)}" alt="${esc(b.alt || '')}" referrerpolicy="no-referrer" loading="lazy">${b.alt ? `<figcaption>${esc(b.alt)}</figcaption>` : ''}</figure>`;
     } else if (b.t === 'table') {
-      html += `<table class="kb-table">` + (b.r || []).map((row, ri) =>
+      html += `<div class="kb-table-wrap"><table class="kb-table">` + (b.r || []).map((row, ri) =>
         `<tr>` + (row || []).map(cell =>
           `<td${ri === 0 ? ' class="th"' : ''}>${renderInline(cell) || '&nbsp;'}</td>`).join('') + `</tr>`
-      ).join('') + `</table>`;
+      ).join('') + `</table></div>`;
+    } else if (b.t === 'hr') {
+      html += `<div class="kb-hr"></div>`;
     }
   }
   return html;
 }
 
+function renderOperatorDetail(op) {
+  const visual = op.illustration || op.cover || '';
+  let html = `<div class="operator-dossier">` +
+    `<section class="operator-hero"><div class="operator-hero-copy"><div class="operator-code">OPERATOR / ${esc(op.item_id || '--')}</div>` +
+    `<h2 class="operator-name">${esc(op.name)}</h2><p class="operator-caption">${esc(op.caption || '终末地干员资料档案')}</p></div>` +
+    (visual ? `<img class="operator-visual" src="${esc(visual)}" alt="${esc(op.name)}" referrerpolicy="no-referrer">` : '') + `</section>`;
+  html += `<nav class="operator-chapter-nav" aria-label="干员详情章节">` + (op.chapters || []).map((c, i) =>
+    `<button class="operator-nav-btn${i === 0 ? ' active' : ''}" data-op-chapter="${i}" type="button">${esc(c.title)}</button>`
+  ).join('') + `</nav><div class="operator-chapters">`;
+  (op.chapters || []).forEach((chapter, ci) => {
+    html += `<section class="operator-chapter${ci === 0 ? ' active' : ''}" data-op-panel="${ci}">`;
+    (chapter.widgets || []).forEach((widget, wi) => {
+      const uid = `op-${ci}-${wi}`;
+      html += `<article class="operator-widget"><div class="operator-widget-title"><h3>${esc(widget.title)}</h3><span>${esc(widget.type || 'DATA')} / ${String(wi + 1).padStart(2, '0')}</span></div>`;
+      if (widget.facts && widget.facts.length) {
+        html += `<div class="operator-facts">` + widget.facts.map(f => `<div class="operator-fact"><div class="operator-fact-label">${esc(f.label)}</div><div class="operator-fact-value">${esc(f.value)}</div></div>`).join('') + `</div>`;
+      }
+      if (widget.tabs && widget.tabs.length) {
+        if (widget.tabs.length > 1 || widget.tabs[0].icon) {
+          html += `<div class="operator-tabs" role="tablist">` + widget.tabs.map((t, ti) =>
+            `<button type="button" class="operator-tab-btn${ti === 0 ? ' active' : ''}${t.icon ? ' has-icon' : ''}" data-op-tab="${uid}" data-tab-index="${ti}" title="${esc(t.title)}">${t.icon ? `<img src="${esc(t.icon)}" alt="">` : esc(t.title)}</button>`
+          ).join('') + `</div>`;
+        }
+        widget.tabs.forEach((tab, ti) => {
+          html += `<div class="operator-pane${ti === 0 ? ' active' : ''}" data-tab-panel="${uid}" data-tab-index="${ti}">`;
+          if (tab.blocks && tab.blocks.length) html += renderStructBlocks(tab.blocks);
+          if (tab.audios && tab.audios.length) {
+            html += `<div class="operator-audio-list">` + tab.audios.map(a =>
+              `<div class="operator-audio"><button class="audio-play" type="button" data-audio="${esc(a.url)}" aria-label="播放 ${esc(a.title)}">▶</button><div class="audio-title">${esc(a.title)}</div><div class="audio-profile">${esc(a.profile)}</div></div>`
+            ).join('') + `</div>`;
+          }
+          if ((!tab.blocks || !tab.blocks.length) && (!tab.audios || !tab.audios.length)) html += `<div class="operator-empty">该页签暂无公开内容</div>`;
+          html += `</div>`;
+        });
+      }
+      html += `</article>`;
+    });
+    html += `</section>`;
+  });
+  html += `</div></div>`;
+  $('syn-tree').innerHTML = html;
+  bindOperatorInteractions();
+  bindKbEntries();
+}
+
+let OPERATOR_AUDIO = null;
+let OPERATOR_AUDIO_BUTTON = null;
+function bindOperatorInteractions() {
+  const root = $('syn-tree');
+  root.querySelectorAll('[data-op-chapter]').forEach(btn => btn.addEventListener('click', () => {
+    root.querySelectorAll('[data-op-chapter]').forEach(x => x.classList.toggle('active', x === btn));
+    root.querySelectorAll('[data-op-panel]').forEach(x => x.classList.toggle('active', x.dataset.opPanel === btn.dataset.opChapter));
+  }));
+  root.querySelectorAll('[data-op-tab]').forEach(btn => btn.addEventListener('click', () => {
+    const group = btn.dataset.opTab, index = btn.dataset.tabIndex;
+    root.querySelectorAll(`[data-op-tab="${group}"]`).forEach(x => x.classList.toggle('active', x === btn));
+    root.querySelectorAll(`[data-tab-panel="${group}"]`).forEach(x => x.classList.toggle('active', x.dataset.tabIndex === index));
+  }));
+  root.querySelectorAll('.audio-play').forEach(btn => btn.addEventListener('click', async () => {
+    if (OPERATOR_AUDIO && OPERATOR_AUDIO_BUTTON === btn && !OPERATOR_AUDIO.paused) {
+      OPERATOR_AUDIO.pause(); btn.classList.remove('playing'); btn.textContent = '▶'; return;
+    }
+    if (OPERATOR_AUDIO) OPERATOR_AUDIO.pause();
+    if (OPERATOR_AUDIO_BUTTON) { OPERATOR_AUDIO_BUTTON.classList.remove('playing'); OPERATOR_AUDIO_BUTTON.textContent = '▶'; }
+    OPERATOR_AUDIO = new Audio(btn.dataset.audio); OPERATOR_AUDIO_BUTTON = btn;
+    OPERATOR_AUDIO.preload = 'none'; btn.classList.add('playing'); btn.textContent = 'Ⅱ';
+    OPERATOR_AUDIO.addEventListener('ended', () => { btn.classList.remove('playing'); btn.textContent = '▶'; });
+    OPERATOR_AUDIO.addEventListener('error', () => { btn.classList.remove('playing'); btn.textContent = '!'; btn.title = '音频加载失败'; });
+    try { await OPERATOR_AUDIO.play(); } catch (_) { btn.classList.remove('playing'); btn.textContent = '!'; }
+  }));
+}
+
+function bindKbEntries() {
+  $('syn-tree').querySelectorAll('.kb-entry[data-name]').forEach(el => {
+    el.addEventListener('click', () => {
+      $('in-search').value = el.dataset.name;
+      MODE_QUERIES.syn = el.dataset.name;
+      hideSuggest(); loadSyn();
+    });
+  });
+}
+
 function renderKbCard(kb) {
+  if (kb.operator_detail) { renderOperatorDetail(kb.operator_detail); return; }
   let html = `<div style="color:var(--sub);margin:8px 0 12px;font-size:14px">「<b style="color:var(--accent3)">${esc(kb.name)}</b>」无流水线配方，来自 WIKI 知识库：</div>`;
   if (kb.category) html += `<span class="src-chip" style="margin-bottom:8px;display:inline-flex">${esc(kb.category)}</span>`;
   const ss = kb.sections_struct || {};
@@ -885,14 +992,7 @@ function renderKbCard(kb) {
     html += `<div class="msg bot">${esc(kb.full_text)}</div>`;
   }
   $('syn-tree').innerHTML = html;
-  $('syn-tree').querySelectorAll('.kb-entry[data-name]').forEach(el => {
-    el.addEventListener('click', () => {
-      $('in-search').value = el.dataset.name;
-      MODE_QUERIES.syn = el.dataset.name;
-      hideSuggest();
-      loadSyn();
-    });
-  });
+  bindKbEntries();
 }
 
 function renderHead(d) {
@@ -954,7 +1054,7 @@ async function loadSyn() {
     if (d.no_recipe) { renderKbCard(d.kb); }
     else if (d.tree && d.tree.kind === 'device') { renderDeviceCards(d.tree); }
     else { renderTree(d.tree); }
-    renderHead(d);
+    if (!(d.kb && d.kb.operator_detail)) renderHead(d);
   } catch (e) { $('syn-tree').innerHTML = `<div class="msg bot"><span style="color:var(--danger)">${esc(e.message)}</span></div>`; }
 }
 

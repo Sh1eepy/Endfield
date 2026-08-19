@@ -27,6 +27,11 @@ class FrontendContractTests(unittest.TestCase):
     def test_search_has_accessible_name(self):
         self.assertIn('aria-label="搜索物品、设备或知识问题"', HTML)
 
+    def test_operator_dossier_supports_tabs_styles_media_and_audio(self):
+        for token in ("renderOperatorDetail", "operator-chapter-nav", "data-op-tab",
+                      "tone-rank-yellow", "operator-audio-list", "new Audio("):
+            self.assertIn(token, HTML)
+
 
 if __name__ == "__main__":
     unittest.main()

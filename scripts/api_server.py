@@ -117,6 +117,7 @@ def _lookup_item_kb(name):
 
 
 _ITEM_MEDIA = None
+_OPERATOR_DETAILS = None
 
 
 def _load_item_media():
@@ -129,6 +130,18 @@ def _load_item_media():
         except (OSError, ValueError):
             _ITEM_MEDIA = {}
     return _ITEM_MEDIA
+
+
+def _load_operator_details():
+    """加载独立干员详情库；保留 Tab、富文本样式、图片和音频。"""
+    global _OPERATOR_DETAILS
+    if _OPERATOR_DETAILS is None:
+        try:
+            with open(os.path.join(ROOT, "output", "operator_details.json"), encoding="utf-8") as f:
+                _OPERATOR_DETAILS = json.load(f).get("operators") or {}
+        except (OSError, ValueError):
+            _OPERATOR_DETAILS = {}
+    return _OPERATOR_DETAILS
 
 
 def _media_cover(media, iid):
@@ -226,11 +239,16 @@ def _kb_summary(kb):
         if v and str(v).strip():
             sections[str(k)] = str(v)[:300]
     ss = (kb.get("sections_struct") or {}) or {}
-    return {"name": kb.get("name"), "category": kb.get("category"),
-            "item_id": str(kb.get("item_id") or ""),
+    item_id = str(kb.get("item_id") or "")
+    result = {"name": kb.get("name"), "category": kb.get("category"),
+            "item_id": item_id,
             "sections": sections,
             "sections_struct": {str(k): v for k, v in ss.items() if v},
             "full_text": (kb.get("full_text") or "")[:800]}
+    operator = _load_operator_details().get(item_id)
+    if operator:
+        result["operator_detail"] = operator
+    return result
 
 
 @app.get("/api/synthesis")

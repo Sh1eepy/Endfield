@@ -19,6 +19,7 @@
 | 名称建议 | `api_server.py /api/names` | 全部名称（配方物品+设备+知识库条目，1908 个），前端模糊搜索联想 |
 | 媒体结构库 | `output/item_media.json` | extract_media.py 提取：封面图 1957 / 正文图 2046 / 外链 291 / 引用 14693（含数量与链接样式） |
 | 前端 | `web/index.html` | 白色工业制图 v3：纵向真实图片配方树、空查询入口、树工具栏、滚动几何动效与响应式布局 |
+| 干员详情库 | `output/operator_details.json` | 31 名干员；基本信息、富文本颜色、技能/天赋/潜能/档案多 Tab、图片与多语种语音 |
 | 评测 | `eval_retrieval.py` | 71 条查询；当前 Recall@5=100%、MRR=97.3%（`final_reviewed.json`） |
 
 ## 3. 关键文件地图
