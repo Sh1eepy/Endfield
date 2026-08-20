@@ -6,7 +6,7 @@ import unittest
 
 from scripts.build_knowledge_graph import create_schema
 from scripts.graph_search import GraphRetriever, should_route_graph
-from scripts.rag_ask import is_interpretive_relation, relationship_evidence_hits
+from scripts.rag_ask import focus_long_context, is_interpretive_relation, relationship_evidence_hits
 
 
 class GraphRAGTests(unittest.TestCase):
@@ -58,6 +58,12 @@ class GraphRAGTests(unittest.TestCase):
         self.assertTrue(is_interpretive_relation("诀是不是挺中意管理员"))
         self.assertTrue(is_interpretive_relation("狼卫的妹妹是不是很可爱"))
         self.assertFalse(is_interpretive_relation("诀属于哪个组织"))
+
+    def test_long_context_finds_evidence_beyond_prefix(self):
+        text = ("无关的档案开头。" * 300) + "\n关键记录：测试角色的妹妹叫远端答案。\n" + ("无关结尾。" * 80)
+        focused = focus_long_context(text, "测试角色的妹妹叫什么", max_chars=500)
+        self.assertIn("远端答案", focused)
+        self.assertLessEqual(len(focused), 520)
 
 
 if __name__ == "__main__":

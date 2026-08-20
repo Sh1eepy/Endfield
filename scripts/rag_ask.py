@@ -24,6 +24,7 @@ CLI:
 import argparse
 import json
 import os
+import re
 import sys
 
 if sys.stdout:
@@ -691,6 +692,85 @@ GEN_SYSTEM = (
 )
 
 
+QUERY_STOP_WORDS = {
+    "什么", "怎么", "怎样", "如何", "是不是", "是否", "来着", "叫啥", "叫什么", "哪个",
+    "哪里", "为啥", "为什么", "一下", "介绍", "告诉", "这个", "那个", "可以", "觉得",
+}
+
+
+def extract_focus_terms(query):
+    """提取用于长文定位的实体词和语义词，不依赖固定人物或固定关系。"""
+    q = (query or "").strip()
+    if not q:
+        return []
+    terms = []
+    try:
+        import jieba
+        terms.extend(x.strip() for x in jieba.lcut(q) if x.strip())
+    except Exception:
+        terms.extend(re.findall(r"[\u4e00-\u9fffA-Za-z0-9·]{2,}", q))
+    # 已知实体名通常是最强定位词；关系和评价词保证复合问题的每个维度都参与选段。
+    terms.extend(n for n in _get_kb_names() if n and n in q)
+    terms.extend(w for w in RELATION_CUE_WORDS + INTERPRETIVE_WORDS if w in q)
+    cleaned = []
+    for term in terms:
+        term = term.strip("，。！？?、：:（）()的了呢吗呀她他它")
+        if len(term) < 2 or term in QUERY_STOP_WORDS or term in cleaned:
+            continue
+        cleaned.append(term)
+    return sorted(cleaned, key=len, reverse=True)
+
+
+def focus_long_context(text, query, max_chars=1800, max_windows=7):
+    """从全文选取覆盖各查询词的分散证据窗口，避免永远只把前 1500 字交给 LLM。"""
+    text = str(text or "")
+    if len(text) <= max_chars:
+        return text
+    terms = extract_focus_terms(query)
+    if not terms:
+        return text[:max_chars]
+    units = [u.strip() for u in re.split(r"\n+|(?<=[。！？!?])", text) if u.strip()]
+    candidates = []
+    for i, unit in enumerate(units):
+        window = "\n".join(units[max(0, i - 1):min(len(units), i + 2)])
+        covered = tuple(t for t in terms if t in window)
+        if not covered:
+            continue
+        score = sum(5 + min(len(t), 8) for t in covered) + len(covered) * len(covered) * 3
+        candidates.append({"i": i, "text": window, "covered": covered, "score": score})
+    if not candidates:
+        return text[:max_chars]
+
+    selected, used_indexes, covered_terms = [], set(), set()
+    # 先为每个查询词保留它的最佳证据，防止复合问题只覆盖得分最高的一个子问。
+    for term in terms:
+        if term in covered_terms:
+            continue
+        options = [c for c in candidates if term in c["covered"]]
+        if not options:
+            continue
+        best = max(options, key=lambda c: (c["score"], -len(c["text"])))
+        if best["i"] not in used_indexes and not any(abs(best["i"] - x) <= 2 for x in used_indexes):
+            selected.append(best); used_indexes.add(best["i"]); covered_terms.update(best["covered"])
+    for candidate in sorted(candidates, key=lambda c: (-c["score"], len(c["text"]))):
+        if len(selected) >= max_windows:
+            break
+        if candidate["i"] in used_indexes or any(abs(candidate["i"] - x) <= 2 for x in used_indexes):
+            continue
+        selected.append(candidate); used_indexes.add(candidate["i"]); covered_terms.update(candidate["covered"])
+
+    parts, size = [], 0
+    for candidate in sorted(selected, key=lambda c: c["i"]):
+        block = candidate["text"]
+        if size + len(block) > max_chars:
+            block = block[:max(0, max_chars - size)]
+        if block:
+            parts.append(block); size += len(block)
+        if size >= max_chars:
+            break
+    return "\n…\n".join(parts) or text[:max_chars]
+
+
 def gen_answer(query, hits, top_k=5):
     """用在线 LLM 基于检索片段生成带引用的回答。
 
@@ -711,7 +791,8 @@ def gen_answer(query, hits, top_k=5):
         return {"answer": "知识库中未找到足够相关的资料来回答这个问题。",
                 "rejected": True, "hits": hits[:top_k]}
     ctx = "\n\n".join(
-        f"[来源{i+1}] (分类:{h['meta'].get('category')} 名称:{h['meta'].get('name')})\n{h['text'][:1500]}"
+        f"[来源{i+1}] (分类:{h['meta'].get('category')} 名称:{h['meta'].get('name')})\n"
+        f"{focus_long_context(h['text'], query, max_chars=1800)}"
         for i, h in enumerate(hits[:top_k]))
     prompt = f"资料：\n{ctx}\n\n问题：{query}\n\n请回答："
     try:
