@@ -396,10 +396,28 @@ body{font-family:"Endfield CN","Microsoft YaHei UI",sans-serif;font-size:15px}.b
 .kb-entry-icon{width:28px;height:28px;object-fit:contain;flex:0 0 auto;background:#fff;clip-path:polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%)}.operator-intro{display:grid;grid-template-columns:92px 1fr;gap:15px;align-items:center;margin:10px 0 14px;padding:13px;background:linear-gradient(110deg,#121510 0 68%,#1737d1 68%);color:#fff;clip-path:polygon(10px 0,100% 0,calc(100% - 14px) 100%,0 100%)}.operator-intro img{width:92px;height:92px;object-fit:contain;background:rgba(255,255,255,.1);filter:drop-shadow(5px 7px 0 rgba(240,207,22,.25))}.operator-intro h4{font-size:20px}.operator-intro-type{font:800 9px/1 "Endfield Tech",monospace;color:#f0cf16;letter-spacing:.14em;margin:4px 0 8px}.operator-intro p{font-size:13px;color:#d7dbd3;line-height:1.6}.operator-video{display:grid;grid-template-columns:74px 1fr auto;gap:14px;align-items:center;padding:16px;margin:12px 0;background:linear-gradient(120deg,#151812 0 74%,#1737d1 74%);color:#fff;box-shadow:8px 9px 0 rgba(240,207,22,.2);clip-path:polygon(12px 0,100% 0,calc(100% - 16px) 100%,0 100%)}.operator-video-icon{width:64px;height:54px;display:grid;place-items:center;background:#f0cf16;color:#111;font-size:24px;clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%)}.operator-video b{display:block;font-size:16px}.operator-video span{font-size:11px;color:#bac0b6}.operator-video a{background:#fff;color:#1737d1;padding:9px 12px;text-decoration:none;font-weight:900;white-space:nowrap}.media-failed{border:1px dashed #bd2637!important;background:#fff1f2!important}.media-error-note{color:#bd2637;font-size:11px;margin-top:5px}
 @media(max-width:1000px){.workspace{grid-template-columns:1fr}.side-rail{display:none}}@media(max-width:650px){.operator-scroll-status{grid-template-columns:1fr}.operator-scroll-status>span{display:none}.operator-intro{grid-template-columns:64px 1fr}.operator-intro img{width:64px;height:64px}.operator-video{grid-template-columns:54px 1fr}.operator-video-icon{width:50px}.operator-video a{grid-column:1/-1;text-align:center}}
 .operator-media-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:18px;margin:14px 0 22px}.operator-media-card{min-width:0;padding:10px;background:linear-gradient(135deg,#151812 0 9px,#fff 9px);border:1px solid #c8c7be;box-shadow:8px 10px 0 rgba(23,55,209,.11);overflow:hidden}.operator-media-card .kb-media-img{display:block;width:100%;height:auto;min-height:180px;max-height:720px;object-fit:contain;background:#efeee8}.operator-media-card .kb-link{display:block;margin-top:9px;font-weight:800}.operator-media-card .kb-entry{margin-top:8px}
+
+/* v8 / staged mechanical boot sequence */
+.entry-curtain{--boot-progress:0%;position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;min-height:0;z-index:9999;display:grid;place-items:center;overflow:hidden;pointer-events:auto;background:linear-gradient(132deg,#070908 0 48%,#101522 48% 72%,#151b31 72%);animation:none!important;transition:opacity .72s ease,visibility .72s step-end}
+.entry-curtain::before{content:"";position:absolute;inset:-20%;width:auto;height:auto;border:0;border-radius:0;clip-path:none;box-shadow:none;background:repeating-linear-gradient(116deg,transparent 0 82px,rgba(255,255,255,.035) 83px 84px),linear-gradient(116deg,transparent 44%,rgba(23,55,209,.22) 44.2% 47%,transparent 47.2%);animation:entryGridDrift 8s linear infinite!important}
+.entry-curtain::after{content:"TALOS-II / SYSTEM INITIALIZATION";position:absolute;left:clamp(20px,4vw,68px);top:clamp(22px,5vh,54px);color:rgba(255,255,255,.58);font:700 10px/1 "Endfield Tech",Consolas,monospace;letter-spacing:.23em;animation:entryTextIn .7s .18s both!important}
+.entry-mechanism{position:relative;width:min(82vw,720px);height:min(58vh,430px);display:grid;place-items:center;transform-style:preserve-3d}
+.entry-beam{position:absolute;height:44px;width:130%;left:-15%;background:linear-gradient(90deg,transparent 0 7%,#f0cf16 7% 29%,#1a38c8 29% 31%,#171a17 31% 82%,transparent 82%);box-shadow:0 14px 26px rgba(0,0,0,.32);clip-path:polygon(3% 0,100% 0,97% 100%,0 100%);opacity:.9}
+.entry-beam-a{top:12%;transform:translate3d(-80vw,-52vh,0) rotate(-28deg);animation:beamStrikeA 1.05s .2s cubic-bezier(.14,.82,.2,1) forwards}.entry-beam-b{bottom:13%;transform:translate3d(80vw,50vh,0) rotate(-28deg);animation:beamStrikeB 1.08s .36s cubic-bezier(.14,.82,.2,1) forwards}
+.entry-rail{position:absolute;top:50%;width:44%;height:2px;background:linear-gradient(90deg,transparent,#f0cf16 35%,#fff);opacity:0;box-shadow:0 0 14px rgba(240,207,22,.55)}.entry-rail.left{right:72%;transform:translateX(-90px) rotate(-28deg);animation:railLock .65s 1.05s ease forwards}.entry-rail.right{left:72%;transform:translateX(90px) rotate(-28deg);animation:railLock .65s 1.05s ease forwards}
+.entry-logo-plate{position:relative;width:clamp(300px,36vw,470px);height:clamp(190px,25vw,300px);display:grid;place-items:center;background:linear-gradient(145deg,#fff 0 72%,#e8e7df 72%);clip-path:polygon(13% 0,100% 0,87% 100%,0 100%);box-shadow:22px 25px 0 rgba(23,55,209,.74),-18px -15px 0 rgba(240,207,22,.88),0 40px 70px rgba(0,0,0,.38);opacity:0;transform:translate3d(-38vw,-35vh,120px) rotate(-24deg) scale(.58);animation:mechanicalDock 1.25s .62s cubic-bezier(.16,.92,.22,1.05) forwards!important}
+.entry-logo-plate::before{content:"";position:absolute;inset:13px;border:1px solid rgba(17,20,16,.22);clip-path:inherit}.entry-logo-plate::after{content:"";position:absolute;inset:0;background:linear-gradient(108deg,transparent 28%,rgba(240,207,22,.58) 46%,rgba(255,255,255,.95) 50%,transparent 66%);transform:translateX(-135%);animation:entryLogoSweep .9s 1.7s ease-out forwards!important}.entry-logo-plate img{width:88%;height:88%;object-fit:contain;position:relative;z-index:1;filter:drop-shadow(0 4px 0 rgba(0,0,0,.08))}
+.entry-lock{position:absolute;width:18px;height:84px;background:#f0cf16;top:50%;transform:translateY(-50%);opacity:0;box-shadow:inset -5px 0 0 #1737d1}.entry-lock.left{left:-31px;animation:lockPinLeft .42s 1.62s ease-out forwards}.entry-lock.right{right:-31px;animation:lockPinRight .42s 1.62s ease-out forwards}
+.entry-boot{position:absolute;left:50%;top:calc(50% + clamp(145px,14vw,175px));width:min(78vw,620px);transform:translateX(-50%);color:#fff;font-family:"Endfield Tech",Consolas,monospace;opacity:0;animation:entryBootIn .55s 1.55s forwards}.entry-boot-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:10px;font-size:10px;letter-spacing:.19em;color:rgba(255,255,255,.64)}.entry-percent{font-size:clamp(22px,3vw,34px);font-weight:800;line-height:.8;color:#f0cf16;letter-spacing:.02em;font-variant-numeric:tabular-nums}.entry-progress{height:13px;padding:3px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.38);clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%)}.entry-progress-fill{display:block;width:var(--boot-progress);height:100%;background:linear-gradient(90deg,#1737d1 0 72%,#f0cf16 72%);box-shadow:0 0 16px rgba(240,207,22,.36);transition:width .08s linear}.entry-ticks{height:8px;margin-top:7px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.28) 0 1px,transparent 1px 5%)}
+.entry-curtain.is-complete{opacity:0;visibility:hidden;pointer-events:none;transition-timing-function:cubic-bezier(.7,0,.2,1),step-end}.entry-curtain.is-complete .entry-mechanism{animation:mechanismRelease .72s cubic-bezier(.7,0,.2,1) forwards}
+@keyframes beamStrikeA{70%{transform:translate3d(2vw,1vh,0) rotate(-28deg)}100%{transform:translate3d(0,0,0) rotate(-28deg)}}@keyframes beamStrikeB{70%{transform:translate3d(-2vw,-1vh,0) rotate(-28deg)}100%{transform:translate3d(0,0,0) rotate(-28deg)}}
+@keyframes mechanicalDock{0%{opacity:0}68%{opacity:1;transform:translate3d(10px,8px,30px) rotate(2deg) scale(1.035)}82%{transform:translate3d(-5px,-3px,0) rotate(-1deg) scale(.99)}100%{opacity:1;transform:translate3d(0,0,0) rotate(0) scale(1)}}@keyframes railLock{to{opacity:1;transform:translateX(0) rotate(-28deg)}}
+@keyframes lockPinLeft{from{opacity:0;transform:translate(-45px,-50%)}to{opacity:1;transform:translate(0,-50%)}}@keyframes lockPinRight{from{opacity:0;transform:translate(45px,-50%)}to{opacity:1;transform:translate(0,-50%)}}@keyframes entryLogoSweep{to{transform:translateX(135%)}}@keyframes entryTextIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}@keyframes entryBootIn{from{opacity:0;transform:translate(-50%,9px)}to{opacity:1;transform:translate(-50%,0)}}@keyframes entryGridDrift{to{transform:translate3d(70px,-40px,0)}}@keyframes mechanismRelease{to{transform:translate3d(12vw,5vh,0) rotate(4deg) scale(1.08);filter:blur(7px)}}
+@media(max-width:650px){.entry-mechanism{width:92vw;height:54vh}.entry-logo-plate{width:min(76vw,350px);height:min(47vw,220px)}.entry-boot{top:calc(50% + 120px)}.entry-beam{width:170%;left:-35%}}@media(prefers-reduced-motion:reduce){.entry-curtain{display:none!important}}
 </style>
 </head>
 <body>
-<div class="entry-curtain" aria-hidden="true"><div class="entry-logo-plate"><img src="/assets/mascots/endfield-logo.png" alt=""></div></div>
+<div class="entry-curtain" id="entry-curtain" aria-hidden="true"><div class="entry-mechanism"><i class="entry-beam entry-beam-a"></i><i class="entry-beam entry-beam-b"></i><i class="entry-rail left"></i><i class="entry-rail right"></i><div class="entry-logo-plate"><i class="entry-lock left"></i><i class="entry-lock right"></i><img src="/assets/mascots/endfield-logo.png" alt=""></div><div class="entry-boot"><div class="entry-boot-head"><span>ARCHIVE CORE / MECHANICAL LINK</span><b class="entry-percent" id="entry-percent">000%</b></div><div class="entry-progress"><span class="entry-progress-fill"></span></div><div class="entry-ticks"></div></div></div></div>
 <div class="ambient" aria-hidden="true"><i class="geo geo-a"></i><i class="geo geo-b"></i><i class="geo geo-c"></i><i class="geo geo-d"></i><i class="geo geo-e"></i><i class="geo geo-f"></i><i class="geo geo-g"></i><i class="geo geo-h"></i><img class="bg-mascot bg-char-1" src="/assets/mascots/mascot-02.png" alt=""><img class="bg-mascot bg-char-2" src="/assets/mascots/mascot-04.png" alt=""><img class="bg-mascot bg-char-3" src="/assets/mascots/mascot-05.png" alt=""><img class="bg-mascot bg-char-4" src="/assets/mascots/mascot-06.png" alt=""><img class="bg-mascot bg-char-5" src="/assets/mascots/mascot-07.png" alt=""></div>
 <header class="topbar">
   <div class="brand"><div class="brand-mark"><img src="/assets/mascots/endfield-logo.png" alt="终末地"></div><div><div class="brand-cn">终末地工业 · 合成档案</div><div class="brand-en">ENDFIELD SYNTHESIS ARCHIVE</div></div></div>
@@ -444,6 +462,33 @@ body{font-family:"Endfield CN","Microsoft YaHei UI",sans-serif;font-size:15px}.b
 <script>
 /* ===================== 工具 ===================== */
 const $ = id => document.getElementById(id);
+/* 开场保持约 3.8 秒：机械组件先锁定，进度随后完成，100% 短暂停留后释放页面。 */
+(function runEntrySequence() {
+  const curtain = $('entry-curtain');
+  const percent = $('entry-percent');
+  if (!curtain) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    curtain.classList.add('is-complete');
+    return;
+  }
+  const duration = 3400;
+  const started = performance.now();
+  function frame(now) {
+    const elapsed = Math.min(1, (now - started) / duration);
+    /* 前段稳步建立连接，中段略停顿，最后快速完成校验。 */
+    let value;
+    if (elapsed < .26) value = elapsed / .26 * 24;
+    else if (elapsed < .68) value = 24 + (elapsed - .26) / .42 * 55;
+    else if (elapsed < .9) value = 79 + (elapsed - .68) / .22 * 16;
+    else value = 95 + (elapsed - .9) / .1 * 5;
+    const whole = Math.min(100, Math.floor(value));
+    curtain.style.setProperty('--boot-progress', `${whole}%`);
+    percent.textContent = `${String(whole).padStart(3, '0')}%`;
+    if (elapsed < 1) requestAnimationFrame(frame);
+    else setTimeout(() => curtain.classList.add('is-complete'), 360);
+  }
+  requestAnimationFrame(frame);
+})();
 const tip = $('tip');
 let RESULT_ANIM_TIMER = null;
 const resultObserver = new MutationObserver(() => {

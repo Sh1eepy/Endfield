@@ -18,6 +18,12 @@ class FrontendContractTests(unittest.TestCase):
         self.assertIn("@keyframes contentIn", HTML)
         self.assertIn("prefers-reduced-motion", HTML)
 
+    def test_entry_sequence_is_centered_staged_and_progressive(self):
+        for token in ('id="entry-curtain"', 'entry-mechanism', 'mechanicalDock',
+                      'entry-beam-a', 'id="entry-percent"', '--boot-progress',
+                      'const duration = 3400', "curtain.classList.add('is-complete')"):
+            self.assertIn(token, HTML)
+
     def test_vertical_image_tree_and_empty_default_are_present(self):
         self.assertIn("nodeSize([116, 148])", HTML)
         self.assertIn("node-card-image", HTML)
