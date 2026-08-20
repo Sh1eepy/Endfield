@@ -1,11 +1,11 @@
 {
   "status": "ok",
   "consistent": true,
-  "checked_at": "2026-08-20T05:37:00.344039+00:00",
+  "checked_at": "2026-08-20T06:19:32.843673+00:00",
   "issues": [],
   "entities": 2129,
   "aliases": 1,
-  "relations": 9357,
+  "relations": 9358,
   "sources": 1958,
   "predicates": {
     "AFFILIATED_WITH": 30,
@@ -23,6 +23,7 @@
     "REFERENCES": 5105,
     "REQUIRES_MATERIAL": 240,
     "REWARDS": 766,
-    "USED_FOR": 290
+    "USED_FOR": 290,
+    "YOUNGER_SISTER_OF": 1
   }
 }

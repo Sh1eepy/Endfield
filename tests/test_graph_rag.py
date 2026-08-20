@@ -56,6 +56,7 @@ class GraphRAGTests(unittest.TestCase):
 
     def test_interpretive_relation_is_separate_route(self):
         self.assertTrue(is_interpretive_relation("诀是不是挺中意管理员"))
+        self.assertTrue(is_interpretive_relation("狼卫的妹妹是不是很可爱"))
         self.assertFalse(is_interpretive_relation("诀属于哪个组织"))
 
 

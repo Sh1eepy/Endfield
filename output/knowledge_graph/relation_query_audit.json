@@ -1,7 +1,7 @@
 {
-  "checked_at": "2026-08-20T05:37:01.086432+00:00",
-  "tested": 846,
-  "passed": 846,
+  "checked_at": "2026-08-20T06:17:57.595449+00:00",
+  "tested": 849,
+  "passed": 849,
   "pass_rate": 1.0,
   "by_family": {
     "AFFILIATED_WITH:forward": {
@@ -183,6 +183,18 @@
     "USED_FOR:boolean": {
       "tested": 20,
       "passed": 20
+    },
+    "YOUNGER_SISTER_OF:forward": {
+      "tested": 1,
+      "passed": 1
+    },
+    "YOUNGER_SISTER_OF:reverse": {
+      "tested": 1,
+      "passed": 1
+    },
+    "YOUNGER_SISTER_OF:boolean": {
+      "tested": 1,
+      "passed": 1
     }
   },
   "failures": [],

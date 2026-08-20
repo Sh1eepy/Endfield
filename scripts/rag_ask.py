@@ -395,8 +395,10 @@ def multi_search(query, top_k=5):
 
 # “喜欢/中意/信任”通常不是 Wiki 的结构化事实字段。此类问题先定位人物，再从原文
 # 提取包含关系对象和态度线索的局部证据，不把一次模型解读永久写入图谱。
-INTERPRETIVE_WORDS = ("喜欢", "中意", "在意", "讨厌", "信任", "敬重", "害怕", "态度", "怎么看", "感情")
+INTERPRETIVE_WORDS = ("喜欢", "中意", "在意", "讨厌", "信任", "敬重", "害怕", "态度", "怎么看", "感情",
+                      "可爱", "漂亮", "帅", "有趣")
 GENERIC_RELATION_TARGETS = ("管理员", "终末地工业", "罗德岛")
+RELATION_CUE_WORDS = ("妹妹", "哥哥", "姐姐", "弟弟", "父亲", "母亲", "师父", "徒弟", "朋友", "队友")
 
 
 def is_interpretive_relation(query):
@@ -423,8 +425,9 @@ def relationship_evidence_hits(query, limit=8):
             window = "\n".join(units[max(0, i - 1):min(len(units), i + 2)])
             target_hits = sum(t in window for t in targets)
             attitude_hits = sum(w in window for w in INTERPRETIVE_WORDS)
+            relation_hits = sum(w in window for w in RELATION_CUE_WORDS if w in q)
             dialogue_bonus = int("管理员" in window or "档案" in text or entry.get("category") == "任务")
-            score = target_hits * 3 + attitude_hits * 2 + dialogue_bonus
+            score = target_hits * 3 + attitude_hits * 2 + relation_hits * 4 + dialogue_bonus
             if target_hits and score >= 4:
                 candidates.append((score, len(window), entry, window))
     candidates.sort(key=lambda x: (-x[0], x[1]))
@@ -683,7 +686,8 @@ GEN_SYSTEM = (
     "3. 若资料不足以回答，明确说'资料中未找到相关内容'\n"
     "4. 对喜欢、性格、态度、动机等解释性问题，必须分成‘原文明确事实’、"
     "‘基于证据的合理解读’和‘资料不足’，不得把解读伪装成设定事实\n"
-    "5. 简洁，中文回答"
+    "5. 复合问题必须逐项回答；某一小问资料不足时，只说明该小问不足，不能拒绝其他有证据的小问\n"
+    "6. 简洁，中文回答"
 )
 
 
@@ -739,8 +743,10 @@ def ask(query, top_k=5, gen_answer_=False):
             pass
         # 单实体图边（阵营、参与过的任务）通常不能证明“喜欢谁”，只在问题中识别到
         # 两个图实体时作为事件链补充；原文证据窗口始终排在最前。
-        graph_hits = ((graph_result or {}).get("hits") or []) if len((graph_result or {}).get("entities") or []) >= 2 else []
-        hits = (evidence + graph_hits + multi_search(q, top_k=top_k))[:max(top_k + 5, 12)]
+        graph_hits = ((graph_result or {}).get("hits") or []) if (
+            len((graph_result or {}).get("entities") or []) >= 2 or (graph_result or {}).get("predicate")) else []
+        # 明确关系边先回答客观子问题，随后文本证据负责主观评价子问题。
+        hits = (graph_hits + evidence + multi_search(q, top_k=top_k))[:max(top_k + 5, 12)]
         result = {"ok": True, "intent": "解释性关系", "method": "evidence_hybrid",
                   "route_used": "hybrid_relation", "graph": graph_result,
                   "interpretation_policy": "事实边与文本解读分离", "hits": hits}

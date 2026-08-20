@@ -1,7 +1,7 @@
 {
   "summary": {
-    "cases": 9,
-    "passed": 9,
+    "cases": 10,
+    "passed": 10,
     "path_recall": 1.0
   },
   "details": [
@@ -95,6 +95,16 @@
       "path_count": 4,
       "entities": [
         "天有洪炉"
+      ]
+    },
+    {
+      "query": "狼卫的妹妹叫什么",
+      "case": "explicit_kinship_reverse",
+      "passed": true,
+      "missing_terms": [],
+      "path_count": 1,
+      "entities": [
+        "狼卫"
       ]
     }
   ]

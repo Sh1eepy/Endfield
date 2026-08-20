@@ -235,6 +235,27 @@ class GraphBuilder:
                 self.add_relation(place_id, "AUTHORITY", person_id, str(row["item_id"]),
                                   match.group(0), confidence=1.0, method="explicit_title_rule")
 
+    def extract_explicit_kinship(self, row):
+        """抽取人物简介中明确点名的亲属关系；只接受“X的妹妹/哥哥”等直接句式。"""
+        text = row.get("full_text") or ""
+        sid = "kb:" + str(row["item_id"])
+        patterns = (
+            (r"(?P<relative>[\u4e00-\u9fff]{2,8})的妹妹", "YOUNGER_SISTER_OF"),
+            (r"(?P<relative>[\u4e00-\u9fff]{2,8})的哥哥", "OLDER_BROTHER_OF"),
+        )
+        for pattern, predicate in patterns:
+            for match in re.finditer(pattern, text):
+                relative = match.group("relative")
+                if relative not in self.by_name:
+                    continue
+                left = max(text.rfind(mark, 0, match.start()) for mark in ("\n", "。", "！", "？")) + 1
+                ends = [text.find(mark, match.end()) for mark in ("\n", "。", "！", "？")]
+                right = min((x for x in ends if x >= 0), default=min(len(text), match.end() + 120))
+                evidence = text[left:right + 1].strip()
+                self.add_relation(sid, predicate, self.entity_id(relative, "person"),
+                                  str(row["item_id"]), evidence or match.group(0),
+                                  confidence=1.0, method="explicit_kinship_rule")
+
     def extract_row(self, row, operator_details):
         category = str(row.get("category") or "")
         if category == "任务":
@@ -242,6 +263,7 @@ class GraphBuilder:
         if category == "干员":
             self.extract_operator_affiliation(row, operator_details)
             self.extract_explicit_authority(row)
+            self.extract_explicit_kinship(row)
         self.extract_references(row)
 
     def apply_curated_aliases(self, alias_path):

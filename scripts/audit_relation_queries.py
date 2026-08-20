@@ -20,6 +20,7 @@ QUERY_WORD = {
     "REQUIRES_MATERIAL": "需要什么材料", "OBTAINED_FROM": "来源", "USED_FOR": "有什么用",
     "RECOMMENDED_FOR": "适合谁", "DEVICE_USES_INPUT": "需要什么原料",
     "DEVICE_PRODUCES": "生产什么", "AUTHORITY": "领袖是谁",
+    "YOUNGER_SISTER_OF": "妹妹是谁", "OLDER_BROTHER_OF": "哥哥是谁",
 }
 
 

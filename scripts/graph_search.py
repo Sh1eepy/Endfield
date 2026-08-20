@@ -19,6 +19,7 @@ PREDICATE_LABELS = {
     "REQUIRES_MATERIAL": "需要材料", "OBTAINED_FROM": "来源", "USED_FOR": "用于",
     "RECOMMENDED_FOR": "适合干员", "DEVICE_USES_INPUT": "使用原料",
     "DEVICE_PRODUCES": "生产", "AUTHORITY": "领导/负责",
+    "YOUNGER_SISTER_OF": "妹妹", "OLDER_BROTHER_OF": "哥哥",
 }
 
 RELATION_HINTS = {
@@ -35,6 +36,8 @@ RELATION_HINTS = {
     "USED_FOR": ("有什么用", "用途", "用来做什么"),
     "DEVICE_USES_INPUT": ("需要什么原料", "使用什么原料"),
     "DEVICE_PRODUCES": ("生产什么", "产出什么", "能做什么"),
+    "YOUNGER_SISTER_OF": ("妹妹", "妹妹是谁", "妹妹叫啥", "妹妹叫什么"),
+    "OLDER_BROTHER_OF": ("哥哥", "哥哥是谁", "哥哥叫啥", "哥哥叫什么"),
 }
 
 GRAPH_KEYWORDS = (
@@ -42,6 +45,7 @@ GRAPH_KEYWORDS = (
     "本名", "真名", "别名", "共同参与", "共同任务", "共同经历", "前置任务", "后续任务",
     "相关人物", "谁参与", "发生在哪", "奖励", "解锁什么", "推荐武器", "升级材料",
     "精英化材料", "怎么获得", "有什么用", "生产什么", "产出什么", "需要什么原料",
+    "妹妹", "哥哥", "姐姐", "弟弟",
 )
 
 
