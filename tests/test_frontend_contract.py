@@ -33,6 +33,15 @@ class FrontendContractTests(unittest.TestCase):
                       "operator-scroll-status", "operator-video", "mediaSrc("):
             self.assertIn(token, HTML)
 
+    def test_ask_results_are_cached_by_query(self):
+        self.assertIn("const ASK_CACHE = new Map()", HTML)
+        self.assertIn("const cached = ASK_CACHE.get(q)", HTML)
+        self.assertIn("ASK_CACHE.set(q, d)", HTML)
+
+    def test_media_tables_render_as_full_size_galleries(self):
+        for token in ("operator-media-grid", "data-media-gallery", "kb-media-img", "mediaTable"):
+            self.assertIn(token, HTML)
+
 
 if __name__ == "__main__":
     unittest.main()
