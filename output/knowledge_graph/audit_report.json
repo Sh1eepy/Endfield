@@ -1,19 +1,28 @@
 {
   "status": "ok",
   "consistent": true,
-  "checked_at": "2026-08-20T05:15:06.907214+00:00",
+  "checked_at": "2026-08-20T05:37:00.344039+00:00",
   "issues": [],
   "entities": 2129,
   "aliases": 1,
-  "relations": 8369,
+  "relations": 9357,
   "sources": 1958,
   "predicates": {
     "AFFILIATED_WITH": 30,
+    "AUTHORITY": 2,
+    "DEVICE_PRODUCES": 451,
+    "DEVICE_USES_INPUT": 535,
     "HAS_PARTICIPANT": 557,
     "LOCATED_IN": 203,
     "NEXT_QUEST": 106,
+    "OBTAINED_FROM": 401,
     "PART_OF": 44,
     "PREVIOUS_QUEST": 108,
-    "REFERENCES": 7321
+    "RECOMMENDED_FOR": 400,
+    "RECOMMENDS_WEAPON": 119,
+    "REFERENCES": 5105,
+    "REQUIRES_MATERIAL": 240,
+    "REWARDS": 766,
+    "USED_FOR": 290
   }
 }

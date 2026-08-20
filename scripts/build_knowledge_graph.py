@@ -13,11 +13,25 @@ from datetime import datetime, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_DB = os.path.join(ROOT, "output", "knowledge_graph", "graph.db")
-SCHEMA_VERSION = "1"
+SCHEMA_VERSION = "2"
 
 TYPE_BY_CATEGORY = {
     "干员": "person", "任务": "quest", "武器": "weapon", "装备": "equipment",
     "物品": "item", "设备": "device", "活动": "event", "档案库": "archive",
+}
+
+# 只有结构化章节中的 entry 引用才转换为带语义的边；其余仍保留 REFERENCES。
+# 这些映射描述“页面字段含义”，不依赖 LLM 猜测。
+SECTION_PREDICATES = {
+    ("任务", "任务奖励"): "REWARDS",
+    ("任务", "解锁内容"): "UNLOCKS",
+    ("干员", "武器推荐"): "RECOMMENDS_WEAPON",
+    ("干员", "精英化"): "REQUIRES_MATERIAL",
+    ("物品", "相关来源"): "OBTAINED_FROM",
+    ("物品", "相关用途"): "USED_FOR",
+    ("设备", "设备来源"): "OBTAINED_FROM",
+    ("设备", "蓝图来源"): "OBTAINED_FROM",
+    ("武器", "武器推荐"): "RECOMMENDED_FOR",
 }
 
 
@@ -179,7 +193,8 @@ class GraphBuilder:
                 if value.get("t") == "entry" and value.get("id"):
                     oid = "kb:" + str(value["id"])
                     if str(value["id"]) in self.by_item:
-                        self.add_relation(sid, "REFERENCES", oid, source,
+                        predicate = SECTION_PREDICATES.get((str(row.get("category") or ""), section), "REFERENCES")
+                        self.add_relation(sid, predicate, oid, source,
                                           f"{section or '正文'}引用：{value.get('x') or value['id']}")
                 for child in value.values():
                     walk(child, section)
@@ -202,12 +217,31 @@ class GraphBuilder:
                     self.add_relation("kb:" + str(row["item_id"]), "AFFILIATED_WITH", oid,
                                       str(row["item_id"]), f"身份认证：{org}")
 
+    def extract_explicit_authority(self, row):
+        """仅抽取明确的‘地区+正式职务’，不把‘带领队伍’之类动作误判为领袖。"""
+        text = row.get("full_text") or ""
+        person_id = "kb:" + str(row["item_id"])
+        patterns = (
+            r"(?P<place>[\u4e00-\u9fff]{2,8})科学发展区管代",
+            r"我是(?P<place>[\u4e00-\u9fff]{2,8})的管代[，,](?P<person>[\u4e00-\u9fff]{2,6})",
+        )
+        for pattern in patterns:
+            for match in re.finditer(pattern, text):
+                place = match.group("place")
+                # 第一种句式中“武陵”紧邻行政单位；第二种还校验自称姓名。
+                if match.groupdict().get("person") and match.group("person") != row.get("name"):
+                    continue
+                place_id = self.entity_id(place, "place")
+                self.add_relation(place_id, "AUTHORITY", person_id, str(row["item_id"]),
+                                  match.group(0), confidence=1.0, method="explicit_title_rule")
+
     def extract_row(self, row, operator_details):
         category = str(row.get("category") or "")
         if category == "任务":
             self.extract_task(row)
         if category == "干员":
             self.extract_operator_affiliation(row, operator_details)
+            self.extract_explicit_authority(row)
         self.extract_references(row)
 
     def apply_curated_aliases(self, alias_path):
@@ -223,6 +257,27 @@ class GraphBuilder:
               VALUES(?,?,?,?,?,1.0,?)""", (item["alias"], eid, item.get("kind", "alias"),
                                              str(item.get("source_item_id") or ""), item.get("evidence", ""),
                                              item.get("review_status", "human_verified")))
+
+    def extract_recipes(self, recipe_path):
+        """把精确 recipes.json 转成设备→原料/产物边，保留配方编号、数量和耗时证据。"""
+        if not os.path.exists(recipe_path):
+            return 0
+        data = json.load(open(recipe_path, encoding="utf-8"))
+        recipes = data.get("recipes", data if isinstance(data, list) else [])
+        count = 0
+        for recipe in recipes:
+            machine = str(recipe.get("machine") or "").strip()
+            mid = self.entity_id(machine, "device")
+            source = "recipe:" + str(recipe.get("id") or machine)
+            duration = recipe.get("duration")
+            for predicate, key in (("DEVICE_USES_INPUT", "inputs"), ("DEVICE_PRODUCES", "outputs")):
+                for item in recipe.get(key) or []:
+                    oid = self.entity_id(str(item.get("name") or ""), "item")
+                    evidence = f"配方{recipe.get('id') or ''}：{machine}；{item.get('name')}×{item.get('count')}；耗时{duration}"
+                    before = self.con.total_changes
+                    self.add_relation(mid, predicate, oid, source, evidence, method="recipe_rule")
+                    count += self.con.total_changes > before
+        return count
 
 
 def build(db_path=DEFAULT_DB, incremental=False, inputs="endfield_kb/*.jsonl"):
@@ -251,6 +306,9 @@ def build(db_path=DEFAULT_DB, incremental=False, inputs="endfield_kb/*.jsonl"):
         con.execute("INSERT OR REPLACE INTO manifest VALUES(?,?,?,?,?,?)",
                     (source, new[source], row.get("name", ""), row.get("category", ""), count, now))
     builder.apply_curated_aliases(os.path.join(ROOT, "scripts", "graph_aliases.json"))
+    # 配方体量很小且是独立结构化数据源：每次重建这些边，避免 KB 增量状态掩盖配方变化。
+    con.execute("DELETE FROM relations WHERE extraction_method='recipe_rule'")
+    builder.extract_recipes(os.path.join(ROOT, "output", "recipes.json"))
     con.execute("DELETE FROM entities WHERE synthetic=1 AND id NOT IN (SELECT subject_id FROM relations) "
                 "AND id NOT IN (SELECT object_id FROM relations) AND id NOT IN (SELECT entity_id FROM aliases)")
     con.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('built_at',?)", (now,))

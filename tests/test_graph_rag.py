@@ -6,6 +6,7 @@ import unittest
 
 from scripts.build_knowledge_graph import create_schema
 from scripts.graph_search import GraphRetriever, should_route_graph
+from scripts.rag_ask import is_interpretive_relation, relationship_evidence_hits
 
 
 class GraphRAGTests(unittest.TestCase):
@@ -46,6 +47,16 @@ class GraphRAGTests(unittest.TestCase):
     def test_relation_router_is_narrow(self):
         self.assertTrue(should_route_graph("甲和乙是什么关系"))
         self.assertFalse(should_route_graph("介绍一下甲的故事"))
+
+    def test_reverse_and_boolean_relation_queries(self):
+        retriever = GraphRetriever(self.db)
+        self.assertIn("测试组织", retriever.search("测试组织和甲是什么关系", max_hops=1)["paths"][0]["path"])
+        self.assertTrue(retriever.search("甲是不是与测试组织有关系", max_hops=1)["paths"])
+        retriever.con.close()
+
+    def test_interpretive_relation_is_separate_route(self):
+        self.assertTrue(is_interpretive_relation("诀是不是挺中意管理员"))
+        self.assertFalse(is_interpretive_relation("诀属于哪个组织"))
 
 
 if __name__ == "__main__":

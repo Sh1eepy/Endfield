@@ -20,7 +20,7 @@
 | 媒体结构库 | `output/item_media.json` | extract_media.py 提取：封面图 1957 / 正文图 2046 / 外链 291 / 引用 14693（含数量与链接样式） |
 | 前端 | `web/index.html` | 白色工业制图 v3：纵向真实图片配方树、空查询入口、树工具栏、滚动几何动效与响应式布局 |
 | 干员详情库 | `output/operator_details.json` | 31 名干员；基本信息、富文本颜色、技能/天赋/潜能/档案多 Tab、图片与多语种语音 |
-| 轻量 GraphRAG | `output/knowledge_graph/graph.db` | 2,129 实体 / 8,369 条可追溯关系；支持别名、单跳/多跳关系检索、增量更新、审计与专项门禁 |
+| 轻量 GraphRAG | `output/knowledge_graph/graph.db` | 2,129 实体 / 9,357 条可追溯关系；覆盖人物/任务/地点/物品/设备/配方，支持解释性关系混合取证、增量更新与问法对称门禁 |
 | 评测 | `eval_retrieval.py` | 71 条查询；当前 Recall@5=100%、MRR=97.3%（`final_reviewed.json`） |
 
 ## 3. 关键文件地图

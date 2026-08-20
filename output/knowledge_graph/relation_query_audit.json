@@ -1,0 +1,190 @@
+{
+  "checked_at": "2026-08-20T05:37:01.086432+00:00",
+  "tested": 846,
+  "passed": 846,
+  "pass_rate": 1.0,
+  "by_family": {
+    "AFFILIATED_WITH:forward": {
+      "tested": 20,
+      "passed": 20
+    },
+    "AFFILIATED_WITH:reverse": {
+      "tested": 20,
+      "passed": 20
+    },
+    "AFFILIATED_WITH:boolean": {
+      "tested": 20,
+      "passed": 20
+    },
+    "AUTHORITY:forward": {
+      "tested": 2,
+      "passed": 2
+    },
+    "AUTHORITY:reverse": {
+      "tested": 2,
+      "passed": 2
+    },
+    "AUTHORITY:boolean": {
+      "tested": 2,
+      "passed": 2
+    },
+    "DEVICE_PRODUCES:forward": {
+      "tested": 20,
+      "passed": 20
+    },
+    "DEVICE_PRODUCES:reverse": {
+      "tested": 20,
+      "passed": 20
+    },
+    "DEVICE_PRODUCES:boolean": {
+      "tested": 20,
+      "passed": 20
+    },
+    "DEVICE_USES_INPUT:forward": {
+      "tested": 20,
+      "passed": 20
+    },
+    "DEVICE_USES_INPUT:reverse": {
+      "tested": 20,
+      "passed": 20
+    },
+    "DEVICE_USES_INPUT:boolean": {
+      "tested": 20,
+      "passed": 20
+    },
+    "HAS_PARTICIPANT:forward": {
+      "tested": 20,
+      "passed": 20
+    },
+    "HAS_PARTICIPANT:reverse": {
+      "tested": 20,
+      "passed": 20
+    },
+    "HAS_PARTICIPANT:boolean": {
+      "tested": 20,
+      "passed": 20
+    },
+    "LOCATED_IN:forward": {
+      "tested": 20,
+      "passed": 20
+    },
+    "LOCATED_IN:reverse": {
+      "tested": 20,
+      "passed": 20
+    },
+    "LOCATED_IN:boolean": {
+      "tested": 20,
+      "passed": 20
+    },
+    "NEXT_QUEST:forward": {
+      "tested": 20,
+      "passed": 20
+    },
+    "NEXT_QUEST:reverse": {
+      "tested": 20,
+      "passed": 20
+    },
+    "NEXT_QUEST:boolean": {
+      "tested": 20,
+      "passed": 20
+    },
+    "OBTAINED_FROM:forward": {
+      "tested": 20,
+      "passed": 20
+    },
+    "OBTAINED_FROM:reverse": {
+      "tested": 20,
+      "passed": 20
+    },
+    "OBTAINED_FROM:boolean": {
+      "tested": 20,
+      "passed": 20
+    },
+    "PART_OF:forward": {
+      "tested": 20,
+      "passed": 20
+    },
+    "PART_OF:reverse": {
+      "tested": 20,
+      "passed": 20
+    },
+    "PART_OF:boolean": {
+      "tested": 20,
+      "passed": 20
+    },
+    "PREVIOUS_QUEST:forward": {
+      "tested": 20,
+      "passed": 20
+    },
+    "PREVIOUS_QUEST:reverse": {
+      "tested": 20,
+      "passed": 20
+    },
+    "PREVIOUS_QUEST:boolean": {
+      "tested": 20,
+      "passed": 20
+    },
+    "RECOMMENDED_FOR:forward": {
+      "tested": 20,
+      "passed": 20
+    },
+    "RECOMMENDED_FOR:reverse": {
+      "tested": 20,
+      "passed": 20
+    },
+    "RECOMMENDED_FOR:boolean": {
+      "tested": 20,
+      "passed": 20
+    },
+    "RECOMMENDS_WEAPON:forward": {
+      "tested": 20,
+      "passed": 20
+    },
+    "RECOMMENDS_WEAPON:reverse": {
+      "tested": 20,
+      "passed": 20
+    },
+    "RECOMMENDS_WEAPON:boolean": {
+      "tested": 20,
+      "passed": 20
+    },
+    "REQUIRES_MATERIAL:forward": {
+      "tested": 20,
+      "passed": 20
+    },
+    "REQUIRES_MATERIAL:reverse": {
+      "tested": 20,
+      "passed": 20
+    },
+    "REQUIRES_MATERIAL:boolean": {
+      "tested": 20,
+      "passed": 20
+    },
+    "REWARDS:forward": {
+      "tested": 20,
+      "passed": 20
+    },
+    "REWARDS:reverse": {
+      "tested": 20,
+      "passed": 20
+    },
+    "REWARDS:boolean": {
+      "tested": 20,
+      "passed": 20
+    },
+    "USED_FOR:forward": {
+      "tested": 20,
+      "passed": 20
+    },
+    "USED_FOR:reverse": {
+      "tested": 20,
+      "passed": 20
+    },
+    "USED_FOR:boolean": {
+      "tested": 20,
+      "passed": 20
+    }
+  },
+  "failures": [],
+  "consistent": true
+}

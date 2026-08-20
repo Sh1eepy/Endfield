@@ -1,7 +1,7 @@
 {
   "summary": {
-    "cases": 6,
-    "passed": 6,
+    "cases": 9,
+    "passed": 9,
     "path_recall": 1.0
   },
   "details": [
@@ -64,6 +64,37 @@
       "path_count": 2,
       "entities": [
         "第二章-进程Ⅶ-谈剑问迹"
+      ]
+    },
+    {
+      "query": "武陵的领袖是谁",
+      "case": "explicit_authority_forward",
+      "passed": true,
+      "missing_terms": [],
+      "path_count": 2,
+      "entities": [
+        "武陵"
+      ]
+    },
+    {
+      "query": "庄方宜是不是武陵的领袖",
+      "case": "explicit_authority_boolean",
+      "passed": true,
+      "missing_terms": [],
+      "path_count": 12,
+      "entities": [
+        "庄方宜",
+        "武陵"
+      ]
+    },
+    {
+      "query": "天有洪炉生产什么",
+      "case": "recipe_device_output",
+      "passed": true,
+      "missing_terms": [],
+      "path_count": 4,
+      "entities": [
+        "天有洪炉"
       ]
     }
   ]

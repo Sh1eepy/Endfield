@@ -4,3 +4,6 @@
 {"query":"第二章-进程Ⅶ-谈剑问迹有哪些相关人物","gold_terms":["陈千语","诀"],"expected_hops":1,"case":"quest_participants"}
 {"query":"第二章-进程Ⅶ-谈剑问迹发生在哪里","gold_terms":["北部禁区"],"expected_hops":1,"case":"quest_location"}
 {"query":"第二章-进程Ⅶ-谈剑问迹的前置任务","gold_terms":["第二章-进程Ⅶ-归途之始"],"expected_hops":1,"case":"quest_predecessor"}
+{"query":"武陵的领袖是谁","gold_terms":["武陵","庄方宜","管代"],"expected_hops":1,"case":"explicit_authority_forward"}
+{"query":"庄方宜是不是武陵的领袖","gold_terms":["武陵","庄方宜","管代"],"expected_hops":1,"case":"explicit_authority_boolean"}
+{"query":"天有洪炉生产什么","gold_terms":["天有洪炉","生产"],"expected_hops":1,"case":"recipe_device_output"}

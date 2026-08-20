@@ -84,13 +84,17 @@ python scripts/build_knowledge_graph.py                 # 全量构建 SQLite �
 python scripts/build_knowledge_graph.py --incremental   # 按来源 content_hash 增量替换边
 python scripts/graph_search.py "陈千语和诀的关系"        # 1-3 跳证据路径
 python scripts/graph_audit.py --fail-on-error           # 来源/hash/外键/证据/关系约束审计
+python scripts/audit_relation_queries.py --fail-on-error # 自动正问/反问/是非问对称审查
 python scripts/eval_graph.py                            # 单跳/多跳专项评测
 ```
 
-图谱位于 `output/knowledge_graph/graph.db`。正式图仅接收任务人物/地点/前后置、干员身份认证、
-结构化引用和人工审定别名；语义推断关系不直接入图。明确关系问题由 `rag_ask.py` 路由到图检索，
+图谱位于 `output/knowledge_graph/graph.db`。正式图接收任务人物/地点/前后置、干员身份认证、
+章节语义引用、配方原料/产物、明确职务句式和人工审定别名；语义推断关系不直接入图。明确关系问题由 `rag_ask.py` 路由到图检索，
 图谱缺少证据时回退原混合 RAG。完整 schema、增量、审查与门禁见
 `output/GRAPHRAG_ARCHITECTURE.md`。
+
+“喜欢/中意/信任/性格”等解释性问题走 `hybrid_relation`：图谱只提供身份与事件定位，系统从任务、
+档案、对话中提取局部原文窗口，生成时强制区分明确事实、合理解读和资料不足，解读结果不回写事实图。
 
 ### 7. `build_rag.py` — RAG 索引构建 / 增量更新
 ```bash

@@ -15,21 +15,33 @@ PREDICATE_LABELS = {
     "HAS_PARTICIPANT": "参与人物", "LOCATED_IN": "发生于", "PREVIOUS_QUEST": "前置任务",
     "NEXT_QUEST": "后续任务", "AFFILIATED_WITH": "所属组织", "REFERENCES": "引用",
     "PART_OF": "属于地区",
+    "REWARDS": "奖励", "UNLOCKS": "解锁", "RECOMMENDS_WEAPON": "推荐武器",
+    "REQUIRES_MATERIAL": "需要材料", "OBTAINED_FROM": "来源", "USED_FOR": "用于",
+    "RECOMMENDED_FOR": "适合干员", "DEVICE_USES_INPUT": "使用原料",
+    "DEVICE_PRODUCES": "生产", "AUTHORITY": "领导/负责",
 }
 
 RELATION_HINTS = {
-    "AUTHORITY": ("上司", "领导", "负责人", "谁管", "管辖", "总代理"),
+    "AUTHORITY": ("上司", "领导", "领袖", "首领", "负责人", "谁管", "管辖", "总代理"),
     "AFFILIATED_WITH": ("属于哪个组织", "所属组织", "隶属", "阵营", "身份认证"),
     "HAS_PARTICIPANT": ("相关人物", "谁参与", "参与过", "共同任务", "共同经历"),
     "LOCATED_IN": ("发生在哪", "地点", "位于", "在哪里"),
     "PREVIOUS_QUEST": ("前置任务", "之前任务", "前置"),
     "NEXT_QUEST": ("后续任务", "之后任务", "后续"),
+    "REWARDS": ("奖励", "给什么"), "UNLOCKS": ("解锁什么", "开放什么"),
+    "RECOMMENDS_WEAPON": ("推荐武器", "用什么武器"),
+    "REQUIRES_MATERIAL": ("需要什么材料", "升级材料", "精英化材料"),
+    "OBTAINED_FROM": ("怎么获得", "从哪里获得", "来源"),
+    "USED_FOR": ("有什么用", "用途", "用来做什么"),
+    "DEVICE_USES_INPUT": ("需要什么原料", "使用什么原料"),
+    "DEVICE_PRODUCES": ("生产什么", "产出什么", "能做什么"),
 }
 
 GRAPH_KEYWORDS = (
-    "关系", "上司", "领导", "负责人", "谁管", "管辖", "隶属", "所属", "组织", "阵营",
+    "关系", "上司", "领导", "领袖", "首领", "负责人", "谁管", "管辖", "隶属", "所属", "组织", "阵营",
     "本名", "真名", "别名", "共同参与", "共同任务", "共同经历", "前置任务", "后续任务",
-    "相关人物", "谁参与", "发生在哪",
+    "相关人物", "谁参与", "发生在哪", "奖励", "解锁什么", "推荐武器", "升级材料",
+    "精英化材料", "怎么获得", "有什么用", "生产什么", "产出什么", "需要什么原料",
 )
 
 

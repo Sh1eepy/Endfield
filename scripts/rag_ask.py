@@ -393,6 +393,58 @@ def multi_search(query, top_k=5):
     return all_hits[:max(top_k + 3, 10)]
 
 
+# “喜欢/中意/信任”通常不是 Wiki 的结构化事实字段。此类问题先定位人物，再从原文
+# 提取包含关系对象和态度线索的局部证据，不把一次模型解读永久写入图谱。
+INTERPRETIVE_WORDS = ("喜欢", "中意", "在意", "讨厌", "信任", "敬重", "害怕", "态度", "怎么看", "感情")
+GENERIC_RELATION_TARGETS = ("管理员", "终末地工业", "罗德岛")
+
+
+def is_interpretive_relation(query):
+    return any(word in (query or "") for word in INTERPRETIVE_WORDS)
+
+
+def relationship_evidence_hits(query, limit=8):
+    """为人物态度/性格判断抽取可读证据窗口，而非生成事实边。"""
+    q = query or ""
+    kb = _get_kb_names()
+    entity_names = sorted([n for n in kb if n and n in q], key=len, reverse=True)
+    targets = entity_names[:2] + [x for x in GENERIC_RELATION_TARGETS if x in q]
+    targets = list(dict.fromkeys(targets))
+    if not targets:
+        return []
+    candidates = []
+    # 主人物条目优先，同时搜索任务/档案中两者共同出现的情节证据。
+    for entry in _load_all_kb_entries():
+        text = entry.get("full_text") or ""
+        if not text or not any(t in text or t == entry.get("name") for t in targets):
+            continue
+        units = [u.strip() for u in __import__("re").split(r"\n+|(?<=[。！？!?])", text) if u.strip()]
+        for i, unit in enumerate(units):
+            window = "\n".join(units[max(0, i - 1):min(len(units), i + 2)])
+            target_hits = sum(t in window for t in targets)
+            attitude_hits = sum(w in window for w in INTERPRETIVE_WORDS)
+            dialogue_bonus = int("管理员" in window or "档案" in text or entry.get("category") == "任务")
+            score = target_hits * 3 + attitude_hits * 2 + dialogue_bonus
+            if target_hits and score >= 4:
+                candidates.append((score, len(window), entry, window))
+    candidates.sort(key=lambda x: (-x[0], x[1]))
+    out, seen = [], set()
+    for score, _length, entry, window in candidates:
+        key = (entry["name"], window)
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append({
+            "meta": {"name": entry["name"], "category": entry["category"],
+                     "item_id": entry["item_id"], "chunk_index": 0},
+            "text": window, "score": min(1.0, score / 10), "vector_sim": 1.0,
+            "bm25_score": 0.0, "_relationship_evidence": True,
+        })
+        if len(out) >= limit:
+            break
+    return out
+
+
 def _device_by_name(recipes, item_index, name):
     """设备名 → 设备配方列表（不存在返回 None）。"""
     by_name = {}
@@ -629,7 +681,9 @@ GEN_SYSTEM = (
     "1. 只基于提供的资料，不要编造资料外的内容\n"
     "2. 回答末尾用 [来源1] 标注依据哪条资料\n"
     "3. 若资料不足以回答，明确说'资料中未找到相关内容'\n"
-    "4. 简洁，中文回答"
+    "4. 对喜欢、性格、态度、动机等解释性问题，必须分成‘原文明确事实’、"
+    "‘基于证据的合理解读’和‘资料不足’，不得把解读伪装成设定事实\n"
+    "5. 简洁，中文回答"
 )
 
 
@@ -647,7 +701,8 @@ def gen_answer(query, hits, top_k=5):
                 "rejected": True, "hits": []}
     is_direct = bool(top.get("_direct"))
     # 多路合并片段（关键词/mention/直取）是人工确认的相关上下文，不因 top-1 vec 低拒答
-    has_curated = any(h.get("_keyword") or h.get("_mention") or h.get("_direct") for h in hits[:top_k])
+    has_curated = any(h.get("_keyword") or h.get("_mention") or h.get("_direct") or
+                      h.get("_relationship_evidence") for h in hits[:top_k])
     if not is_direct and not has_curated and top.get("vector_sim", 0) < 0.30:
         return {"answer": "知识库中未找到足够相关的资料来回答这个问题。",
                 "rejected": True, "hits": hits[:top_k]}
@@ -672,6 +727,28 @@ def ask(query, top_k=5, gen_answer_=False):
     if not q:
         return {"ok": False, "error": "查询为空"}
     intent, conf, method = classify_query(q)
+
+    # 解释性人物关系：图只负责事实边，原文窗口负责语气/事件证据，LLM 只做有边界的解读。
+    if is_interpretive_relation(q):
+        evidence = relationship_evidence_hits(q, limit=max(top_k, 8))
+        graph_result = None
+        try:
+            from graph_search import graph_query
+            graph_result = graph_query(q, top_k=top_k)
+        except Exception:
+            pass
+        # 单实体图边（阵营、参与过的任务）通常不能证明“喜欢谁”，只在问题中识别到
+        # 两个图实体时作为事件链补充；原文证据窗口始终排在最前。
+        graph_hits = ((graph_result or {}).get("hits") or []) if len((graph_result or {}).get("entities") or []) >= 2 else []
+        hits = (evidence + graph_hits + multi_search(q, top_k=top_k))[:max(top_k + 5, 12)]
+        result = {"ok": True, "intent": "解释性关系", "method": "evidence_hybrid",
+                  "route_used": "hybrid_relation", "graph": graph_result,
+                  "interpretation_policy": "事实边与文本解读分离", "hits": hits}
+        if gen_answer_:
+            gen = gen_answer(q, hits, top_k=max(top_k, 8))
+            if gen:
+                result.update(gen)
+        return result
 
     # 0. 枚举查询："有哪些/列举/所有" → 知识库分类内过滤枚举
     #    （"终末地至今为止的主线任务有哪些" → 任务分类枚举主线）

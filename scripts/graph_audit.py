@@ -12,7 +12,9 @@ from build_knowledge_graph import DEFAULT_DB, content_hash, load_rows
 
 ALLOWED_PREDICATES = {
     "REFERENCES", "HAS_PARTICIPANT", "LOCATED_IN", "PREVIOUS_QUEST", "NEXT_QUEST",
-    "AFFILIATED_WITH", "PART_OF",
+    "AFFILIATED_WITH", "PART_OF", "REWARDS", "UNLOCKS", "RECOMMENDS_WEAPON",
+    "REQUIRES_MATERIAL", "OBTAINED_FROM", "USED_FOR", "RECOMMENDED_FOR",
+    "DEVICE_USES_INPUT", "DEVICE_PRODUCES", "AUTHORITY",
 }
 
 
@@ -44,7 +46,8 @@ def audit_graph(db_path=DEFAULT_DB):
     if self_loops:
         issues.append(f"self_loops:{self_loops}")
     dangling_sources = con.execute("""SELECT COUNT(*) FROM relations r LEFT JOIN manifest m
-                                      ON m.source_item_id=r.source_item_id WHERE m.source_item_id IS NULL""").fetchone()[0]
+                                      ON m.source_item_id=r.source_item_id
+                                      WHERE m.source_item_id IS NULL AND r.extraction_method!='recipe_rule'""").fetchone()[0]
     if dangling_sources:
         issues.append(f"relations_with_missing_source:{dangling_sources}")
     rows = load_rows()

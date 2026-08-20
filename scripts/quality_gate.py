@@ -22,6 +22,7 @@ def main():
     ap.add_argument("--min-source-overlap", type=float, default=.60)
     ap.add_argument("--min-judge-faithfulness", type=float, default=1.50)
     ap.add_argument("--min-graph-recall", type=float, default=.90)
+    ap.add_argument("--min-relation-query-pass", type=float, default=.98)
     args = ap.parse_args()
     failures = []
     status = load("output/rag/build_status.json")
@@ -61,6 +62,10 @@ def main():
         graph_recall = evaluate_graph()["summary"]["path_recall"]
         if graph_recall < args.min_graph_recall:
             failures.append(f"graph_path_recall:{graph_recall}<{args.min_graph_recall}")
+        from audit_relation_queries import audit_relation_queries
+        relation_pass = audit_relation_queries(graph_db_path, sample_per_predicate=20)["pass_rate"]
+        if relation_pass < args.min_relation_query_pass:
+            failures.append(f"relation_query_pass:{relation_pass}<{args.min_relation_query_pass}")
     print(json.dumps({"passed": not failures, "failures": failures}, ensure_ascii=False, indent=2))
     if failures:
         raise SystemExit(1)
