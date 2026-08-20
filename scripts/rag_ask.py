@@ -847,10 +847,15 @@ def ask(query, top_k=5, gen_answer_=False):
         if gen_answer_ and llm.available():
             enum_names = enum["names"][:40]
             names_list = "\n".join(f"[来源{i + 1}] {name}" for i, name in enumerate(enum_names))
+            truncated_note = (f"这里只提供前 {len(enum_names)} 项用于整理，完整结果共 {len(enum['names'])} 项；"
+                              "不得把当前清单说成完整清单。" if len(enum["names"]) > len(enum_names)
+                              else f"当前清单包含完整的 {len(enum_names)} 项。")
             try:
                 ans = llm.chat(
-                    f"知识库中{enum['label']}相关条目如下：\n{names_list}\n\n"
-                    f"问题：{query}\n请基于这些条目整理成清晰的回答（有章节/分类就分组，说明共多少项）。",
+                    f"知识库中{enum['label']}相关条目总数：{len(enum['names'])}。\n"
+                    f"{truncated_note}\n条目如下：\n{names_list}\n\n"
+                    f"问题：{query}\n请基于这些条目整理成清晰的回答（有章节/分类就分组，"
+                    "准确说明总数；清单被截断时必须明确说明只展示前若干项）。",
                     system=GEN_SYSTEM, temperature=0.3, max_tokens=800)
                 result["answer"] = ans
                 result["rejected"] = False

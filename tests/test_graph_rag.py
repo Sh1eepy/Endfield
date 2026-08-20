@@ -3,9 +3,11 @@ import os
 import sqlite3
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from scripts.build_knowledge_graph import create_schema
 from scripts.graph_search import GraphRetriever, should_route_graph
+from scripts import rag_ask
 from scripts.rag_ask import focus_long_context, is_interpretive_relation, relationship_evidence_hits
 
 
@@ -64,6 +66,20 @@ class GraphRAGTests(unittest.TestCase):
         focused = focus_long_context(text, "测试角色的妹妹叫什么", max_chars=500)
         self.assertIn("远端答案", focused)
         self.assertLessEqual(len(focused), 520)
+
+    def test_large_enum_prompt_discloses_total_and_truncation(self):
+        names = [f"任务{i}" for i in range(55)]
+        enum = {"names": names, "label": "主线任务", "category": "任务"}
+        with patch.object(rag_ask, "classify_query", return_value=("知识", 1.0, "rule")), \
+                patch.object(rag_ask, "enum_lookup", return_value=enum), \
+                patch.object(rag_ask.llm, "available", return_value=True), \
+                patch.object(rag_ask.llm, "chat", return_value="整理结果") as chat:
+            result = rag_ask.ask("主线任务有哪些", gen_answer_=True)
+        prompt = chat.call_args.args[0]
+        self.assertEqual(result["count"], 55)
+        self.assertIn("总数：55", prompt)
+        self.assertIn("前 40 项", prompt)
+        self.assertIn("不得把当前清单说成完整清单", prompt)
 
 
 if __name__ == "__main__":

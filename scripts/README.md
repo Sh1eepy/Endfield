@@ -1,5 +1,8 @@
 # scripts - 通用工具集
 
+RAG、图谱、结构化查询的完整流程、协作规则、LLM 调用次数、截断预算和 Agent Loop 决策见
+[`../KNOWLEDGE_SYSTEM_ARCHITECTURE.md`](../KNOWLEDGE_SYSTEM_ARCHITECTURE.md)。本文件维护工具与命令。
+
 RAG 的整体技术链路、监控能力、评测口径和生产化缺口见
 `output/RAG_TECHNICAL_OVERVIEW.md`。
 

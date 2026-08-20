@@ -24,6 +24,7 @@
 | 评测 | `eval_retrieval.py` | 71 条查询；当前 Recall@5=100%、MRR=97.3%（`final_reviewed.json`） |
 
 ## 3. 关键文件地图
+- `KNOWLEDGE_SYSTEM_ARCHITECTURE.md` → **RAG、知识图谱、结构化查询、LLM 调用与质量门禁的权威总览**
 - `RAG_UPGRADE_PLAN.md` → RAG 优化计划与进度；`RAG_DEVLOG.md` → 开发决策/踩坑记录
 - `scripts/build_kb_all.py` → WIKI 全量 JSON → `endfield_kb/`（22 分类 jsonl+md）
 - `scripts/recipe_extract.py` → 全量 JSON → `output/recipes.json`（配方）
@@ -45,6 +46,9 @@
 - 合成树剪枝规则：叶子=基础资源（免费资源清水/惰气/息壤气 + 无产出配方矿物 + **种子类**）；每个物品最多 2 个配方（排除自循环）；循环/超深分支直接剪掉，不显示"已截断"；植物类（芽针/锦草等）正常展开种植机配方；**无配方物品回退知识库返回物品信息**
 - RAG 增量：条目级 `content_hash`（md5）→ manifest 对比 → ChromaDB upsert/delete → BM25 按分类分片只重建变更分类
 - 设备（如"天有洪炉"）走 `/api/synthesis` 的设备分支 → 配方卡片（原料/产物/耗时）
+- 知识问答不是开放式 Agent：当前为确定性路由 + 可选查询改写/生成。开放问题通常 2 次 LLM，
+  图关系通常 1 次，结构化直查可 0 次；是否增加补检索循环由困难集收益决定。
+- 长条目生成不再固定截取开头，使用 `focus_long_context()` 从全文分散选择覆盖各子问题的证据窗口。
 
 ## 5. 收尾路线（执行中）
 1. ✅ **阶段 1**：统一文档口径、审计敏感文件、建立 Git 基线
