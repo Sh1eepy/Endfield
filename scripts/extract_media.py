@@ -43,6 +43,7 @@ if sys.stdout:
 
 
 def load_data(fname):
+    """读取原始 WIKI 数据，供媒体链接和引用提取使用。"""
     with open(fname, encoding="utf-8") as f:
         return json.load(f)
 
@@ -109,6 +110,7 @@ def walk_inline(els, id2name, images, links, refs, seen_refs):
 
 
 def extract_entry(en, id2name):
+    """提取单个条目的封面、正文媒体、外链和条目引用。"""
     it = en.get("item") or {}
     di = (en.get("detail") or {}).get("item") or {}
     name = di.get("name") or it.get("name", "")
@@ -179,6 +181,7 @@ def extract_entry(en, id2name):
 
 
 def main():
+    """扫描全部条目并生成前端使用的 `output/item_media.json`。"""
     ap = argparse.ArgumentParser(description="提取 WIKI 图片/链接/引用结构信息")
     ap.add_argument("--input", help="全量 JSON；默认最新 endfield_wiki_full_*.json")
     ap.add_argument("--out", default="output/item_media.json")
@@ -227,4 +230,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

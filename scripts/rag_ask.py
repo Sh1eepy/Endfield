@@ -1,22 +1,13 @@
 # -*- coding: utf-8 -*-
-"""
-rag_ask.py — RAG 问答路由（RAG_UPGRADE_PLAN.md 阶段 3-5）
+"""知识问答主流程。
 
-把「意图识别 → 检索路由 → 精排 → 答案生成」串成一条可调用的问答管线。
-
-路由规则（阶段 3）:
-    配方意图 → 结构化配方库直查（recipes.json，精确、命中率 100%）
-    设备意图 → 设备名直查（该设备能造的配方列表）
-    其他意图（知识/数值/比较）→ RAG 混合检索（向量+BM25→RRF）
-    以上未命中 → 回退 RAG 检索
-
-答案生成（阶段 5，在线 LLM）:
-    检索片段 + LLM 生成带引用回答；检索分低 → 诚实拒答
+顺序是“意图识别 → 确定性直查/图检索/RAG → 可选 LLM 生成”。配方、枚举和明确关系优先使用
+结构化数据；图或直查没有证据时再回退文本检索。这个模块负责组织步骤，不修改索引和知识图谱。
 
 用法:
     from rag_ask import ask
     result = ask("重息壤怎么合成")
-    result = ask("重息壤是什么", gen_answer=True)   # 阶段5后启用 LLM 生成
+    result = ask("重息壤是什么", gen_answer_=True)
 
 CLI:
     python scripts/rag_ask.py "重息壤是什么" --gen
@@ -87,7 +78,7 @@ def _get_kb_names():
     return _kb_names
 
 
-# ===================== 阶段 3：结构化直查 =====================
+# ===================== 结构化直查 =====================
 
 def extract_item_name(query):
     """从自由文本查询中抽取配方/设备名：遍历配方库全部名称，取查询中包含的最长匹配。
@@ -403,6 +394,7 @@ RELATION_CUE_WORDS = ("妹妹", "哥哥", "姐姐", "弟弟", "父亲", "母亲"
 
 
 def is_interpretive_relation(query):
+    """识别需要原文解读、不能直接固化为图谱事实的关系问题。"""
     return any(word in (query or "") for word in INTERPRETIVE_WORDS)
 
 
@@ -539,7 +531,7 @@ def recipe_lookup(query, intent=None):
     return None
 
 
-# ===================== 阶段 4：RAG 检索 =====================
+# ===================== RAG 检索 =====================
 
 # 枚举查询：主题关键词 → (目标分类, 名称过滤关键词列表)
 # 用于"有哪些/列举/所有"类问题——纯向量检索对枚举失效，改为知识库分类内过滤枚举。
@@ -678,7 +670,7 @@ def rag_search(query, top_k=5, entity_boost=True, direct_fallback=True):
     return hits or boosted
 
 
-# ===================== 阶段 5：答案生成 =====================
+# ===================== 答案生成 =====================
 
 GEN_SYSTEM = (
     "你是《明日方舟：终末地》百科助手。根据提供的资料回答用户问题，要求：\n"
@@ -804,6 +796,16 @@ def gen_answer(query, hits, top_k=5):
                          "score": h["score"]} for h in hits[:top_k]]}
 
 
+def attach_generated_answer(result, query, hits, top_k, enabled):
+    """按需生成答案并合并到路由结果；LLM 不可用或失败时保留原检索结果。"""
+    if not enabled:
+        return result
+    generated = gen_answer(query, hits, top_k=top_k)
+    if generated:
+        result.update(generated)
+    return result
+
+
 # ===================== 入口 =====================
 
 def ask(query, top_k=5, gen_answer_=False):
@@ -831,11 +833,7 @@ def ask(query, top_k=5, gen_answer_=False):
         result = {"ok": True, "intent": "解释性关系", "method": "evidence_hybrid",
                   "route_used": "hybrid_relation", "graph": graph_result,
                   "interpretation_policy": "事实边与文本解读分离", "hits": hits}
-        if gen_answer_:
-            gen = gen_answer(q, hits, top_k=max(top_k, 8))
-            if gen:
-                result.update(gen)
-        return result
+        return attach_generated_answer(result, q, hits, max(top_k, 8), gen_answer_)
 
     # 0. 枚举查询："有哪些/列举/所有" → 知识库分类内过滤枚举
     #    （"终末地至今为止的主线任务有哪些" → 任务分类枚举主线）
@@ -867,7 +865,7 @@ def ask(query, top_k=5, gen_answer_=False):
                 pass
         return result
 
-    # 阶段 3：结构化直查条件：
+    # 结构化直查条件：
     #   - 配方/设备意图 → 直接试
     #   - 意图不明（None）或纯名称查询（用户直接输入"天有洪炉"）→ 也试
     pure_name = extract_item_name(q)[0] == q
@@ -888,11 +886,7 @@ def ask(query, top_k=5, gen_answer_=False):
                 result = {"ok": True, "intent": "关系", "method": "graph_rule",
                           "route_used": "graph", "graph": graph_result,
                           "hits": graph_result.get("hits") or []}
-                if gen_answer_:
-                    gen = gen_answer(q, result["hits"], top_k=top_k)
-                    if gen:
-                        result.update(gen)
-                return result
+                return attach_generated_answer(result, q, result["hits"], top_k, gen_answer_)
     except Exception:
         graph_result = {"available": False, "paths": [], "error": "graph_unavailable"}
 
@@ -903,11 +897,7 @@ def ask(query, top_k=5, gen_answer_=False):
     if graph_result is not None:
         result["graph_attempted"] = True
         result["graph"] = graph_result
-    if gen_answer_:
-        gen = gen_answer(q, hits, top_k=top_k)
-        if gen:
-            result.update(gen)
-    return result
+    return attach_generated_answer(result, q, hits, top_k, gen_answer_)
 
 
 if __name__ == "__main__":

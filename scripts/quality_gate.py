@@ -12,6 +12,7 @@ def load(path):
 
 
 def main():
+    """汇总评测结果；任一核心指标低于阈值时返回非零状态。"""
     ap = argparse.ArgumentParser()
     ap.add_argument("--min-recall", type=float, default=.98)
     ap.add_argument("--min-mrr", type=float, default=.93)

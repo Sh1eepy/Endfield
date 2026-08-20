@@ -34,11 +34,13 @@ if sys.stdout:
 
 
 def load_data(fname):
+    """读取配方提取所需的 WIKI 原始数据。"""
     with open(fname, encoding="utf-8") as f:
         return json.load(f)
 
 
 def build_id2name(catalog):
+    """建立物品 ID 到名称的映射，补齐配方表中的引用名称。"""
     id2name = {}
     for en in catalog:
         it = en.get("item") or {}
@@ -223,6 +225,7 @@ def parse_table(tbl, bm, id2name, cur_id, cur_name, cur_sub, device_ids, recipes
 
 
 def main():
+    """从设备和物品表格提取配方，写入 `output/recipes.json`。"""
     import argparse
 
     ap = argparse.ArgumentParser(description="从 WIKI 全量 JSON 提取全部配方")

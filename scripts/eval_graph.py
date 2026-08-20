@@ -12,6 +12,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def evaluate(eval_path="output/eval/graph_eval_set.jsonl"):
+    """检查固定关系问题是否找回包含必要实体的图路径。"""
     path = eval_path if os.path.isabs(eval_path) else os.path.join(ROOT, eval_path)
     cases = [json.loads(line) for line in open(path, encoding="utf-8") if line.strip()]
     details = []
@@ -30,6 +31,7 @@ def evaluate(eval_path="output/eval/graph_eval_set.jsonl"):
 
 
 def main():
+    """运行图检索评测并写入结果文件。"""
     ap = argparse.ArgumentParser()
     ap.add_argument("--eval", default="output/eval/graph_eval_set.jsonl")
     ap.add_argument("--out", default="output/eval/graph_result.json")

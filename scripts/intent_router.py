@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-intent_router.py — 意图识别分层漏斗（RAG_UPGRADE_PLAN.md 阶段 2）
+intent_router.py — 规则优先、LLM 兜底的意图识别
 
 层级（从便宜到贵，低置信度才往下走）:
     L1 规则层:  关键词/正则，毫秒级零成本

@@ -7,6 +7,7 @@ import os
 
 
 def compact(value, depth=0):
+    """限制深度和样本数量，生成便于阅读的条目结构摘要。"""
     if depth > 4:
         return type(value).__name__
     if isinstance(value, dict):
@@ -20,6 +21,7 @@ def compact(value, depth=0):
 
 
 def main():
+    """按名称检查原始 WIKI 条目，帮助定位解析问题。"""
     ap = argparse.ArgumentParser()
     ap.add_argument("name")
     ap.add_argument("--input")

@@ -21,6 +21,7 @@ def _read_kb(pattern="endfield_kb/*.jsonl"):
 
 
 def audit_index(index_dir="output/rag", check_chroma=True):
+    """只读核对知识库、manifest、Chroma、BM25 和 mention 的一致性。"""
     from build_rag import content_hash, inconsistent_bm25_categories
 
     index_dir = index_dir if os.path.isabs(index_dir) else os.path.join(ROOT, index_dir)
@@ -79,6 +80,7 @@ def audit_index(index_dir="output/rag", check_chroma=True):
 
 
 def main():
+    """运行索引审计并把结果写入 `output/rag/build_status.json`。"""
     ap = argparse.ArgumentParser()
     ap.add_argument("--index-dir", default="output/rag")
     ap.add_argument("--out", default="output/rag/build_status.json")

@@ -3,8 +3,7 @@
 RAG、图谱、结构化查询的完整流程、协作规则、LLM 调用次数、截断预算和 Agent Loop 决策见
 [`../KNOWLEDGE_SYSTEM_ARCHITECTURE.md`](../KNOWLEDGE_SYSTEM_ARCHITECTURE.md)。本文件维护工具与命令。
 
-RAG 的整体技术链路、监控能力、评测口径和生产化缺口见
-`output/RAG_TECHNICAL_OVERVIEW.md`。
+RAG 专项细节见 [`../output/RAG_TECHNICAL_OVERVIEW.md`](../output/RAG_TECHNICAL_OVERVIEW.md)。
 
 《明日方舟：终末地》**配方合成树** 项目的工具集。
 （早期「生产流水线空间规划」工具已全部移除，勿重建。）
@@ -94,7 +93,7 @@ python scripts/eval_graph.py                            # 单跳/多跳专项评
 图谱位于 `output/knowledge_graph/graph.db`。正式图接收任务人物/地点/前后置、干员身份认证、
 章节语义引用、配方原料/产物、明确职务句式和人工审定别名；语义推断关系不直接入图。明确关系问题由 `rag_ask.py` 路由到图检索，
 图谱缺少证据时回退原混合 RAG。完整 schema、增量、审查与门禁见
-`output/GRAPHRAG_ARCHITECTURE.md`。
+[`../output/GRAPHRAG_ARCHITECTURE.md`](../output/GRAPHRAG_ARCHITECTURE.md)。
 
 “喜欢/中意/信任/性格”等解释性问题走 `hybrid_relation`：图谱只提供身份与事件定位，系统从任务、
 档案、对话中提取局部原文窗口，生成时强制区分明确事实、合理解读和资料不足，解读结果不回写事实图。
@@ -163,7 +162,7 @@ python -m uvicorn scripts.api_server:app --host 0.0.0.0 --port 8000
 前端本地内置 Noto Sans SC（中文）与 Oxanium（英文/数字），许可证随字体保存；配方与问答
 分别保留独立输入。透明小人作为框边贴纸和低透明分散背景，终末地图标用于开场、顶栏与首屏。
 
-## RAG 问答工具（阶段 0-5，见 RAG_UPGRADE_PLAN.md）
+## RAG 问答工具
 
 ### 14. `llm_client.py` — 在线 LLM 统一客户端（OpenAI 兼容协议）
 ```python
@@ -266,4 +265,4 @@ python -m compileall -q scripts tests
 
 ## 部署
 
-根目录提供 `Dockerfile`、`requirements.txt` 和 `railway.json`。完整构建会下载 embedding 模型并在镜像内重建 RAG，运行阶段保持离线。密钥只能通过运行环境注入，详见 `DEPLOYMENT.md`。
+根目录提供 `Dockerfile`、`requirements.txt` 和 `railway.json`。完整构建会下载 embedding 模型并在镜像内重建 RAG，运行阶段保持离线。密钥只能通过运行环境注入，详见 [`../DEPLOYMENT.md`](../DEPLOYMENT.md)。

@@ -2,7 +2,7 @@
 """
 llm_client.py — 在线 LLM 统一客户端（OpenAI 兼容协议）
 
-用途（RAG_UPGRADE_PLAN.md 阶段 0）:
+用途：
   - 意图识别 L3 兜底（chat_json 强制 JSON 输出）
   - RAG 答案生成（chat + 引用溯源）
   - 测试集自动生成 / 评测裁判

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-eval_retrieval.py — RAG 检索评测（基于自动生成评测集，RAG_UPGRADE_PLAN.md 阶段 1）
+eval_retrieval.py — RAG 严格检索评测
 
 用法:
     python scripts/eval_retrieval.py                          # 用默认评测集
@@ -90,6 +90,7 @@ def judged(row, results, recipes_ix):
 
 
 def main():
+    """运行严格检索集并按意图、难度汇总 Recall、MRR 和 Precision。"""
     ap = argparse.ArgumentParser()
     ap.add_argument("--eval", default="output/eval/eval_set.jsonl")
     ap.add_argument("--out", default="output/eval/result.json")

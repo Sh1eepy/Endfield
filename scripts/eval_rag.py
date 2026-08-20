@@ -24,6 +24,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 
 
 def main():
+    """运行旧版语义检索检查；正式指标以 `eval_retrieval.py` 为准。"""
     # ---- 加载 RAG 检索器 ----
     from rag_search import RAGRetriever
 

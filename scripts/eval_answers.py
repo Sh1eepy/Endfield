@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.join(ROOT, "scripts"))
 
 
 def deterministic_score(case, result):
+    """用必要词、引用和拒答标注做可复现的基础答案评分。"""
     answer = str(result.get("answer") or "")
     should_refuse = bool(case.get("should_refuse"))
     refused = bool(result.get("rejected")) or "未找到" in answer or "不足" in answer
@@ -36,6 +37,7 @@ JUDGE_KEYS = {
 
 
 def summarize(details):
+    """汇总逐题结果，生成质量门禁读取的指标。"""
     keys = ["refusal_correct", "required_terms_coverage", "citation_present", "source_overlap"]
     summary = {k: round(sum(float(x["deterministic"][k]) for x in details) / len(details), 4) for k in keys}
     judged = []
@@ -60,6 +62,7 @@ def summarize(details):
 
 
 def main():
+    """运行小型端到端答案集；可选调用 LLM judge。"""
     ap = argparse.ArgumentParser()
     ap.add_argument("--eval", default="output/eval/answer_eval_set.jsonl")
     ap.add_argument("--out", default="output/eval/answer_result.json")

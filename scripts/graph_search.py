@@ -50,11 +50,13 @@ GRAPH_KEYWORDS = (
 
 
 def should_route_graph(query):
+    """判断问题是否明确要求实体关系或多跳路径。"""
     q = (query or "").strip()
     return bool(q and any(word in q for word in GRAPH_KEYWORDS))
 
 
 class GraphRetriever:
+    """从 SQLite 图谱解析实体、关系方向和最多三跳的证据路径。"""
     def __init__(self, db_path=DEFAULT_DB):
         self.db_path = db_path
         self.con = None
@@ -201,6 +203,7 @@ class GraphRetriever:
 
 
 def graph_query(query, top_k=8, db_path=DEFAULT_DB):
+    """安全打开图数据库并返回路径；数据库不可用时返回可降级结果。"""
     # 每次请求建立一个只读短连接，避免增量构建后实体缓存陈旧，也避免 Windows 文件锁。
     retriever = GraphRetriever(db_path)
     try:
@@ -211,6 +214,7 @@ def graph_query(query, top_k=8, db_path=DEFAULT_DB):
 
 
 def main():
+    """图查询命令行入口。"""
     import argparse
     ap = argparse.ArgumentParser()
     ap.add_argument("query")

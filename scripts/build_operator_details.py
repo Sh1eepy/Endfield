@@ -13,6 +13,7 @@ from build_kb_all import build_id2name, render_document_struct, render_inline
 
 
 def clean_audio(item):
+    """统一音频字段并过滤没有播放地址的记录。"""
     url = str(item.get("resourceUrl") or "").strip()
     if not url:
         return None
@@ -21,6 +22,7 @@ def clean_audio(item):
 
 
 def build_cover_map(catalog):
+    """从媒体目录建立条目 ID 到封面的映射。"""
     covers = {}
     for entry in catalog:
         item = entry.get("item") or {}
@@ -33,6 +35,7 @@ def build_cover_map(catalog):
 
 
 def attach_entry_images(blocks, covers):
+    """给富文本中的条目引用补上对应封面。"""
     for block in blocks:
         sequences = []
         if block.get("c"):
@@ -47,6 +50,7 @@ def attach_entry_images(blocks, covers):
 
 
 def clean_intro(intro):
+    """整理技能/Tab 简介字段，保留名称、类型、图片和说明。"""
     if not isinstance(intro, dict):
         return None
     out = {key: str(intro.get(key) or "") for key in ("name", "type", "imgUrl", "description")}
@@ -54,6 +58,7 @@ def clean_intro(intro):
 
 
 def build_operator(entry, id2name, covers):
+    """把干员块式文档整理为前端可直接渲染的章节、Tab 和媒体结构。"""
     item = entry.get("item") or {}
     detail_item = (entry.get("detail") or {}).get("item") or {}
     doc = detail_item.get("document") or {}
@@ -107,6 +112,7 @@ def build_operator(entry, id2name, covers):
 
 
 def main():
+    """生成全部干员详情数据，并输出构建统计。"""
     ap = argparse.ArgumentParser()
     ap.add_argument("--input")
     ap.add_argument("--out", default="output/operator_details.json")

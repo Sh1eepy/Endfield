@@ -49,6 +49,7 @@ def _load_userdict():
 
 
 class RAGRetriever:
+    """加载本地索引，执行名称、BM25、向量三路召回并用 RRF 合并。"""
     def __init__(self, index_dir="output/rag", model_name="BAAI/bge-small-zh-v1.5"):
         self.index_dir = index_dir
         # ---------- 加载 BM25（按分类分片，跨分片合并）----------
@@ -184,6 +185,7 @@ class RAGRetriever:
 
 
 def main():
+    """命令行检索入口，用于快速检查召回结果和分数。"""
     ap = argparse.ArgumentParser(description="混合检索：向量 + BM25 → RRF")
     ap.add_argument("query", help="查询语句")
     ap.add_argument("--top-k", type=int, default=5, help="返回条数")

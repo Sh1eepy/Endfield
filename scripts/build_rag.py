@@ -71,6 +71,7 @@ def content_hash(text):
 
 
 def load_records(paths):
+    """读取分类 JSONL，并按条目 ID 去重；后出现的记录覆盖旧记录。"""
     """读取知识库 JSONL；支持 glob（如 endfield_kb/*.jsonl）。category 优先取行内字段。"""
     files = []
     for p in paths:
@@ -149,10 +150,12 @@ def split_chunks(record, max_chars):
 
 
 def tokenize(text):
+    """使用项目专名词典分词，供 BM25 构建和检索保持一致。"""
     return [t for t in jieba.cut(text) if t.strip() and t.strip() != "\n"]
 
 
 def chunk_records(records, max_chars):
+    """把规范化条目切成带稳定 ID、内容哈希和检索前缀的 chunks。"""
     """records → [{id, text, meta, hash}]。chunk id = 分类-item_id-序号。
 
     text 带条目级元信息前缀（Contextual Retrieval 轻量版）：
@@ -178,6 +181,7 @@ def chunk_records(records, max_chars):
 
 
 def write_bm25_shards(chunks, bm25_dir, categories=None):
+    """按分类写 BM25 分片；增量模式只传入发生变化的分类。"""
     """按分类写 BM25 分片（bm25/{分类}.pkl）。categories=None 重建全部；否则只重建指定分类。"""
     os.makedirs(bm25_dir, exist_ok=True)
     by_cat = {}
@@ -201,6 +205,7 @@ def write_bm25_shards(chunks, bm25_dir, categories=None):
 
 
 def inconsistent_bm25_categories(chunks, bm25_dir):
+    """找出缺失、陈旧、损坏或多余的 BM25 分类分片。"""
     """找出与最新 manifest 不一致、缺失或损坏的 BM25 分类分片。"""
     expected = {}
     for c in chunks:
@@ -224,6 +229,7 @@ def inconsistent_bm25_categories(chunks, bm25_dir):
 
 
 def main():
+    """构建或增量更新向量索引、BM25 分片和 manifest。"""
     import argparse
 
     ap = argparse.ArgumentParser(description="构建/增量更新 RAG 索引（ChromaDB + BM25 分片）")

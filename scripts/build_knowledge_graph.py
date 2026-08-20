@@ -36,17 +36,20 @@ SECTION_PREDICATES = {
 
 
 def content_hash(row):
+    """计算来源内容指纹，用于判断是否需要增量重建。"""
     raw = "\n".join((str(row.get("name") or ""), str(row.get("category") or ""),
                      str(row.get("full_text") or "")))
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
 def relation_id(subject_id, predicate, object_id, source_item_id, evidence):
+    """根据关系和证据生成稳定 ID，保证重复构建可去重。"""
     raw = "\x1f".join((subject_id, predicate, object_id, source_item_id, evidence))
     return hashlib.sha1(raw.encode("utf-8")).hexdigest()
 
 
 def load_rows(pattern="endfield_kb/*.jsonl"):
+    """读取所有规范化知识条目，并跳过空行和非法 JSON。"""
     rows = []
     for path in sorted(glob.glob(os.path.join(ROOT, pattern))):
         with open(path, encoding="utf-8") as fh:
@@ -55,6 +58,7 @@ def load_rows(pattern="endfield_kb/*.jsonl"):
 
 
 def connect(path=DEFAULT_DB):
+    """打开 SQLite 图数据库并启用外键检查。"""
     os.makedirs(os.path.dirname(path), exist_ok=True)
     con = sqlite3.connect(path)
     con.row_factory = sqlite3.Row
@@ -63,6 +67,7 @@ def connect(path=DEFAULT_DB):
 
 
 def create_schema(con, reset=False):
+    """创建实体、别名、来源和关系表；`reset` 时重建全部表。"""
     if reset:
         con.executescript("DROP TABLE IF EXISTS relations; DROP TABLE IF EXISTS aliases; "
                           "DROP TABLE IF EXISTS manifest; DROP TABLE IF EXISTS entities; DROP TABLE IF EXISTS meta;")
@@ -98,6 +103,7 @@ def create_schema(con, reset=False):
 
 
 class GraphBuilder:
+    """按可审计规则写入实体、别名和带原文证据的关系。"""
     def __init__(self, con, rows):
         self.con = con
         self.rows = rows
@@ -303,6 +309,7 @@ class GraphBuilder:
 
 
 def build(db_path=DEFAULT_DB, incremental=False, inputs="endfield_kb/*.jsonl"):
+    """全量或按来源哈希增量构建知识图谱，并返回构建统计。"""
     rows = load_rows(inputs)
     con = connect(db_path)
     create_schema(con, reset=not incremental)
@@ -351,6 +358,7 @@ def build(db_path=DEFAULT_DB, incremental=False, inputs="endfield_kb/*.jsonl"):
 
 
 def main():
+    """知识图谱构建命令行入口。"""
     ap = argparse.ArgumentParser()
     ap.add_argument("--db", default="output/knowledge_graph/graph.db")
     ap.add_argument("--inputs", default="endfield_kb/*.jsonl")

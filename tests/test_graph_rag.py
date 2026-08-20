@@ -81,6 +81,15 @@ class GraphRAGTests(unittest.TestCase):
         self.assertIn("前 40 项", prompt)
         self.assertIn("不得把当前清单说成完整清单", prompt)
 
+    def test_generation_helper_preserves_or_merges_route_result(self):
+        base = {"ok": True, "route_used": "rag"}
+        with patch.object(rag_ask, "gen_answer") as generate:
+            self.assertIs(rag_ask.attach_generated_answer(base, "问题", [], 5, False), base)
+            generate.assert_not_called()
+        with patch.object(rag_ask, "gen_answer", return_value={"answer": "回答", "rejected": False}):
+            result = rag_ask.attach_generated_answer(base.copy(), "问题", [], 5, True)
+        self.assertEqual(result["answer"], "回答")
+
 
 if __name__ == "__main__":
     unittest.main()

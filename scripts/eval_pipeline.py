@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.join(ROOT, "scripts"))
 
 
 def main():
+    """离线评估意图分类覆盖率和实际路由，不默认调用在线 LLM。"""
     ap = argparse.ArgumentParser()
     ap.add_argument("--eval", default="output/eval/routing_eval_set.jsonl")
     ap.add_argument("--out", default="output/eval/pipeline_result.json")

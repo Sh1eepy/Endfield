@@ -14,6 +14,7 @@ from PIL import Image
 
 
 def remove_edge_background(source: Path, target: Path, threshold: int = 242) -> None:
+    """只移除与图片边缘连通的近白背景，保留角色内部白色区域。"""
     image = Image.open(source).convert("RGBA")
     pixels = image.load()
     width, height = image.size
@@ -58,6 +59,7 @@ def remove_edge_background(source: Path, target: Path, threshold: int = 242) -> 
 
 
 def main() -> None:
+    """批量处理指定图片并输出透明 PNG。"""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("source", type=Path)
     parser.add_argument("target", type=Path)

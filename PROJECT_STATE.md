@@ -1,4 +1,4 @@
-# PROJECT_STATE.md — 项目状态交接（AI 继续工作前请先读本文件 + AGENTS.md）
+# 项目状态
 
 > 2026-08 更新。项目 = **《明日方舟：终末地》配方合成树**。
 > 早期「生产流水线空间规划」已整体移除（算法/产物/文档全删），不要重建。
@@ -18,13 +18,13 @@
 | 合成树 API | `api_server.py /api/synthesis` | 物品合成树 / 设备配方卡 / 歧义→候选列表 / 无配方→知识库信息；叶子=基础资源，配方≤2，深度≤10，循环剪枝 |
 | 名称建议 | `api_server.py /api/names` | 全部名称（配方物品+设备+知识库条目，1908 个），前端模糊搜索联想 |
 | 媒体结构库 | `output/item_media.json` | extract_media.py 提取：封面图 1957 / 正文图 2046 / 外链 291 / 引用 14693（含数量与链接样式） |
-| 前端 | `web/index.html` | 白色工业制图 v3：纵向真实图片配方树、空查询入口、树工具栏、滚动几何动效与响应式布局 |
+| 前端 | `web/index.html` | 白色工业档案风格：纵向图片配方树、干员详情、机械开场和响应式布局 |
 | 干员详情库 | `output/operator_details.json` | 31 名干员；基本信息、富文本颜色、技能/天赋/潜能/档案多 Tab、图片与多语种语音 |
 | 轻量 GraphRAG | `output/knowledge_graph/graph.db` | 2,129 实体 / 9,358 条可追溯关系；覆盖人物/任务/地点/物品/设备/配方与明确亲属关系，支持解释性关系混合取证、增量更新与问法对称门禁 |
 | 评测 | `eval_retrieval.py` | 71 条查询；当前 Recall@5=100%、MRR=97.3%（`final_reviewed.json`） |
 
 ## 3. 关键文件地图
-- `KNOWLEDGE_SYSTEM_ARCHITECTURE.md` → **RAG、知识图谱、结构化查询、LLM 调用与质量门禁的权威总览**
+- `KNOWLEDGE_SYSTEM_ARCHITECTURE.md` → RAG、知识图谱、结构化查询、LLM 调用与质量门禁总览
 - `RAG_UPGRADE_PLAN.md` → RAG 优化计划与进度；`RAG_DEVLOG.md` → 开发决策/踩坑记录
 - `scripts/build_kb_all.py` → WIKI 全量 JSON → `endfield_kb/`（22 分类 jsonl+md）
 - `scripts/recipe_extract.py` → 全量 JSON → `output/recipes.json`（配方）
@@ -39,7 +39,7 @@
 - `scripts/gen_eval_set.py` → 评测集自动生成；`scripts/eval_retrieval.py` → 检索评测
 - `scripts/gen_jieba_dict.py` + `scripts/dict_zh.txt` → 游戏专有名词词典
 - `output/eval/` → 评测集与历次评测结果；`output/mention_index.json` → mention 反查索引
-- `web/index.html` → 前端（白色工业制图 v3；纵向真实图片配方树 + 知识问答）
+- `web/index.html` → 前端（纵向图片配方树 + 知识问答 + 干员详情）
 - `.env` → 可选（LLM 相关配置，私密勿提交）；`.gitignore` + `.env.example` → 密钥安全
 
 ## 4. 关键技术结论
@@ -50,22 +50,15 @@
   图关系通常 1 次，结构化直查可 0 次；是否增加补检索循环由困难集收益决定。
 - 长条目生成不再固定截取开头，使用 `focus_long_context()` 从全文分散选择覆盖各子问题的证据窗口。
 
-## 5. 收尾路线（执行中）
-1. ✅ **阶段 1**：统一文档口径、审计敏感文件、建立 Git 基线
-2. ✅ **阶段 2**：已补离线自动化测试；修复空输入和负数深度参数问题
-3. ✅ **阶段 3**：已完成合成树展开/收起、节点跳转、搜索历史与浏览器验收
-4. ✅ **阶段 4**：名称召回、漏索引修复与评测审计完成；Recall@5=100%
-5. ✅ **阶段 5**：Docker/Railway 配置与本地端到端验收完成；实际镜像构建和公网发布待外部环境
-
-## 6. 当前发布边界
+## 5. 当前发布边界
 
 - 仓库已经具备可复现 Dockerfile、Railway 配置、依赖锁定和部署说明。
 - 当前机器未安装 Docker，尚未执行真实 `docker build`。
-- 仓库尚未连接 GitHub remote，也未获得 Railway 项目权限，因此没有擅自推送或公网发布。
-- 下一步按 `DEPLOYMENT.md` 安装 Docker 本地验镜像，或配置 GitHub/Railway 后发布。
+- GitHub remote 已连接到 `https://github.com/Sh1eepy/Endfield.git`；推送仍需明确授权。
+- Railway 尚未配置项目权限。下一步按 `DEPLOYMENT.md` 本地验镜像或发布。
 
 每个阶段的决策、验证方式和维护方法记录在 `PROJECT_PROGRESS.md`。
 
-## 6. 环境与纪律提醒（详见 AGENTS.md）
+## 6. 环境提醒（详见 AGENTS.md）
 - 终端 GBK 乱码 → 写 UTF-8 文件再读取；模型离线加载；浏览器用 127.0.0.1
 - 边界：只改 `scripts/ web/ endfield_kb/ output/ logs/`

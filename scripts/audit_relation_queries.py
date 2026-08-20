@@ -25,6 +25,7 @@ QUERY_WORD = {
 
 
 def audit_relation_queries(db_path=DEFAULT_DB, sample_per_predicate=40):
+    """为每类关系批量验证正向、反向和是非问是否能找回原边。"""
     con = sqlite3.connect(db_path); con.row_factory = sqlite3.Row
     rows = [dict(r) for r in con.execute("""SELECT r.predicate,s.canonical_name subject,o.canonical_name object_name
       FROM relations r JOIN entities s ON s.id=r.subject_id JOIN entities o ON o.id=r.object_id
@@ -63,6 +64,7 @@ def audit_relation_queries(db_path=DEFAULT_DB, sample_per_predicate=40):
 
 
 def main():
+    """运行关系问法审查并落盘结果，供质量门禁读取。"""
     ap = argparse.ArgumentParser(); ap.add_argument("--db", default="output/knowledge_graph/graph.db")
     ap.add_argument("--out", default="output/knowledge_graph/relation_query_audit.json")
     ap.add_argument("--sample-per-predicate", type=int, default=40); ap.add_argument("--fail-on-error", action="store_true")

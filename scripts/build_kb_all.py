@@ -23,11 +23,13 @@ if sys.stdout:
 
 
 def load_data(fname):
+    """读取完整 WIKI JSON，并兼容列表或外层对象两种导出格式。"""
     with open(fname, encoding="utf-8") as f:
         return json.load(f)
 
 
 def build_id2name(catalog):
+    """建立条目 ID 到名称的映射，供引用和表格渲染使用。"""
     id2name = {}
     for en in catalog:
         it = en.get("item") or {}
@@ -79,6 +81,7 @@ def render_inline(els, id2name):
 
 
 def render_block(bv, blockmap, id2name, depth=0):
+    """递归把文本、列表、表格和图片块渲染成检索文本。"""
     kind = bv.get("kind")
     lines = []
     if kind == "text":
@@ -238,6 +241,7 @@ def render_block_struct(bv, blockmap, id2name):
 
 
 def render_document_struct(doc_entry, id2name):
+    """保留块类型和行列结构，供前端还原富内容。"""
     blockmap = doc_entry.get("blockMap") or {}
     out = []
     for bid in doc_entry.get("blockIds") or []:
@@ -248,6 +252,7 @@ def render_document_struct(doc_entry, id2name):
 
 
 def render_document(doc_entry, id2name):
+    """把一个块式文档渲染成按章节组织的文本。"""
     blockmap = doc_entry.get("blockMap") or {}
     out = []
     for bid in doc_entry.get("blockIds") or []:
@@ -258,6 +263,7 @@ def render_document(doc_entry, id2name):
 
 
 def extract_entry(en, id2name):
+    """把单个块式 WIKI 条目整理为结构化字段和可检索全文。"""
     """把 catalog 单条渲染成 {item_id,name,caption,sections,documents}。"""
     it = en.get("item") or {}
     detail = en.get("detail") or {}
@@ -307,6 +313,7 @@ def extract_entry(en, id2name):
 
 
 def build_full_text(dev):
+    """把条目字段和章节合并成稳定、可检索的全文。"""
     section_text = {}
     for ch, ws in (dev["sections"] or {}).items():
         for wt, text in ws.items():
@@ -325,6 +332,7 @@ def build_full_text(dev):
 
 
 def main():
+    """把完整 WIKI 数据提取为按分类组织的 JSONL、Markdown 和目录。"""
     ap = argparse.ArgumentParser(description="按子分类提取 WIKI 全量数据为知识库（jsonl+md）")
     ap.add_argument("--input", help="全量 JSON；默认最新 endfield_wiki_full_*.json")
     ap.add_argument("--out-dir", default="endfield_kb", help="输出目录（默认 endfield_kb/）")

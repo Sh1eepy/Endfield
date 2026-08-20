@@ -6,6 +6,7 @@ import time
 
 
 class RAGMonitor:
+    """记录单进程请求、路由、降级和延迟；数据不跨重启持久化。"""
     def __init__(self, latency_window=500):
         self.started_at = time.time()
         self.counts = Counter({key: 0 for key in (

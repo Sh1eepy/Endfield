@@ -20,6 +20,7 @@ ALLOWED_PREDICATES = {
 
 
 def audit_graph(db_path=DEFAULT_DB):
+    """检查图谱端点、来源、证据、自环和基础数量是否一致。"""
     issues = []
     if not os.path.exists(db_path):
         return {"status": "fail", "consistent": False, "issues": ["graph_db_missing"]}
@@ -74,6 +75,7 @@ def audit_graph(db_path=DEFAULT_DB):
 
 
 def main():
+    """运行图谱审计并输出 JSON 结果。"""
     ap = argparse.ArgumentParser()
     ap.add_argument("--db", default="output/knowledge_graph/graph.db")
     ap.add_argument("--out", default="output/knowledge_graph/audit_report.json")

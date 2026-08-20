@@ -28,6 +28,7 @@ import jieba  # noqa: E402
 
 
 def collect_names():
+    """收集知识库、配方和设备专名，生成领域词典候选。"""
     names = set()
     # 配方库：物品名 + 设备名
     rs = (json.load(open(os.path.join(ROOT, "output", "recipes.json"), encoding="utf-8")) or {}).get("recipes", [])
@@ -57,6 +58,7 @@ def collect_names():
 
 
 def main():
+    """写入 jieba 用户词典，保持构建和查询分词一致。"""
     import argparse
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="scripts/dict_zh.txt")

@@ -61,6 +61,7 @@ app.add_middleware(
 
 @app.get("/api/health")
 def health():
+    """快速存活检查；不加载索引，也不调用模型。"""
     return {"status": "ok", "service": "endfield-wiki-agent"}
 
 
@@ -84,6 +85,7 @@ def health_deep():
 
 @app.get("/api/metrics")
 def rag_metrics():
+    """返回当前进程内的问答计数和延迟摘要；服务重启后重新计数。"""
     from rag_monitor import monitor
     return monitor.snapshot()
 
@@ -287,6 +289,7 @@ def _kb_summary(kb):
 
 @app.get("/api/synthesis")
 def synthesis(item: str, max_depth: int = 10):
+    """查询物品合成树、设备配方或知识库详情。"""
     if not item or not item.strip():
         return {"ok": False, "error": "请输入物品或设备名称"}
     if max_depth < 0:
@@ -390,12 +393,13 @@ def names():
     return {"names": _NAMES_CACHE, "count": len(_NAMES_CACHE)}
 
 
-# ===================== RAG 问答（阶段 5）=====================
+# ===================== RAG 问答 =====================
 
 from pydantic import BaseModel as _BaseModel  # noqa: E402
 
 
 class AskRequest(_BaseModel):
+    """知识问答参数；关闭 `gen_answer` 时只返回路由和检索结果。"""
     query: str
     top_k: int = 5
     gen_answer: bool = True

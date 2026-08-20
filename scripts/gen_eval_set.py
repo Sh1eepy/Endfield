@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-gen_eval_set.py — RAG 评测集自动生成器（RAG_UPGRADE_PLAN.md 阶段 1）
+gen_eval_set.py — RAG 评测集生成器
 
 思路：用在线 LLM 按「意图类别 × 难度」矩阵自动生成查询，gold 答案用
 结构化配方库 / 知识库自动核对（不是让 LLM 编答案，避免"自问自答"污染评测）。
@@ -70,12 +70,14 @@ PROMPT_TMPL = """你是《明日方舟：终末地》资深玩家，帮评测系
 # ===================== 数据加载 =====================
 
 def load_recipes(path):
+    """读取配方数据，作为结构化评测锚点。"""
     rs = json.load(open(path, encoding="utf-8"))
     rs = rs if isinstance(rs, list) else rs.get("recipes", rs)
     return rs
 
 
 def load_kb(patterns):
+    """读取知识库条目，作为各意图评测锚点。"""
     recs = []
     for p in patterns:
         for f in sorted(glob.glob(p)):
@@ -125,6 +127,7 @@ def anchor_specs(recipes, kb):
 # ===================== 生成 =====================
 
 def sample_anchors(specs, per_class):
+    """按类别采样锚点，避免评测集被单一分类占满。"""
     out = {}
     for intent, items in specs.items():
         random.shuffle(items)
@@ -152,6 +155,7 @@ def sample_anchors(specs, per_class):
 
 
 def anchor_desc(a):
+    """把锚点整理成生成问题时使用的简短说明。"""
     if a["kind"] == "比较对":
         return f"「{a['a']['name']}」与「{a['b']['name']}」（比较两者哪个更好/有何区别）"
     return f"「{a['name']}」"
@@ -193,6 +197,7 @@ def template_fallback(a):
 
 
 def main():
+    """生成意图×难度评测集；LLM 不可用时使用规则模板。"""
     ap = argparse.ArgumentParser()
     ap.add_argument("--recipes", default="output/recipes.json")
     ap.add_argument("--kb", nargs="*", default=["endfield_kb/*.jsonl"])
