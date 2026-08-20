@@ -68,8 +68,15 @@ def health():
 def health_deep():
     """无外网、无费用的索引深度检查；LLM 只报告脱敏配置状态。"""
     from rag_audit import audit_index
+    from graph_audit import audit_graph
     from llm_client import llm
     result = audit_index()
+    graph = audit_graph()
+    result["graph"] = graph
+    if not graph.get("consistent"):
+        result["consistent"] = False
+        result["status"] = "degraded"
+        result.setdefault("issues", []).extend("graph:" + x for x in graph.get("issues") or [])
     result["service"] = "endfield-wiki-agent"
     result["llm"] = llm.config_summary()
     return result

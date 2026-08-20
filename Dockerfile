@@ -22,6 +22,7 @@ ENV HF_HUB_OFFLINE=1 \
     TRANSFORMERS_OFFLINE=1
 
 RUN python scripts/build_rag.py --inputs "endfield_kb/*.jsonl" --reset
+RUN python scripts/build_knowledge_graph.py
 
 EXPOSE 8000
 

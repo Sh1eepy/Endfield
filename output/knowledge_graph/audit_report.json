@@ -1,0 +1,19 @@
+{
+  "status": "ok",
+  "consistent": true,
+  "checked_at": "2026-08-20T05:15:06.907214+00:00",
+  "issues": [],
+  "entities": 2129,
+  "aliases": 1,
+  "relations": 8369,
+  "sources": 1958,
+  "predicates": {
+    "AFFILIATED_WITH": 30,
+    "HAS_PARTICIPANT": 557,
+    "LOCATED_IN": 203,
+    "NEXT_QUEST": 106,
+    "PART_OF": 44,
+    "PREVIOUS_QUEST": 108,
+    "REFERENCES": 7321
+  }
+}

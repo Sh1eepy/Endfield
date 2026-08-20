@@ -21,6 +21,7 @@ def main():
     ap.add_argument("--min-citation", type=float, default=.90)
     ap.add_argument("--min-source-overlap", type=float, default=.60)
     ap.add_argument("--min-judge-faithfulness", type=float, default=1.50)
+    ap.add_argument("--min-graph-recall", type=float, default=.90)
     args = ap.parse_args()
     failures = []
     status = load("output/rag/build_status.json")
@@ -50,6 +51,16 @@ def main():
         faithfulness = (a.get("judge") or {}).get("faithfulness")
         if faithfulness is not None and faithfulness < args.min_judge_faithfulness:
             failures.append(f"judge_faithfulness:{faithfulness}<{args.min_judge_faithfulness}")
+    graph_db_path = os.path.join(ROOT, "output/knowledge_graph/graph.db")
+    if os.path.exists(graph_db_path):
+        from graph_audit import audit_graph
+        from eval_graph import evaluate as evaluate_graph
+        graph_audit = audit_graph(graph_db_path)
+        if not graph_audit.get("consistent"):
+            failures.append("graph_inconsistent:" + ";".join(graph_audit.get("issues") or []))
+        graph_recall = evaluate_graph()["summary"]["path_recall"]
+        if graph_recall < args.min_graph_recall:
+            failures.append(f"graph_path_recall:{graph_recall}<{args.min_graph_recall}")
     print(json.dumps({"passed": not failures, "failures": failures}, ensure_ascii=False, indent=2))
     if failures:
         raise SystemExit(1)

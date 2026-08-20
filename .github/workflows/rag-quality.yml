@@ -2,9 +2,9 @@ name: RAG quality gate
 
 on:
   push:
-    paths: ["scripts/**", "tests/**", "output/eval/**", "output/rag/**", ".github/workflows/rag-quality.yml"]
+    paths: ["scripts/**", "tests/**", "output/eval/**", "output/rag/**", "output/knowledge_graph/**", ".github/workflows/rag-quality.yml"]
   pull_request:
-    paths: ["scripts/**", "tests/**", "output/eval/**", "output/rag/**"]
+    paths: ["scripts/**", "tests/**", "output/eval/**", "output/rag/**", "output/knowledge_graph/**"]
 
 jobs:
   offline-quality:
@@ -14,5 +14,7 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - run: pip install rank-bm25 jieba httpx
-      - run: python -m unittest tests.test_build_rag tests.test_intent_router tests.test_rag_monitor
+      - run: python -m unittest tests.test_build_rag tests.test_intent_router tests.test_rag_monitor tests.test_graph_rag
+      - run: python scripts/graph_audit.py --fail-on-error
+      - run: python scripts/eval_graph.py
       - run: python scripts/quality_gate.py

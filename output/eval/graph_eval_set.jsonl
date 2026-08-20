@@ -1,0 +1,6 @@
+{"query":"诀属于哪个组织","gold_terms":["诀","应龙特勤队"],"expected_hops":1,"case":"single_hop_affiliation"}
+{"query":"诀的本名是什么","gold_terms":["诀","李织烟"],"expected_hops":1,"case":"curated_alias"}
+{"query":"陈千语和李织烟（诀）的关系","gold_terms":["陈千语","诀","参与人物"],"expected_hops":2,"case":"two_entity_common_quest"}
+{"query":"第二章-进程Ⅶ-谈剑问迹有哪些相关人物","gold_terms":["陈千语","诀"],"expected_hops":1,"case":"quest_participants"}
+{"query":"第二章-进程Ⅶ-谈剑问迹发生在哪里","gold_terms":["北部禁区"],"expected_hops":1,"case":"quest_location"}
+{"query":"第二章-进程Ⅶ-谈剑问迹的前置任务","gold_terms":["第二章-进程Ⅶ-归途之始"],"expected_hops":1,"case":"quest_predecessor"}

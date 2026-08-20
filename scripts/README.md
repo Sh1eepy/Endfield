@@ -77,6 +77,21 @@ python scripts/build_operator_details.py   # → output/operator_details.json
 
 ## RAG 层工具
 
+### 轻量 GraphRAG：关系与多跳问答
+
+```bash
+python scripts/build_knowledge_graph.py                 # 全量构建 SQLite 图谱
+python scripts/build_knowledge_graph.py --incremental   # 按来源 content_hash 增量替换边
+python scripts/graph_search.py "陈千语和诀的关系"        # 1-3 跳证据路径
+python scripts/graph_audit.py --fail-on-error           # 来源/hash/外键/证据/关系约束审计
+python scripts/eval_graph.py                            # 单跳/多跳专项评测
+```
+
+图谱位于 `output/knowledge_graph/graph.db`。正式图仅接收任务人物/地点/前后置、干员身份认证、
+结构化引用和人工审定别名；语义推断关系不直接入图。明确关系问题由 `rag_ask.py` 路由到图检索，
+图谱缺少证据时回退原混合 RAG。完整 schema、增量、审查与门禁见
+`output/GRAPHRAG_ARCHITECTURE.md`。
+
 ### 7. `build_rag.py` — RAG 索引构建 / 增量更新
 ```bash
 # 首次全量（清空重建，约 3 分钟）

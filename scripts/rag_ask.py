@@ -708,10 +708,32 @@ def ask(query, top_k=5, gen_answer_=False):
             return {"ok": True, "intent": intent or "配方/设备", "method": method, **direct,
                     "route_used": "structured"}
 
+    # GraphRAG：明确关系/多跳问题优先查询带证据的图路径。没有路径时继续走原 RAG，
+    # “图谱尚无证据”不等于“关系不存在”。
+    graph_result = None
+    try:
+        from graph_search import graph_query, should_route_graph
+        if should_route_graph(q):
+            graph_result = graph_query(q, top_k=max(top_k, 5))
+            if graph_result.get("paths"):
+                result = {"ok": True, "intent": "关系", "method": "graph_rule",
+                          "route_used": "graph", "graph": graph_result,
+                          "hits": graph_result.get("hits") or []}
+                if gen_answer_:
+                    gen = gen_answer(q, result["hits"], top_k=top_k)
+                    if gen:
+                        result.update(gen)
+                return result
+    except Exception:
+        graph_result = {"available": False, "paths": [], "error": "graph_unavailable"}
+
     # 其他意图 / 直查未命中 → 多路检索（RAG + 改写子查询 + 全文关键词 + mention）
     hits = multi_search(q, top_k=top_k)
     result = {"ok": True, "intent": intent or "未知", "method": method,
               "route_used": "rag", "hits": hits}
+    if graph_result is not None:
+        result["graph_attempted"] = True
+        result["graph"] = graph_result
     if gen_answer_:
         gen = gen_answer(q, hits, top_k=top_k)
         if gen:
