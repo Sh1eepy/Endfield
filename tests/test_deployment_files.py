@@ -15,9 +15,14 @@ class DeploymentFileTests(unittest.TestCase):
 
     def test_dockerfile_builds_index_offline_and_uses_port(self):
         text = (ROOT / "Dockerfile").read_text(encoding="utf-8")
+        starter = (ROOT / "scripts" / "start_server.py").read_text(encoding="utf-8")
         self.assertIn("HF_HUB_OFFLINE=1", text)
         self.assertIn("build_rag.py", text)
-        self.assertIn("${PORT:-8000}", text)
+        self.assertIn("download.pytorch.org/whl/cpu", text)
+        self.assertIn("torch==2.13.0+cpu", text)
+        self.assertIn("python scripts/start_server.py", text)
+        self.assertIn('os.environ.get("PORT")', starter)
+        self.assertIn('os.environ.get("WEB_CONCURRENCY")', starter)
         self.assertNotIn("LLM_API_KEY=", text)
 
     def test_railway_healthcheck_matches_api(self):

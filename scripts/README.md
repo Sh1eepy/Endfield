@@ -143,8 +143,13 @@ python scripts/extract_module.py --chunk-dir chunks --module-id 71188 --out-dir 
 
 ### 13. `api_server.py` — FastAPI 服务（配方合成树 + RAG 问答）
 ```bash
-python -m uvicorn scripts.api_server:app --host 0.0.0.0 --port 8000
+# 生产（云端，默认 4 worker，吃云服务器内存）
+python scripts/start_server.py
+# 本机开发调试（单进程，不重复加载模型）
+WEB_CONCURRENCY=1 python scripts/start_server.py
 ```
+多 worker 由 `start_server.py` 统一管理：worker 数取环境变量 `WEB_CONCURRENCY`（默认 4）。
+云端（Railway）在 Variables 里设 `WEB_CONCURRENCY=4`；本机开发设 1。
 | 端点 | 说明 |
 |---|---|
 | `GET /api/health` | 健康检查 |

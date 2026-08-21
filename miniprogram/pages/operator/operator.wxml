@@ -1,0 +1,243 @@
+<!-- pages/operator/operator.wxml — 干员详情页（阶段 4：章节/Tab/宽表/音频） -->
+
+<view class="op-page">
+  <!-- 背景半透明 q 版小人（5 个漂移） -->
+  <image class="bg-mascot bg-op-1" src="/assets/images/mascot-03.png" mode="aspectFit" />
+  <image class="bg-mascot bg-op-2" src="/assets/images/mascot-05.png" mode="aspectFit" />
+  <image class="bg-mascot bg-op-3" src="/assets/images/mascot-08.png" mode="aspectFit" />
+  <image class="bg-mascot bg-op-4" src="/assets/images/mascot-02.png" mode="aspectFit" />
+  <image class="bg-mascot bg-op-5" src="/assets/images/mascot-06.png" mode="aspectFit" />
+  <!-- 页面角落：不透明小 q 版装饰 -->
+  <image class="deco-mascot deco-op" src="/assets/images/mascot-07.png" mode="aspectFit" />
+  <!-- 加载中 -->
+  <block wx:if="{{loading}}">
+    <view class="poly-panel op-body">
+      <view class="loading-text tech-label">LOADING DOSSIER…</view>
+    </view>
+  </block>
+
+  <!-- 错误 -->
+  <block wx:elif="{{error}}">
+    <view class="poly-panel op-body">
+      <view class="op-error">未找到详情：{{error}}</view>
+    </view>
+  </block>
+
+  <!-- 空 -->
+  <block wx:elif="{{!op}}">
+    <view class="poly-panel op-body">
+      <view class="empty-code tech-label">NO OPERATOR / READY</view>
+    </view>
+  </block>
+
+  <!-- ===== 干员档案 ===== -->
+  <block wx:else>
+    <!-- hero：首屏立绘靠左，文字在下方单色深底区 -->
+    <view class="op-hero anim-rise">
+      <view class="op-hero-visual-zone" wx:if="{{visual}}">
+        <image
+          class="op-visual {{opVisualFail ? 'op-visual-hide' : ''}}"
+          src="{{visual}}"
+          mode="aspectFit"
+          data-key="opVisualFail"
+          binderror="onImgError"
+        />
+      </view>
+      <view class="op-hero-copy">
+        <view class="op-code tech-label">OPERATOR / {{op.item_id || '--'}}</view>
+        <view class="op-name">{{op.name}}</view>
+        <view class="op-caption">{{op.caption || '终末地干员资料档案'}}</view>
+      </view>
+    </view>
+
+    <!-- 章节导航（横向滚动） -->
+    <scroll-view class="op-chapter-nav anim-rise d2" scroll-x enable-flex wx:if="{{chapters.length > 1}}">
+      <view
+        class="op-nav-btn {{c.active ? 'active' : ''}}"
+        wx:for="{{chapters}}"
+        wx:key="title"
+        wx:for-item="c"
+        wx:for-index="ci"
+        data-i="{{ci}}"
+        bindtap="onChapterTap"
+      >{{c.title}}</view>
+    </scroll-view>
+
+    <!-- 当前章节 widgets -->
+    <view class="op-widgets">
+      <block wx:for="{{widgets}}" wx:key="title" wx:for-item="w" wx:for-index="wi">
+        <view class="op-widget poly-panel anim-rise d{{wi < 4 ? wi + 2 : 6}}">
+          <view class="op-widget-head">
+            <view class="op-widget-title">{{w.title}}</view>
+            <view class="op-widget-type tech-label">{{w.type}} / {{wi < 9 ? '0' : ''}}{{wi + 1}}</view>
+          </view>
+
+          <!-- facts 事实卡 -->
+          <view class="op-facts" wx:if="{{w.facts.length}}">
+            <view class="op-fact" wx:for="{{w.facts}}" wx:key="label" wx:for-item="f">
+              <view class="op-fact-label tech-label">{{f.label}}</view>
+              <view class="op-fact-value">{{f.value}}</view>
+            </view>
+          </view>
+
+          <!-- tabs 页签 -->
+          <block wx:if="{{w.tabs.length}}">
+            <scroll-view class="op-tabs" scroll-x enable-flex wx:if="{{w.hasTabs}}">
+              <view
+                class="op-tab-btn {{t.active ? 'active' : ''}}"
+                wx:for="{{w.tabs}}"
+                wx:key="title"
+                wx:for-item="t"
+                wx:for-index="ti"
+                data-wi="{{wi}}"
+                data-ti="{{ti}}"
+                bindtap="onTabTap"
+              >
+                <image wx:if="{{t.icon}}" src="{{t.icon}}" mode="aspectFit" class="op-tab-icon" />
+                <text wx:else>{{t.title}}</text>
+              </view>
+            </scroll-view>
+
+            <!-- 每个 tab 的内容（active 才显示） -->
+            <block wx:for="{{w.tabs}}" wx:key="title" wx:for-item="t" wx:for-index="ti">
+              <view class="op-pane" wx:if="{{t.active}}">
+                <!-- intro 简介卡（文字在下，动图单独占满横宽） -->
+                <block wx:if="{{t.intro}}">
+                  <!-- 动图/立绘：单独占满横宽 -->
+                  <view class="op-intro-media" wx:if="{{t.intro.imgUrl}}">
+                    <image
+                      class="op-intro-img-full {{introImgFail ? 'op-intro-img-hide' : ''}}"
+                      src="{{t.intro.imgUrl}}"
+                      mode="widthFix"
+                      data-key="introImgFail"
+                      binderror="onImgError"
+                      data-url="{{t.intro.imgUrl}}"
+                      bindtap="onImgPreview"
+                    />
+                  </view>
+                  <view class="op-intro">
+                    <view class="op-intro-copy">
+                      <view class="op-intro-name">{{t.intro.name}}</view>
+                      <view class="op-intro-type tech-label">{{t.intro.type || 'OPERATOR DATA'}}</view>
+                      <view class="op-intro-desc" wx:if="{{t.intro.description && t.intro.description !== t.intro.name}}">{{t.intro.description}}</view>
+                    </view>
+                  </view>
+                </block>
+
+                <!-- blocks 结构化块 -->
+                <block wx:for="{{t.blocks}}" wx:key="index" wx:for-item="b" wx:for-index="bi">
+                  <!-- 段落 -->
+                  <view class="kb-paragraph" wx:if="{{b.t === 'para'}}">
+                    <block wx:for="{{b.inline}}" wx:key="index" wx:for-item="e" wx:for-index="ei">
+                      <!-- 条目引用：图标 + 名称 + 数量，整体可点击跳转 -->
+                      <view wx:if="{{e.t === 'entry'}}" class="para-entry" data-name="{{e.v}}" bindtap="onEntryTap">
+                        <image wx:if="{{e.icon}}" class="para-icon" src="{{e.icon}}" mode="aspectFit" />
+                        <text class="para-entry-name">{{e.v}}{{e.c ? '×' + e.c : ''}}</text>
+                      </view>
+                      <!-- 外链 -->
+                      <text wx:elif="{{e.t === 'link'}}" class="para-link" data-url="{{e.u}}" bindtap="onVideoTap">{{e.v}} ↗</text>
+                      <!-- 普通文本 -->
+                      <text wx:else>{{e.v}}</text>
+                    </block>
+                  </view>
+                  <!-- 图片：占满横宽 + 点击全屏预览 -->
+                  <view class="kb-img-wrap" wx:elif="{{b.t === 'img'}}">
+                    <image
+                      class="kb-img"
+                      src="{{b.u}}"
+                      mode="widthFix"
+                      data-url="{{b.u}}"
+                      bindtap="onImgPreview"
+                    />
+                    <view class="kb-img-note" wx:if="{{b.alt}}">{{b.alt}}</view>
+                  </view>
+                  <!-- 表格（横向滚动，紧凑单元格） -->
+                  <scroll-view class="kb-table-wrap" scroll-x wx:elif="{{b.t === 'table' && !b.isImgTable}}">
+                    <view class="kb-table">
+                      <view class="kb-tr" wx:for="{{b.rows}}" wx:key="index" wx:for-item="row" wx:for-index="ri">
+                        <view class="kb-td {{ri === 0 ? 'th' : ''}}" wx:for="{{row}}" wx:key="index" wx:for-item="cell">
+                          <!-- 单元格内容：文本/entry图标/行内图，逐个渲染 -->
+                          <view wx:for="{{cell}}" wx:key="index" wx:for-item="e" class="cell-item">
+                            <block wx:if="{{e.t === 'img'}}">
+                              <image class="cell-img" src="{{e.u}}" mode="widthFix" data-url="{{e.u}}" bindtap="onImgPreview" />
+                            </block>
+                            <block wx:elif="{{e.t === 'entry'}}">
+                              <view class="cell-entry" data-name="{{e.v}}" bindtap="onEntryTap">
+                                <image wx:if="{{e.icon}}" class="cell-icon" src="{{e.icon}}" mode="aspectFit" />
+                                <text class="cell-text">{{e.v}}{{e.c ? '×' + e.c : ''}}</text>
+                              </view>
+                            </block>
+                            <block wx:elif="{{e.t === 'link'}}">
+                              <text class="cell-link" data-url="{{e.u}}" bindtap="onVideoTap">{{e.v}} ↗</text>
+                            </block>
+                            <text wx:else>{{e.v}}</text>
+                          </view>
+                        </view>
+                      </view>
+                    </view>
+                  </scroll-view>
+                  <!-- 图片表格（干员履历/待机动作/物料）：竖排大图，一张放满下一张放下 -->
+                  <view class="img-table" wx:elif="{{b.t === 'table' && b.isImgTable}}">
+                    <!-- 平铺所有单元格里的 img / link -->
+                    <block wx:for="{{b.rows}}" wx:key="index" wx:for-item="row" wx:for-index="ri">
+                      <block wx:for="{{row}}" wx:key="index" wx:for-item="cell" wx:for-index="ci">
+                        <block wx:for="{{cell}}" wx:key="index" wx:for-item="e" wx:for-index="ei">
+                          <image wx:if="{{e.t === 'img'}}" class="img-table-img" src="{{e.u}}" mode="widthFix" data-url="{{e.u}}" bindtap="onImgPreview" />
+                          <view wx:elif="{{e.t === 'link'}}" class="img-table-link" data-url="{{e.u}}" bindtap="onVideoTap">{{e.v}} ↗</view>
+                        </block>
+                      </block>
+                    </block>
+                  </view>
+                  <!-- 分隔线 -->
+                  <view class="kb-hr" wx:elif="{{b.t === 'hr'}}"></view>
+                  <!-- 有 HTTPS 直链时原生播放；只有森空岛 ID 时保留外部入口 -->
+                  <block wx:elif="{{b.t === 'video'}}">
+                    <video
+                      wx:if="{{b.playUrl}}"
+                      class="op-video-player"
+                      src="{{b.playUrl}}"
+                      poster="{{b.poster}}"
+                      controls
+                      object-fit="contain"
+                      show-center-play-btn
+                      enable-progress-gesture
+                    />
+                    <view wx:else class="op-video" data-url="{{b.videoUrl}}" bindtap="onVideoTap">
+                      <view class="op-video-icon">▶</view>
+                      <view class="op-video-copy">
+                        <view class="op-video-title">森空岛视频内容</view>
+                        <view class="op-video-id tech-label">VIDEO ID / {{b.id}}</view>
+                      </view>
+                      <view class="op-video-open tech-label">打开 ↗</view>
+                    </view>
+                  </block>
+                </block>
+
+                <!-- audios 语音 -->
+                <view class="op-audio-list" wx:if="{{t.audios.length}}">
+                  <view class="op-audio" wx:for="{{t.audios}}" wx:key="title" wx:for-item="a" wx:for-index="ai">
+                    <view
+                      class="audio-play {{playingIdx === (wi + '-' + ti + '-' + ai) ? 'playing' : ''}}"
+                      data-key="{{wi}}-{{ti}}-{{ai}}"
+                      data-url="{{a.url}}"
+                      bindtap="onAudioTap"
+                    >{{playingIdx === (wi + '-' + ti + '-' + ai) ? '■' : '▶'}}</view>
+                    <view class="op-audio-copy">
+                      <view class="audio-title">{{a.title}}</view>
+                      <view class="audio-profile">{{a.profile}}</view>
+                    </view>
+                  </view>
+                </view>
+
+                <!-- 空页签 -->
+                <view class="op-empty" wx:if="{{!t.blocks.length && !t.audios.length && !t.intro}}">该页签暂无公开内容</view>
+              </view>
+            </block>
+          </block>
+        </view>
+      </block>
+    </view>
+  </block>
+</view>
+
+<view class="asset-credit">图片素材来自：呵纹Hevon　·　画师：仓鼠饭团c</view>

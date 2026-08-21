@@ -1,0 +1,70 @@
+/* components/synth-tree/synth-tree.wxss — canvas 合成树（框内显示 + 拖动缩放） */
+
+.synth-wrap {
+  position: relative;
+}
+
+/* 框：固定高度（上下随树长适配），overflow 隐藏，树内容在框内拖动/缩放 */
+.synth-frame {
+  width: 100%;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(20, 23, 18, 0.025) 1px, transparent 1px) 0 0 / 36px 36px,
+    linear-gradient(rgba(20, 23, 18, 0.025) 1px, transparent 1px) 0 0 / 36px 36px;
+  background-color: #f7f6f1;
+  border: 1px solid var(--border);
+  border-radius: 4px 16px 4px 16px;
+  box-shadow: inset 0 -2px 0 var(--klein), 7px 9px 0 rgba(23, 55, 209, 0.07);
+  position: relative;
+}
+
+.tree-canvas {
+  display: block;
+}
+
+/* 操作提示（左下角） */
+.synth-hint {
+  position: absolute;
+  left: 10px;
+  bottom: 8px;
+  padding: 3px 8px;
+  font-size: 8px;
+  color: #867600;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.synth-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 0 2px;
+}
+
+.synth-title {
+  font-size: 9px;
+  color: #867600;
+  letter-spacing: 0.12em;
+}
+
+.synth-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.synth-btn {
+  padding: 5px 12px;
+  border: 1px solid #c7c6be;
+  background: #fff;
+  color: #555a52;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 3px 10px 3px 10px;
+}
+
+.synth-btn:active {
+  background: var(--yellow);
+  color: var(--ink);
+}

@@ -1,0 +1,52 @@
+<!-- components/entry-curtain/entry-curtain.wxml — 开场动画（SYSTEM BOOT v3：多段动效 + 超大地标 + 8个小人） -->
+<view class="curtain {{leaving ? 'leaving' : ''}} {{done ? 'done' : ''}}" wx:if="{{!done}}">
+  <!-- 背景层：超大半透明终末地图标（缓慢呼吸 + 旋转） -->
+  <image class="bg-logo" src="/assets/images/endfield-logo.png" mode="aspectFit" />
+
+  <!-- 背景：8 个不同 q 版小人乱滚（错峰，各自旋转位移） -->
+  <image class="roll-mascot roll-1" src="/assets/images/mascot-01.png" mode="aspectFit" />
+  <image class="roll-mascot roll-2" src="/assets/images/mascot-02.png" mode="aspectFit" />
+  <image class="roll-mascot roll-3" src="/assets/images/mascot-03.png" mode="aspectFit" />
+  <image class="roll-mascot roll-4" src="/assets/images/mascot-04.png" mode="aspectFit" />
+  <image class="roll-mascot roll-5" src="/assets/images/mascot-05.png" mode="aspectFit" />
+  <image class="roll-mascot roll-6" src="/assets/images/mascot-06.png" mode="aspectFit" />
+  <image class="roll-mascot roll-7" src="/assets/images/mascot-07.png" mode="aspectFit" />
+  <image class="roll-mascot roll-8" src="/assets/images/mascot-08.png" mode="aspectFit" />
+
+  <!-- 机械构件层 -->
+  <view class="mechanism">
+    <!-- 多段动效：扫描光束 -->
+    <view class="beam beam-a"></view>
+    <view class="beam beam-b"></view>
+    <view class="scan-line"></view>
+    <view class="rail rail-left"></view>
+    <view class="rail rail-right"></view>
+
+    <!-- 阶段动画容器 -->
+    <view class="stage">
+      <!-- logo 板（斜切 + 双投影 + 扫光 + 锁定震颤） -->
+      <view class="logo-plate">
+        <image src="/assets/images/endfield-logo.png" mode="aspectFit" />
+        <view class="logo-lock lock-l"></view>
+        <view class="logo-lock lock-r"></view>
+      </view>
+
+      <!-- 进度区 -->
+      <view class="boot">
+        <view class="boot-head">
+          <text class="boot-label tech">ARCHIVE CORE / MECHANICAL LINK</text>
+          <text class="boot-percent">{{percent < 10 ? '00' : (percent < 100 ? '0' : '')}}{{percent}}%</text>
+        </view>
+        <view class="progress">
+          <view class="progress-fill" style="width: {{percent}}%;"></view>
+          <view class="progress-glow" style="left: {{percent}}%;"></view>
+        </view>
+        <view class="ticks"></view>
+        <view class="boot-status" wx:if="{{percent >= 100}}">
+          <text class="boot-ok">✓ SYSTEM READY</text>
+          <text class="boot-sub tech-label">TALOS-II / ONLINE</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

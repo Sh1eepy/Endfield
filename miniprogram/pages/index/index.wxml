@@ -1,0 +1,121 @@
+<!-- pages/index/index.wxml — 首页：开场动画 + 顶栏 + hero + 命令壳搜索（联想/历史）+ 结果占位 -->
+
+<!-- 开场动画（SYSTEM BOOT） -->
+<entry-curtain wx:if="{{curtainShow}}" bindcomplete="onCurtainComplete" />
+
+<!-- 背景装饰：滚动视差几何体（位移/缩放/旋转联动）+ 透明小人 -->
+<view class="geo-layer">
+  <view class="geo geo-a" style="transform: {{geoA}};"></view>
+  <view class="geo geo-b" style="transform: {{geoB}};"></view>
+  <view class="geo geo-c" style="transform: {{geoC}};"></view>
+  <view class="geo geo-d" style="transform: {{geoD}};"></view>
+</view>
+<!-- 页面背景：半透明 q 版小人（5 个，漂移） -->
+<image class="bg-mascot bg-char-1" src="/assets/images/mascot-01.png" mode="aspectFit" />
+<image class="bg-mascot bg-char-2" src="/assets/images/mascot-02.png" mode="aspectFit" />
+<image class="bg-mascot bg-char-3" src="/assets/images/mascot-03.png" mode="aspectFit" />
+<image class="bg-mascot bg-char-4" src="/assets/images/mascot-04.png" mode="aspectFit" />
+<image class="bg-mascot bg-char-5" src="/assets/images/mascot-05.png" mode="aspectFit" />
+
+<!-- 顶部：斜切 logo 标 + 品牌字 + 状态 -->
+<view class="topbar">
+  <view class="brand">
+    <view class="brand-mark">
+      <image src="/assets/images/endfield-logo.png" mode="aspectFit" />
+    </view>
+    <view>
+      <view class="brand-cn">终末地 · 合成终端</view>
+      <view class="brand-en tech-label">ENDFIELD SYNTHESIS ARCHIVE</view>
+    </view>
+  </view>
+  <view class="top-meta">
+    <text class="top-code tech-label">SYN/01</text>
+    <view class="status">
+      <view class="dot {{backendOk ? 'on' : ''}}"></view>
+      <text>{{backendText}}</text>
+    </view>
+  </view>
+</view>
+
+<!-- hero：大标题 + 统计 -->
+<view class="hero">
+  <view>
+    <view class="eyebrow"><text>DATA / ARCHIVE // 数据档案</text></view>
+    <view class="hero-title">
+      <text>配方合成</text>
+      <text class="hero-title-yellow">与知识问答</text>
+    </view>    <view class="hero-copy">输入物品、设备名或直接提问，检索 <text class="hl">345 条真实配方</text> 与 <text class="hl">1900+ 条知识库条目</text>。</view>
+  </view>
+  <view class="hero-stats">
+    <view class="stat"><text class="stat-v">{{stats.names}}</text><text class="stat-l tech-label">KB ENTRIES</text></view>
+    <view class="stat" wx:if="{{stats.recipes}}"><text class="stat-v">{{stats.recipes}}</text><text class="stat-l tech-label">RECIPES</text></view>
+  </view>
+</view>
+
+<!-- 命令壳搜索 -->
+<view class="search-anchor">
+  <!-- 搜索壳右上角：不透明小 q 版装饰 -->
+  <image class="deco-mascot deco-search" src="/assets/images/mascot-06.png" mode="aspectFit" />
+  <view class="command-shell poly-panel">
+    <view class="yellow-strip"></view>
+    <view class="command-head">
+      <view class="mode-tabs">
+        <view class="mode-btn {{mode === 'syn' ? 'active' : ''}}" data-mode="syn" bindtap="switchMode">配方 · 制造</view>
+        <view class="mode-btn {{mode === 'ask' ? 'active' : ''}}" data-mode="ask" bindtap="switchMode">知识问答</view>
+      </view>
+      <view class="mode-note tech-label">MODE: <text>{{mode === 'syn' ? 'SYNTHESIS' : 'KNOWLEDGE'}}</text></view>
+    </view>
+
+    <view class="query-row">
+      <text class="query-prefix">&gt;</text>
+      <input
+        class="query-input"
+        value="{{query}}"
+        placeholder="{{mode === 'syn' ? '输入物品或设备名，如：重息壤' : '输入问题，如：诀升满级要多少材料'}}"
+        confirm-type="search"
+        bindinput="onQueryInput"
+        bindconfirm="onSubmit"
+      />
+      <view class="enter-key tech-label" bindtap="onSubmit">ENTER ↵</view>
+    </view>
+
+    <!-- 搜索历史（壳内，无裁剪问题） -->
+    <view class="search-history" wx:if="{{history.length}}">
+      <text class="history-label tech-label">最近查询</text>
+      <view class="history-chips">
+        <view
+          class="history-chip {{item.mode === 'ask' ? 'chip-ask' : ''}}"
+          wx:for="{{history}}"
+          wx:key="q"
+          data-index="{{index}}"
+          bindtap="onHistoryTap"
+        >{{item.q}}</view>
+        <view class="history-clear" bindtap="onHistoryClear">清除</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 联想下拉：挂在壳外兄弟节点，避免被 clip-path 裁剪 -->
+  <scroll-view class="suggest" wx:if="{{suggestShow && suggest.length}}" scroll-y>
+    <view
+      class="sug-item {{suggestActive === sIdx ? 'active' : ''}}"
+      wx:for="{{suggest}}"
+      wx:for-item="sug"
+      wx:for-index="sIdx"
+      wx:key="name"
+      data-name="{{sug.name}}"
+      bindtap="pickSuggestion"
+    >
+      <text wx:for="{{sug.segs}}" wx:for-item="seg" wx:for-index="segIdx" wx:key="segIdx" class="{{seg.t === 'hit' ? 'sug-hit' : ''}}">{{seg.v}}</text>
+    </view>
+  </scroll-view>
+  <view class="sug-empty" wx:if="{{suggestShow && suggestEmpty}}">没有匹配「{{query}}」的名称</view>
+</view>
+
+<!-- 空查询引导：结果在独立页面展示，这里只说明当前可执行动作 -->
+<view class="placeholder-note">
+  <view class="empty-code tech-label">{{mode === 'syn' ? 'SYNTHESIS QUERY / READY' : 'KNOWLEDGE QUERY / READY'}}</view>
+  <view class="empty-hint">{{mode === 'syn' ? '输入物品或设备名称，查看完整合成链。' : '输入问题，检索知识库并查看证据来源。'}}</view>
+</view>
+
+<view class="asset-credit">图片素材来自：呵纹Hevon　·　画师：仓鼠饭团c</view>

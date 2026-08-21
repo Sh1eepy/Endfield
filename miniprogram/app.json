@@ -1,0 +1,17 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/ask/ask",
+    "pages/operator/operator"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#f5f4ee",
+    "navigationBarTitleText": "终末地 · 合成终端",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f5f4ee",
+    "backgroundTextStyle": "dark"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

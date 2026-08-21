@@ -41,3 +41,6 @@ wiki数据采集skill/
 Thumbs.db
 .idea/
 .vscode/
+
+# 微信开发者工具的个人设置（公共项目配置保留）
+miniprogram/project.private.config.json

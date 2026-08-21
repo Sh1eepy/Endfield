@@ -19,6 +19,7 @@
 | 名称建议 | `api_server.py /api/names` | 全部名称（配方物品+设备+知识库条目，1908 个），前端模糊搜索联想 |
 | 媒体结构库 | `output/item_media.json` | extract_media.py 提取：封面图 1957 / 正文图 2046 / 外链 291 / 引用 14693（含数量与链接样式） |
 | 前端 | `web/index.html` | 白色工业档案风格：纵向图片配方树、干员详情、机械开场和响应式布局 |
+| 微信小程序 | `miniprogram/` | 首页联想与历史、配方/问答独立查询、Canvas 合成树、知识问答证据与干员档案；静态检查已通过，待开发者工具和真机验收 |
 | 干员详情库 | `output/operator_details.json` | 31 名干员；基本信息、富文本颜色、技能/天赋/潜能/档案多 Tab、图片与多语种语音 |
 | 轻量 GraphRAG | `output/knowledge_graph/graph.db` | 2,129 实体 / 9,358 条可追溯关系；覆盖人物/任务/地点/物品/设备/配方与明确亲属关系，支持解释性关系混合取证、增量更新与问法对称门禁 |
 | 评测 | `eval_retrieval.py` | 71 条查询；当前 Recall@5=100%、MRR=97.3%（`final_reviewed.json`） |
@@ -40,6 +41,7 @@
 - `scripts/gen_jieba_dict.py` + `scripts/dict_zh.txt` → 游戏专有名词词典
 - `output/eval/` → 评测集与历次评测结果；`output/mention_index.json` → mention 反查索引
 - `web/index.html` → 前端（纵向图片配方树 + 知识问答 + 干员详情）
+- `miniprogram/` → 微信小程序端；`miniprogram/README.md` 记录开发、真机与发布方法
 - `.env` → 可选（LLM 相关配置，私密勿提交）；`.gitignore` + `.env.example` → 密钥安全
 
 ## 4. 关键技术结论
@@ -53,12 +55,13 @@
 ## 5. 当前发布边界
 
 - 仓库已经具备可复现 Dockerfile、Railway 配置、依赖锁定和部署说明。
-- 当前机器未安装 Docker，尚未执行真实 `docker build`。
-- GitHub remote 已连接到 `https://github.com/Sh1eepy/Endfield.git`；推送仍需明确授权。
+- 2026-08-21 已完成本地 Docker 镜像构建与容器运行验证，服务可正常启动。
+- GitHub remote 已连接到 `https://github.com/Sh1eepy/Endfield.git`。
 - Railway 尚未配置项目权限。下一步按 `DEPLOYMENT.md` 本地验镜像或发布。
+- 小程序主体功能已接入同一套 FastAPI；模拟器默认访问本机，正式发布前还需配置线上 HTTPS API 域名并完成真机验收。
 
 每个阶段的决策、验证方式和维护方法记录在 `PROJECT_PROGRESS.md`。
 
 ## 6. 环境提醒（详见 AGENTS.md）
 - 终端 GBK 乱码 → 写 UTF-8 文件再读取；模型离线加载；浏览器用 127.0.0.1
-- 边界：只改 `scripts/ web/ endfield_kb/ output/ logs/`
+- 边界：业务代码位于 `scripts/ web/ miniprogram/`，生成数据位于 `endfield_kb/ output/ logs/`

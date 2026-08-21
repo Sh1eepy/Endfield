@@ -12,6 +12,7 @@
 - 名称 + BM25 + 向量的混合 RAG，并带实体直取、枚举、mention 和关键词补充检索；
 - 可追溯知识图谱，支持明确关系、正反向问法和最多三跳路径；
 - 白色工业档案风格前端，包含纵向图片树、机械开场动画和响应式布局；
+- 微信小程序端，覆盖搜索联想、配方树、知识问答与干员档案；
 - RAG/图谱增量更新、深度健康检查、运行指标和 CI 质量门禁。
 
 ## 数据和请求流程
@@ -22,7 +23,7 @@ WIKI 原始 JSON
   ├─ recipe_extract.py → output/recipes.json → 配方合成树
   └─ 媒体/干员提取 → 图片、音频和档案详情
 
-浏览器 → FastAPI
+网页 / 微信小程序 → FastAPI
   ├─ /api/synthesis：配方、设备、知识库详情
   ├─ /api/ask：图检索/RAG + 可选 LLM 回答
   └─ /api/names、/api/health、/api/metrics
@@ -71,6 +72,15 @@ python -m uvicorn scripts.api_server:app --host 0.0.0.0 --port 8000
 本地构建默认离线加载 `BAAI/bge-small-zh-v1.5`，需要提前把模型放入 Hugging Face 缓存。没有本地缓存时，
 使用 Docker 构建更省事。
 
+### 微信小程序
+
+先用上面的命令启动后端，再在微信开发者工具中导入仓库里的 `miniprogram/` 目录。开发者工具模拟器默认访问
+`http://127.0.0.1:8000`。真机调试时，`127.0.0.1` 指向手机自身，需要把
+`miniprogram/app.js` 中的 `apiBase` 临时改为电脑的局域网地址，并确保手机和电脑在同一网络。
+
+正式发布必须把 `apiBase` 改为线上 HTTPS 地址，并在微信公众平台配置 request 合法域名。个人开发者工具设置保存在
+`project.private.config.json`，该文件已被 Git 忽略。完整步骤见 [小程序说明](miniprogram/README.md)。
+
 ## 验证
 
 ```powershell
@@ -97,6 +107,7 @@ scripts/       数据构建、检索、图谱、API 和评测工具
 endfield_kb/   按分类整理的知识库
 output/        配方、索引 manifest、图谱和评测结果
 web/           单页前端、字体、角色素材和本地 D3
+miniprogram/   微信小程序端页面、组件、主题与本地素材
 tests/         离线回归测试
 ```
 
@@ -107,6 +118,7 @@ tests/         离线回归测试
 - [知识库、RAG 与知识图谱总览](KNOWLEDGE_SYSTEM_ARCHITECTURE.md)
 - [工具命令](scripts/README.md)
 - [部署说明](DEPLOYMENT.md)
+- [微信小程序说明](miniprogram/README.md)
 - [RAG 开发记录](RAG_DEVLOG.md)
 
 ## 数据与素材说明

@@ -273,14 +273,14 @@ def _kb_summary(kb):
     sections = {}
     for k, v in (kb.get("sections") or {}).items():
         if v and str(v).strip():
-            sections[str(k)] = str(v)[:300]
+            sections[str(k)] = str(v)[:2000]  # 放宽：速览等长条目显示全
     ss = (kb.get("sections_struct") or {}) or {}
     item_id = str(kb.get("item_id") or "")
     result = {"name": kb.get("name"), "category": kb.get("category"),
             "item_id": item_id,
             "sections": sections,
             "sections_struct": {str(k): v for k, v in ss.items() if v},
-            "full_text": (kb.get("full_text") or "")[:800]}
+            "full_text": (kb.get("full_text") or "")[:8000]}  # 放宽：避免截断
     operator = _load_operator_details().get(item_id)
     if operator:
         result["operator_detail"] = operator

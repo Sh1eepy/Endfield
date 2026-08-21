@@ -1,0 +1,23 @@
+<!-- components/synth-tree/synth-tree.wxml — canvas 合成树（框内显示 + 拖动缩放） -->
+<view class="synth-wrap">
+  <view class="synth-frame" style="height: {{frameH}}px;">
+    <canvas
+      type="2d"
+      id="tree-canvas"
+      class="tree-canvas"
+      style="width: {{canvasW}}px; height: {{canvasH}}px;"
+      bindtouchstart="_onTouchStart"
+      bindtouchmove="_onTouchMove"
+      bindtouchend="_onTouchEnd"
+      bindtouchcancel="_onTouchEnd"
+    ></canvas>
+    <view class="synth-hint tech-label">{{hint}}</view>
+  </view>
+  <view class="synth-tools" wx:if="{{treeTitle}}">
+    <view class="synth-title tech-label">{{treeTitle}} / SYNTHESIS TREE</view>
+    <view class="synth-btns">
+      <view class="synth-btn" bindtap="collapseAll">折叠</view>
+      <view class="synth-btn" bindtap="expandAll">展开</view>
+    </view>
+  </view>
+</view>

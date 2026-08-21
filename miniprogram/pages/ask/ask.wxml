@@ -1,0 +1,159 @@
+<!-- pages/ask/ask.wxml — 问答结果页（合成树 / 结构化直查 / 知识检索） -->
+
+<view class="ask-page">
+  <!-- 背景半透明 q 版小人（5 个，不遮挡文字） -->
+  <image class="bg-mascot bg-ask-1" src="/assets/images/mascot-02.png" mode="aspectFit" />
+  <image class="bg-mascot bg-ask-2" src="/assets/images/mascot-06.png" mode="aspectFit" />
+  <image class="bg-mascot bg-ask-3" src="/assets/images/mascot-08.png" mode="aspectFit" />
+  <image class="bg-mascot bg-ask-4" src="/assets/images/mascot-01.png" mode="aspectFit" />
+  <image class="bg-mascot bg-ask-5" src="/assets/images/mascot-04.png" mode="aspectFit" />
+  <!-- 页面角落：不透明小 q 版装饰 -->
+  <image class="deco-mascot deco-ask" src="/assets/images/mascot-07.png" mode="aspectFit" />
+
+  <view class="ask-head">
+    <view class="tech-label">{{mode === 'syn' ? 'SYNTHESIS QUERY' : 'KNOWLEDGE QUERY'}}</view>
+    <view class="ask-query">{{query}}</view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="poly-panel ask-body" wx:if="{{loading}}">
+    <view class="loading-line"></view>
+    <view class="loading-text tech-label">RETRIEVING + GENERATING…</view>
+  </view>
+
+  <!-- 错误 -->
+  <view class="poly-panel ask-body" wx:elif="{{error}}">
+    <view class="ask-error">请求失败：{{error}}</view>
+  </view>
+
+  <!-- ===== 合成树（canvas，阶段 6） ===== -->
+  <synth-tree wx:elif="{{synthTree}}" tree="{{synthTree}}" bindsearch="onTreeSearch" />
+
+  <!-- ===== 知识库回退（无配方物品/速览等：查得到直接显示名称） ===== -->
+  <view class="poly-panel ask-body" wx:elif="{{route === 'kb'}}">
+    <view class="ask-card-title">{{kbData.name}}</view>
+    <view class="kb-cat tech-label" wx:if="{{kbData.category}}">{{kbData.category}}</view>
+    <!-- 完整渲染 sections -->
+    <block wx:for="{{kbData.sections}}" wx:key="title" wx:for-item="sec">
+      <view class="kb-sec">
+        <view class="kb-sec-title">{{sec.title}}</view>
+        <block wx:for="{{sec.blocks}}" wx:key="index" wx:for-item="b">
+          <view class="kb-para" wx:if="{{b.t === 'para'}}">{{b.text}}</view>
+          <view class="kb-table-wrap" wx:elif="{{b.t === 'table'}}">
+            <view class="kb-table">
+              <view class="kb-tr" wx:for="{{b.rows}}" wx:key="index" wx:for-item="row" wx:for-index="ri">
+                <view class="kb-td {{ri === 0 ? 'th' : ''}}" wx:for="{{row}}" wx:key="index" wx:for-item="cell">{{cell}}</view>
+              </view>
+            </view>
+          </view>
+          <image wx:elif="{{b.t === 'img'}}" class="kb-full-img" src="{{b.u}}" mode="widthFix" data-url="{{b.u}}" bindtap="onKbImgPreview" />
+          <view class="kb-hr" wx:elif="{{b.t === 'hr'}}"></view>
+        </block>
+      </view>
+    </block>
+    <!-- full_text 兜底（无 sections 时）：文本 + [图片] 渲染成真图，完整显示 -->
+    <block wx:if="{{!kbData.sections.length && kbData.fullBlocks.length}}">
+      <block wx:for="{{kbData.fullBlocks}}" wx:key="index" wx:for-item="b">
+        <view class="kb-para" wx:if="{{b.t === 'para'}}">{{b.text}}</view>
+        <image wx:elif="{{b.t === 'img'}}" class="kb-full-img" src="{{b.u}}" mode="widthFix" data-url="{{b.u}}" bindtap="onKbImgPreview" />
+      </block>
+    </block>
+  </view>
+
+  <!-- ===== 结构化直查：配方 / 设备配方卡 ===== -->
+  <block wx:elif="{{route === 'recipe' || route === 'device'}}">
+    <view class="poly-panel ask-body">
+      <view class="ask-card-title">{{recipeCard.title}}</view>
+      <view class="ask-recipe-card" wx:for="{{recipeCard.recipes}}" wx:key="machine" wx:for-item="r">
+        <view class="rc-machine">{{r.machine}} · {{r.duration}}s</view>
+        <view class="rc-row">
+          <text class="rc-label">原料</text>
+          <text wx:for="{{r.inputs}}" wx:for-item="x" wx:key="name" class="rc-item">{{x.name}}×{{x.count}}</text>
+        </view>
+        <view class="rc-row">
+          <text class="rc-label">产物</text>
+          <text wx:for="{{r.outputs}}" wx:for-item="o" wx:key="name" class="rc-item">{{o.name}}×{{o.count}}</text>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- ===== 结构化直查：设备产物反查 ===== -->
+  <view class="poly-panel ask-body" wx:elif="{{route === 'device_products'}}">
+    <view class="ask-card-title">产出「{{deviceProducts.keyword}}」的设备</view>
+    <view class="prod-grid">
+      <view
+        class="prod-chip"
+        wx:for="{{deviceProducts.matches}}"
+        wx:key="device"
+        wx:for-item="m"
+      >{{m.device}} → {{m.output}}×{{m.count}}</view>
+    </view>
+  </view>
+
+  <!-- ===== 结构化直查：歧义候选 ===== -->
+  <view class="poly-panel ask-body" wx:elif="{{route === 'ambiguous'}}">
+    <view class="ask-card-title">「{{ambiguous.item}}」匹配多个物品，请选择：</view>
+    <view class="ambig-grid">
+      <view
+        class="ambig-btn"
+        wx:for="{{ambiguous.candidates}}"
+        wx:key="*this"
+        wx:for-item="c"
+        data-name="{{c}}"
+        bindtap="onAmbiguousPick"
+      >{{c}}</view>
+    </view>
+  </view>
+
+  <!-- ===== 知识库检索：意图 + 答案 + 来源 + 片段 ===== -->
+  <block wx:elif="{{route === 'rag'}}">
+    <view class="poly-panel ask-body">
+      <view class="ask-tags">
+        <text class="intent-tag">意图：{{intent}}</text>
+        <text class="intent-tag tag-blue">知识库检索</text>
+      </view>
+
+      <!-- 答案正文（引用角标可点击） -->
+      <view class="ask-answer {{rejected ? 'ask-rejected' : ''}}">
+        <text wx:for="{{answerSegs}}" wx:key="index" wx:for-item="seg"
+          class="{{seg.t === 'ref' ? 'src-ref' : ''}} {{highlightSrc === seg.n ? 'src-ref-hi' : ''}}"
+          data-t="{{seg.t}}" data-n="{{seg.n}}" bindtap="onSegTap">{{seg.v}}</text>
+      </view>
+
+      <!-- 来源 chips -->
+      <view class="ask-sources" id="sources-anchor" wx:if="{{sources.length}}">
+        <view class="ask-src-title tech-label">依据来源（点击查看）</view>
+        <view class="src-chips">
+          <view
+            class="src-chip {{highlightSrc === item.n ? 'src-chip-hi' : ''}}"
+            wx:for="{{sources}}"
+            wx:key="n"
+            wx:for-item="item"
+            data-name="{{item.name}}"
+            data-cat="{{item.category}}"
+            bindtap="onSourceTap"
+          ><text class="rn">[{{item.n}}]</text>{{item.name}}</view>
+        </view>
+      </view>
+
+      <!-- 检索片段折叠 -->
+      <view class="ask-hits" wx:if="{{hits.length}}">
+        <view class="hits-title tech-label" bindtap="onHitsToggle">检索片段（{{hits.length}} 条）{{hitsOpen ? '▴' : '▾'}}</view>
+        <view wx:if="{{hitsOpen}}">
+          <view class="hit-item" wx:for="{{hits}}" wx:key="name" wx:for-item="h">
+            <view class="hit-head"><text class="hit-name">{{h.name}}</text><text class="hit-cat">{{h.category}}</text></view>
+            <view class="hit-text">{{h.text}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 空状态 -->
+  <view class="poly-panel ask-body" wx:else>
+    <view class="empty-code tech-label">NO QUERY / READY</view>
+  </view>
+</view>
+
+<view class="asset-credit">图片素材来自：呵纹Hevon　·　画师：仓鼠饭团c</view>

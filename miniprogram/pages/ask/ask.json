@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "synth-tree": "/components/synth-tree/synth-tree"
+  },
+  "navigationBarTitleText": "知识问答"
+}
