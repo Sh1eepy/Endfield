@@ -1,5 +1,8 @@
 # 自有服务器部署手册
 
+如果使用朋友的服务器，并采用“你管理应用、朋友保留主机/Nginx 管理权”的权限分工，请优先阅读
+[`FRIEND_SERVER_HANDOFF.md`](FRIEND_SERVER_HANDOFF.md)。
+
 适用架构：子域名 → Nginx/HTTPS → `127.0.0.1:8000` → Docker Compose → FastAPI。
 应用容器不会把 8000 端口暴露到公网，知识问答的 IP 限流由 Nginx 执行，应用内部另有限制同时问答数的信号量。
 

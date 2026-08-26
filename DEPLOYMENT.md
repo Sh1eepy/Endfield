@@ -9,6 +9,7 @@
 ```
 
 完整命令、更新和回滚步骤见 [`deploy/README.md`](deploy/README.md)。没有自有服务器时才需要 Railway。
+朋友提供服务器时的逐步权限交接见 [`deploy/FRIEND_SERVER_HANDOFF.md`](deploy/FRIEND_SERVER_HANDOFF.md)。
 网页使用相对路径访问 `/api/*`，因此两种部署都不需要拆分前端服务。
 
 ## 为什么镜像构建时重建 RAG
