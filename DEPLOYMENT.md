@@ -1,8 +1,15 @@
-# DEPLOYMENT.md — Docker 与 Railway 部署
+# DEPLOYMENT.md — Docker、自有服务器与 Railway 部署
 
 ## 推荐架构
 
-使用一个 Railway Docker 服务同时托管 FastAPI、D3 前端和完整 RAG。前端使用相对路径访问 `/api/*`，因此不需要拆分 Vercel 服务，也没有额外跨域配置。
+已有服务器和子域名时，推荐直接使用 `compose.yaml` 运行应用，并由宿主机 Nginx 提供 HTTPS、反向代理和 `/api/ask` 限流：
+
+```text
+子域名 → Nginx/HTTPS → 127.0.0.1:8000 → Docker Compose → FastAPI + Web + RAG
+```
+
+完整命令、更新和回滚步骤见 [`deploy/README.md`](deploy/README.md)。没有自有服务器时才需要 Railway。
+网页使用相对路径访问 `/api/*`，因此两种部署都不需要拆分前端服务。
 
 ## 为什么镜像构建时重建 RAG
 
@@ -34,11 +41,29 @@ curl "http://127.0.0.1:8000/api/synthesis?item=重息壤"
 
 不传 `.env` 时，配方树、设备卡和知识库回退仍可用；需要在线 LLM 生成回答时，通过运行环境注入 `LLM_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL`。
 
+## 自有服务器 + 子域名
+
+仓库已提供：
+
+- `compose.yaml`：只绑定 `127.0.0.1:8000`、默认单 worker、容器健康检查、自动重启和日志轮转；
+- `deploy/nginx/endfield.conf`：反向代理、付费问答按 IP 限流、并发限制和代理超时；
+- `deploy/README.md`：DNS、Docker、Nginx、Certbot、上线验收、更新、回滚和排障步骤。
+
+首次上线保持：
+
+```dotenv
+WEB_CONCURRENCY=1
+ASK_MAX_CONCURRENCY=2
+```
+
+FastAPI 还会限制问答 `query` 为 1～300 字符、`top_k` 为 1～10；应用并发满时返回 HTTP 429。
+公网只开放 80/443，不能直接暴露容器的 8000 端口。
+
 ## Railway
 
 1. 把仓库推送到 GitHub。
 2. Railway 新建项目并选择该 GitHub 仓库；`railway.json` 会选择 Dockerfile 构建。
-3. 在 Railway Variables 中设置 LLM 环境变量。首次部署建议设置 `WEB_CONCURRENCY=1`，
+3. 在 Railway Variables 中设置 LLM 环境变量、`ASK_MAX_CONCURRENCY=2`。首次部署建议设置 `WEB_CONCURRENCY=1`，
    确认内存余量后再逐步提高到 2-4；每个 worker 都会各自加载 embedding 模型与 RAG 索引。
    不要上传 `.env`，不要把 Key 写入 Dockerfile。
 4. 等待构建完成；健康检查路径为 `/api/health`，超时为 300 秒。
@@ -69,4 +94,4 @@ python -m compileall -q scripts tests
 python scripts/eval_retrieval.py --out output/eval/final_reviewed.json
 ```
 
-2026-08-21 已完成本地 Docker 镜像构建、容器启动和基础接口验证。Railway 上线后仍需使用公开域名复核健康检查、配方树与知识问答。
+2026-08-21 已完成本地 Docker 镜像构建、容器启动和基础接口验证。任何公网环境上线后仍需使用正式域名复核健康检查、配方树与知识问答。

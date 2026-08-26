@@ -58,6 +58,9 @@ docker run --rm -p 8000:8000 --env-file .env endfield-synthesis
 
 `.env` 已被 Git 忽略，不要提交真实 API Key。
 
+已有 Linux 服务器和子域名时，使用仓库中的 `compose.yaml` 与 Nginx 模板上线；完整的 HTTPS、限流、更新、回滚和排障命令见
+[自有服务器部署手册](deploy/README.md)。容器默认只监听宿主机 `127.0.0.1:8000`，公网入口由 Nginx 提供。
+
 ### 本地 Python
 
 项目使用 Python 3.12：

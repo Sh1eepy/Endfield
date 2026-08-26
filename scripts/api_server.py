@@ -17,13 +17,14 @@ api_server.py — 终末地配方合成树 API（FastAPI）
 import json
 import os
 import sys
+import threading
 import time
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
@@ -49,6 +50,20 @@ _load_env()
 from recipe_index import load_recipes, build_item_index, find_item_ids_by_name  # noqa: E402
 
 app = FastAPI(title="终末地配方合成树", version="1.0.0")
+
+
+def _positive_int_env(name, default):
+    """读取正整数环境变量；配置无效时使用安全默认值。"""
+    try:
+        return max(1, int(os.environ.get(name) or default))
+    except (TypeError, ValueError):
+        return default
+
+
+# 每个 worker 独立限制同时执行的问答数，避免大量慢 LLM 请求耗尽线程和额度。
+# 公网按 IP 的请求频率限制由 deploy/nginx/endfield.conf 负责。
+ASK_MAX_CONCURRENCY = _positive_int_env("ASK_MAX_CONCURRENCY", 2)
+_ASK_SEMAPHORE = threading.BoundedSemaphore(ASK_MAX_CONCURRENCY)
 
 # 展示阶段：放开跨域，便于本地静态页直连
 app.add_middleware(
@@ -395,14 +410,21 @@ def names():
 
 # ===================== RAG 问答 =====================
 
-from pydantic import BaseModel as _BaseModel  # noqa: E402
 
-
-class AskRequest(_BaseModel):
+class AskRequest(BaseModel):
     """知识问答参数；关闭 `gen_answer` 时只返回路由和检索结果。"""
-    query: str
-    top_k: int = 5
+    query: str = Field(min_length=1, max_length=300)
+    top_k: int = Field(default=5, ge=1, le=10)
     gen_answer: bool = True
+
+    @field_validator("query")
+    @classmethod
+    def normalize_query(cls, value):
+        """统一去除首尾空白，并拒绝只含空白的请求。"""
+        value = value.strip()
+        if not value:
+            raise ValueError("query 不能为空")
+        return value
 
 
 @app.post("/api/ask")
@@ -413,6 +435,12 @@ def ask_endpoint(req: AskRequest):
     """
     from rag_ask import ask
     from rag_monitor import monitor
+    if not _ASK_SEMAPHORE.acquire(blocking=False):
+        raise HTTPException(
+            status_code=429,
+            detail="问答服务繁忙，请稍后重试",
+            headers={"Retry-After": "3"},
+        )
     started = time.perf_counter()
     try:
         result = ask(req.query, top_k=req.top_k, gen_answer_=req.gen_answer)
@@ -421,6 +449,8 @@ def ask_endpoint(req: AskRequest):
     except Exception as exc:
         monitor.observe(None, (time.perf_counter() - started) * 1000, req.gen_answer, error=exc)
         raise
+    finally:
+        _ASK_SEMAPHORE.release()
 
 
 # ---- 静态前端（web/ 目录），放在最后挂载以免覆盖 /api/* ----

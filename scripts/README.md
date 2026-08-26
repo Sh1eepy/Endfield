@@ -143,13 +143,13 @@ python scripts/extract_module.py --chunk-dir chunks --module-id 71188 --out-dir 
 
 ### 13. `api_server.py` — FastAPI 服务（配方合成树 + RAG 问答）
 ```bash
-# 生产（云端，默认 4 worker，吃云服务器内存）
+# 生产（默认 1 worker；每个 worker 都会加载一份模型与索引）
 python scripts/start_server.py
 # 本机开发调试（单进程，不重复加载模型）
 WEB_CONCURRENCY=1 python scripts/start_server.py
 ```
-多 worker 由 `start_server.py` 统一管理：worker 数取环境变量 `WEB_CONCURRENCY`（默认 4）。
-云端（Railway）在 Variables 里设 `WEB_CONCURRENCY=4`；本机开发设 1。
+多 worker 由 `start_server.py` 统一管理：worker 数取环境变量 `WEB_CONCURRENCY`（默认 1）。
+首次上线保持 1，确认内存余量后再提高；`ASK_MAX_CONCURRENCY`（默认 2）限制每个 worker 同时执行的付费问答数。
 | 端点 | 说明 |
 |---|---|
 | `GET /api/health` | 健康检查 |
@@ -159,6 +159,7 @@ WEB_CONCURRENCY=1 python scripts/start_server.py
 | `GET /api/media?url=...` | WIKI CDN 图片/音频白名单同源代理（类型与 25MB 上限校验） |
 
 自动托管 `web/index.html`（白色工业制图 + 纵向真实图片配方树 + 知识问答双模式）。
+`/api/ask` 的 `query` 限制为 1～300 字符、`top_k` 限制为 1～10；并发满时返回 429。
 当前界面采用多轮廓卡片语言（圆角胶囊、斜切多边形、不对称圆角），背景由圆环、波浪带、
 多边形叠层构成；包含开机式入场动画、滚动视差与分区淡入，并兼容
 `prefers-reduced-motion` 减少动态效果设置。
@@ -270,4 +271,4 @@ python -m compileall -q scripts tests
 
 ## 部署
 
-根目录提供 `Dockerfile`、`requirements.txt` 和 `railway.json`。完整构建会下载 embedding 模型并在镜像内重建 RAG，运行阶段保持离线。密钥只能通过运行环境注入，详见 [`../DEPLOYMENT.md`](../DEPLOYMENT.md)。
+根目录提供 `Dockerfile`、`compose.yaml`、`requirements.txt` 和 `railway.json`；`deploy/` 提供自有服务器的 Nginx、HTTPS、更新与回滚手册。完整构建会下载 embedding 模型并在镜像内重建 RAG，运行阶段保持离线。密钥只能通过运行环境注入，详见 [`../DEPLOYMENT.md`](../DEPLOYMENT.md)。

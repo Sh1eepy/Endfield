@@ -54,10 +54,10 @@
 
 ## 5. 当前发布边界
 
-- 仓库已经具备可复现 Dockerfile、Railway 配置、依赖锁定和部署说明。
+- 仓库已经具备可复现 Dockerfile、Compose、自有服务器 Nginx/HTTPS/限流模板、Railway 配置、依赖锁定和部署说明。
 - 2026-08-21 已完成本地 Docker 镜像构建与容器运行验证，服务可正常启动。
 - GitHub remote 已连接到 `https://github.com/Sh1eepy/Endfield.git`。
-- Railway 尚未配置项目权限。下一步按 `DEPLOYMENT.md` 本地验镜像或发布。
+- 已有服务器时按 `deploy/README.md` 使用 Compose + Nginx 发布；Railway 仅作为无自有服务器时的可选方案。
 - 小程序主体功能已接入同一套 FastAPI；模拟器默认访问本机，正式发布前还需配置线上 HTTPS API 域名并完成真机验收。
 
 每个阶段的决策、验证方式和维护方法记录在 `PROJECT_PROGRESS.md`。

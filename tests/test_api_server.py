@@ -4,6 +4,8 @@ import os
 import unittest
 from unittest.mock import patch
 
+from pydantic import ValidationError
+
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
 
 from scripts import api_server
@@ -180,6 +182,33 @@ class ApiSmokeTests(unittest.TestCase):
             )
         self.assertEqual(result, expected)
         mocked.assert_called_once_with("重息壤是什么", top_k=3, gen_answer_=False)
+
+    def test_ask_request_normalizes_and_limits_input(self):
+        req = api_server.AskRequest(query="  重息壤是什么  ")
+        self.assertEqual(req.query, "重息壤是什么")
+        for kwargs in (
+            {"query": "   "},
+            {"query": "问" * 301},
+            {"query": "测试", "top_k": 0},
+            {"query": "测试", "top_k": 11},
+        ):
+            with self.subTest(kwargs=kwargs), self.assertRaises(ValidationError):
+                api_server.AskRequest(**kwargs)
+
+    def test_ask_endpoint_rejects_when_concurrency_is_full(self):
+        acquired = []
+        try:
+            for _ in range(api_server.ASK_MAX_CONCURRENCY):
+                acquired.append(api_server._ASK_SEMAPHORE.acquire(blocking=False))
+            self.assertTrue(all(acquired))
+            with self.assertRaises(api_server.HTTPException) as caught:
+                api_server.ask_endpoint(api_server.AskRequest(query="测试"))
+            self.assertEqual(caught.exception.status_code, 429)
+            self.assertEqual(caught.exception.headers["Retry-After"], "3")
+        finally:
+            for ok in acquired:
+                if ok:
+                    api_server._ASK_SEMAPHORE.release()
 
 
 if __name__ == "__main__":
