@@ -57,6 +57,41 @@ export default function App() {
       .catch(() => { /* 联想不可用时静默 */ })
   }, [])
 
+  // 分区进入视口时播放一次（等价旧版 reveal-on-scroll + IntersectionObserver）
+  useEffect(() => {
+    const targets = document.querySelectorAll('.reveal-on-scroll')
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return
+          entry.target.classList.add('is-visible')
+          observer.unobserve(entry.target)
+        })
+      }, { threshold: 0.08, rootMargin: '0px 0px -5% 0px' })
+      targets.forEach((el) => observer.observe(el))
+      return () => observer.disconnect()
+    }
+    targets.forEach((el) => el.classList.add('is-visible'))
+  }, [])
+
+  // 滚动视差：设置 --scroll-y 供 CSS 使用，顶栏超过 54px 收缩（等价旧版 scroll 监听）
+  useEffect(() => {
+    let ticking = false
+    const onScroll = () => {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(() => {
+        const y = window.scrollY || 0
+        document.documentElement.style.setProperty('--scroll-y', String(y))
+        document.body.classList.toggle('is-scrolled', y > 54)
+        ticking = false
+      })
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   const playEnter = useCallback(() => {
     const el = synTreeRef.current
     if (!el) return
@@ -200,7 +235,7 @@ export default function App() {
             synTreeRef={synTreeRef}
           />
         </section>
-        <div className="footer-line">
+        <div className="footer-line reveal-on-scroll">
           <span>© ENDFIELD SYNTHESIS ARCHIVE / COMMUNITY TOOL</span>
           <span>图片素材来自：呵纹Hevon · 画师：仓鼠饭团c</span>
           <span>DATA INTEGRITY: VERIFIED · LOCAL INDEX: ONLINE</span>
