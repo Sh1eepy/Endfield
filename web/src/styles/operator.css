@@ -185,27 +185,30 @@
 .operator-pane .kb-center { text-align: center; }
 .operator-pane .kb-hr { height: 1px; background: linear-gradient(90deg, #f0cf16, var(--op-blue), transparent); margin: 14px 0; border: 0; }
 
-/* 干员简介条 */
+/* 干员简介条 / 技能动态图展示：大图居左，说明文字居右 */
 .operator-intro {
   display: grid;
-  grid-template-columns: 92px 1fr;
-  gap: 15px;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 20px;
   align-items: center;
   margin: 10px 0 14px;
-  padding: 13px;
-  background: linear-gradient(110deg, #121510 0 68%, #1737d1 68%);
+  padding: 16px;
+  background: linear-gradient(110deg, #14161a 0 62%, #1737d1 62%);
   color: #fff;
-  clip-path: polygon(10px 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
+  border-radius: 14px;
+  border: 1px solid #2a3342;
 }
 .operator-intro img {
-  width: 92px; height: 92px;
+  width: 100%;
+  height: auto;
+  max-height: 380px;
   object-fit: contain;
-  background: rgba(255, 255, 255, 0.1);
-  filter: drop-shadow(5px 7px 0 rgba(240, 207, 22, 0.25));
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 8px;
 }
-.operator-intro h4 { font-size: 20px; }
-.operator-intro-type { font: 800 9px/1 var(--font-tech); color: #f0cf16; letter-spacing: 0.14em; margin: 4px 0 8px; }
-.operator-intro p { font-size: 13px; color: #d7dbd3; line-height: 1.6; }
+.operator-intro h4 { font-size: 26px; letter-spacing: -0.01em; }
+.operator-intro-type { font: 800 10px/1 var(--font-tech); color: #f0cf16; letter-spacing: 0.14em; margin: 8px 0 10px; }
+.operator-intro p { font-size: 14px; color: #d7dbd3; line-height: 1.7; max-width: 46ch; }
 
 /* 视频 */
 .operator-video {

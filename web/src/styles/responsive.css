@@ -60,8 +60,8 @@
   .entry-beam { width: 170%; left: -35%; }
   .operator-scroll-status { grid-template-columns: 1fr; }
   .operator-scroll-status > span { display: none; }
-  .operator-intro { grid-template-columns: 64px 1fr; }
-  .operator-intro img { width: 64px; height: 64px; }
+  .operator-intro { grid-template-columns: 1fr; }
+  .operator-intro img { max-height: 260px; }
   .operator-video { grid-template-columns: 54px 1fr; }
   .operator-video-icon { width: 50px; }
   .operator-video a { grid-column: 1 / -1; text-align: center; }
