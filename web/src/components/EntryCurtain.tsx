@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 /** 机械开场动画：约 3.4s 进度 + 机械组件锁定，尊重 prefers-reduced-motion。 */
 export default function EntryCurtain() {
   const [complete, setComplete] = useState(false)
   const [progress, setProgress] = useState('000%')
-  const curtainRef = useRef<HTMLDivElement>(null)
+  const [fillWidth, setFillWidth] = useState('0%')
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -24,7 +24,8 @@ export default function EntryCurtain() {
       else if (elapsed < 0.9) value = 79 + ((elapsed - 0.68) / 0.22) * 16
       else value = 95 + ((elapsed - 0.9) / 0.1) * 5
       const whole = Math.min(100, Math.floor(value))
-      curtainRef.current?.style.setProperty('--boot-progress', `${whole}%`)
+      // 直接内联控制宽度，进度条随数值平滑填满
+      setFillWidth(`${whole}%`)
       setProgress(`${String(whole).padStart(3, '0')}%`)
       if (elapsed < 1) raf = requestAnimationFrame(frame)
       else timeout = window.setTimeout(() => setComplete(true), 360)
@@ -53,7 +54,7 @@ export default function EntryCurtain() {
             <span>ARCHIVE CORE / MECHANICAL LINK</span>
             <b className="entry-percent" id="entry-percent">{progress}</b>
           </div>
-          <div className="entry-progress"><span className="entry-progress-fill" /></div>
+          <div className="entry-progress"><span className="entry-progress-fill" style={{ width: fillWidth }} /></div>
           <div className="entry-ticks" />
         </div>
       </div>
