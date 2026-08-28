@@ -1,0 +1,35 @@
+/* ============================================================
+   tree.css — 配方树（纵向卡片节点 + 连线）
+   ============================================================ */
+
+#syn-tree svg text { user-select: none; }
+.link { fill: none; stroke: #a8aba3; stroke-width: 1.4; }
+.link.cnt { stroke: #8d7c0e; stroke-width: 1.1; stroke-dasharray: 2 3; }
+.edge-label { fill: #665b0b; font-size: 9.5px; font-family: var(--font-tech); }
+
+.node-card { cursor: pointer; }
+.node-card-bg {
+  fill: #fff;
+  stroke: #242822;
+  stroke-width: 1.2;
+  filter: drop-shadow(4px 5px 0 rgba(23, 55, 209, 0.16)) drop-shadow(8px 10px 8px rgba(25, 28, 22, 0.1));
+  transition: stroke 0.15s, stroke-width 0.15s;
+}
+.node-card:hover .node-card-bg { stroke: var(--yellow, #f0cf16); stroke-width: 3; filter: drop-shadow(6px 8px 0 rgba(23, 55, 209, 0.23)) drop-shadow(12px 15px 10px rgba(25, 28, 22, 0.12)); }
+.node-card-image { pointer-events: none; }
+.node-card-label {
+  fill: #20231f;
+  font-size: 11px;
+  font-weight: 750;
+  pointer-events: none;
+  cursor: pointer;
+}
+.node-card-label:hover { fill: var(--klein); text-decoration: underline; }
+.node-card-sub {
+  fill: #777b73;
+  font: 600 8px/1 var(--font-tech);
+  letter-spacing: 0.08em;
+  pointer-events: none;
+}
+.node-card-fallback { fill: #e7e5dc; font: 800 10px/1 var(--font-tech); pointer-events: none; }
+.collapse-mark { pointer-events: none; fill: #191c18; font-size: 11px; font-weight: 700; }

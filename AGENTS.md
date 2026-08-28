@@ -27,7 +27,7 @@ endfield_wiki_full_*.json (147MB, 1958条, 块式富文本)
       GET  /api/synthesis?item=重息壤   合成树（物品树 / 设备配方卡 / 歧义→候选列表 / 无配方→知识库信息 + 封面图/相关引用）
       GET  /api/names                   全部名称（前端模糊搜索联想）
       GET  /api/health                  健康检查
-  → web/index.html (白色工业制图；纵向图片配方树 + 知识问答双模式)
+  → web/ 前端（Vite+React+TS，`npm run build` 出 dist 由后端托管；白色工业制图；纵向图片配方树 + 知识问答双模式）
 ```
 
 ## 3. 环境（重要，已确认）
@@ -45,7 +45,7 @@ endfield_wiki_full_*.json (147MB, 1958条, 块式富文本)
 ├─ scripts/          # 工具（勿重写，先查 README）
 ├─ endfield_kb/      # 按分类提取的知识库（build_kb_all 产物）
 ├─ output/           # RAG 索引、recipes.json、评测结果
-├─ web/              # 前端（index.html + vendor/d3.min.js）
+├─ web/              # 前端（Vite+React+TS；src 源码 + dist 产物）
 ├─ .env              # 可选（LLM 相关配置备用，私密）
 └─ endfield_wiki_full_*.json / endfield_devices.* / endfield_items.*  # 历史数据（只读）
 ```

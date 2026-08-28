@@ -1,0 +1,197 @@
+/* ============================================================
+   entry.css — 机械开场动画（v8 staged mechanical boot）
+   ============================================================ */
+
+.entry-curtain {
+  --boot-progress: 0%;
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: linear-gradient(132deg, #070908 0 48%, #101522 48% 72%, #151b31 72%);
+  transition: opacity 0.72s ease, visibility 0.72s step-end;
+}
+.entry-curtain::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    repeating-linear-gradient(116deg, transparent 0 82px, rgba(255, 255, 255, 0.035) 83px 84px),
+    linear-gradient(116deg, transparent 44%, rgba(23, 55, 209, 0.22) 44.2% 47%, transparent 47.2%);
+  animation: entryGridDrift 8s linear infinite;
+}
+.entry-curtain::after {
+  content: "TALOS-II / SYSTEM INITIALIZATION";
+  position: absolute;
+  left: clamp(20px, 4vw, 68px);
+  top: clamp(22px, 5vh, 54px);
+  color: rgba(255, 255, 255, 0.58);
+  font: 700 10px/1 var(--font-tech);
+  letter-spacing: 0.23em;
+  animation: entryTextIn 0.7s 0.18s both;
+}
+
+.entry-mechanism {
+  position: relative;
+  width: min(82vw, 720px);
+  height: min(58vh, 430px);
+  display: grid;
+  place-items: center;
+  transform-style: preserve-3d;
+}
+
+.entry-beam {
+  position: absolute;
+  height: 44px;
+  width: 130%;
+  left: -15%;
+  background: linear-gradient(90deg, transparent 0 7%, #f0cf16 7% 29%, #1a38c8 29% 31%, #171a17 31% 82%, transparent 82%);
+  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.32);
+  clip-path: polygon(3% 0, 100% 0, 97% 100%, 0 100%);
+  opacity: 0.9;
+}
+.entry-beam-a { top: 12%; transform: translate3d(-80vw, -52vh, 0) rotate(-28deg); animation: beamStrikeA 1.05s 0.2s cubic-bezier(0.14, 0.82, 0.2, 1) forwards; }
+.entry-beam-b { bottom: 13%; transform: translate3d(80vw, 50vh, 0) rotate(-28deg); animation: beamStrikeB 1.08s 0.36s cubic-bezier(0.14, 0.82, 0.2, 1) forwards; }
+@keyframes beamStrikeA {
+  70% { transform: translate3d(2vw, 1vh, 0) rotate(-28deg); }
+  100% { transform: translate3d(0, 0, 0) rotate(-28deg); }
+}
+@keyframes beamStrikeB {
+  70% { transform: translate3d(-2vw, -1vh, 0) rotate(-28deg); }
+  100% { transform: translate3d(0, 0, 0) rotate(-28deg); }
+}
+
+.entry-rail {
+  position: absolute;
+  top: 50%;
+  width: 44%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #f0cf16 35%, #fff);
+  opacity: 0;
+  box-shadow: 0 0 14px rgba(240, 207, 22, 0.55);
+}
+.entry-rail.left { right: 72%; transform: translateX(-90px) rotate(-28deg); animation: railLock 0.65s 1.05s ease forwards; }
+.entry-rail.right { left: 72%; transform: translateX(90px) rotate(-28deg); animation: railLock 0.65s 1.05s ease forwards; }
+@keyframes railLock { to { opacity: 1; transform: translateX(0) rotate(-28deg); } }
+
+.entry-logo-plate {
+  position: relative;
+  width: clamp(300px, 36vw, 470px);
+  height: clamp(190px, 25vw, 300px);
+  display: grid;
+  place-items: center;
+  background: linear-gradient(145deg, #fff 0 72%, #e8e7df 72%);
+  clip-path: polygon(13% 0, 100% 0, 87% 100%, 0 100%);
+  box-shadow: 22px 25px 0 rgba(23, 55, 209, 0.74), -18px -15px 0 rgba(240, 207, 22, 0.88), 0 40px 70px rgba(0, 0, 0, 0.38);
+  opacity: 0;
+  transform: translate3d(-38vw, -35vh, 120px) rotate(-24deg) scale(0.58);
+  animation: mechanicalDock 1.25s 0.62s cubic-bezier(0.16, 0.92, 0.22, 1.05) forwards;
+}
+.entry-logo-plate::before { content: ""; position: absolute; inset: 13px; border: 1px solid rgba(17, 20, 16, 0.22); clip-path: inherit; }
+.entry-logo-plate::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(108deg, transparent 28%, rgba(240, 207, 22, 0.58) 46%, rgba(255, 255, 255, 0.95) 50%, transparent 66%);
+  transform: translateX(-135%);
+  animation: entryLogoSweep 0.9s 1.7s ease-out forwards;
+}
+.entry-logo-plate img {
+  width: 88%;
+  height: 88%;
+  object-fit: contain;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.08));
+}
+@keyframes mechanicalDock {
+  0% { opacity: 0; }
+  68% { opacity: 1; transform: translate3d(10px, 8px, 30px) rotate(2deg) scale(1.035); }
+  82% { transform: translate3d(-5px, -3px, 0) rotate(-1deg) scale(0.99); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) rotate(0) scale(1); }
+}
+@keyframes entryLogoSweep { to { transform: translateX(135%); } }
+
+.entry-lock {
+  position: absolute;
+  width: 18px;
+  height: 84px;
+  background: #f0cf16;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  box-shadow: inset -5px 0 0 #1737d1;
+}
+.entry-lock.left { left: -31px; animation: lockPinLeft 0.42s 1.62s ease-out forwards; }
+.entry-lock.right { right: -31px; animation: lockPinRight 0.42s 1.62s ease-out forwards; }
+@keyframes lockPinLeft { from { opacity: 0; transform: translate(-45px, -50%); } to { opacity: 1; transform: translate(0, -50%); } }
+@keyframes lockPinRight { from { opacity: 0; transform: translate(45px, -50%); } to { opacity: 1; transform: translate(0, -50%); } }
+
+.entry-boot {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + clamp(145px, 14vw, 175px));
+  width: min(78vw, 620px);
+  transform: translateX(-50%);
+  color: #fff;
+  font-family: var(--font-tech);
+  opacity: 0;
+  animation: entryBootIn 0.55s 1.55s forwards;
+}
+@keyframes entryBootIn { from { opacity: 0; transform: translate(-50%, 9px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.entry-boot-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  margin-bottom: 10px;
+  font-size: 10px;
+  letter-spacing: 0.19em;
+  color: rgba(255, 255, 255, 0.64);
+}
+#entry-percent {
+  font-size: clamp(22px, 3vw, 34px);
+  font-weight: 800;
+  line-height: 0.8;
+  color: #f0cf16;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.entry-progress {
+  height: 13px;
+  padding: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+}
+.entry-progress-fill {
+  display: block;
+  width: var(--boot-progress);
+  height: 100%;
+  background: linear-gradient(90deg, #1737d1 0 72%, #f0cf16 72%);
+  box-shadow: 0 0 16px rgba(240, 207, 22, 0.36);
+  transition: width 0.08s linear;
+}
+.entry-ticks {
+  height: 8px;
+  margin-top: 7px;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.28) 0 1px, transparent 1px 5%);
+}
+
+.entry-curtain.is-complete {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition-timing-function: cubic-bezier(0.7, 0, 0.2, 1), step-end;
+}
+.entry-curtain.is-complete .entry-mechanism { animation: mechanismRelease 0.72s cubic-bezier(0.7, 0, 0.2, 1) forwards; }
+@keyframes mechanismRelease {
+  to { transform: translate3d(12vw, 5vh, 0) rotate(4deg) scale(1.08); filter: blur(7px); }
+}
+@keyframes entryTextIn { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes entryGridDrift { to { transform: translate3d(70px, -40px, 0); } }

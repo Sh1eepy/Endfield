@@ -453,7 +453,9 @@ def ask_endpoint(req: AskRequest):
         _ASK_SEMAPHORE.release()
 
 
-# ---- 静态前端（web/ 目录），放在最后挂载以免覆盖 /api/* ----
+# ---- 静态前端（优先 web/dist 构建产物，回退 web/ 源码目录），放在最后挂载以免覆盖 /api/* ----
 web_dir = os.path.join(ROOT, "web")
-if os.path.isdir(web_dir):
-    app.mount("/", StaticFiles(directory=web_dir, html=True), name="web")
+dist_dir = os.path.join(web_dir, "dist")
+static_dir = dist_dir if os.path.isdir(dist_dir) else web_dir
+if os.path.isdir(static_dir):
+    app.mount("/", StaticFiles(directory=static_dir, html=True), name="web")

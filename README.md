@@ -63,15 +63,18 @@ docker run --rm -p 8000:8000 --env-file .env endfield-synthesis
 
 ### 本地 Python
 
-项目使用 Python 3.12：
+项目使用 Python 3.12（conda env `endfield`）：
 
 ```powershell
 pip install -r requirements.txt
 python scripts/build_rag.py --inputs "endfield_kb/*.jsonl" --reset
 python scripts/build_knowledge_graph.py
+# 前端（Vite + React + TS）构建产物由后端托管
+cd web && npm install && npm run build && cd ..
 python -m uvicorn scripts.api_server:app --host 0.0.0.0 --port 8000
 ```
 
+前端开发时用 `cd web && npm run dev`（http://localhost:5173，自动代理 `/api` 到 8000）。
 本地构建默认离线加载 `BAAI/bge-small-zh-v1.5`，需要提前把模型放入 Hugging Face 缓存。没有本地缓存时，
 使用 Docker 构建更省事。
 
@@ -109,7 +112,7 @@ python scripts/quality_gate.py
 scripts/       数据构建、检索、图谱、API 和评测工具
 endfield_kb/   按分类整理的知识库
 output/        配方、索引 manifest、图谱和评测结果
-web/           单页前端、字体、角色素材和本地 D3
+web/           Vite+React+TS 前端（src 源码 + dist 构建产物）
 miniprogram/   微信小程序端页面、组件、主题与本地素材
 tests/         离线回归测试
 ```

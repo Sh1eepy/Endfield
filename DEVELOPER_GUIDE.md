@@ -71,16 +71,31 @@ RAG 和图谱的详细协作见 `KNOWLEDGE_SYSTEM_ARCHITECTURE.md`，工具命�
 
 ## 前端
 
-`web/index.html` 是单页实现，D3 从本地 `web/vendor/d3.min.js` 加载。需要保留：
+前端位于 `web/`，使用 **Vite + React 18 + TypeScript + framer-motion**（2026-08 由单文件 `index.html` 重构）。
 
-- 配方和问答模式各自的 query；
-- 相同问答的会话缓存；
-- 空 query 入口，不恢复默认物品；
-- 纵向固定尺寸图片节点和树内横向滚动；
-- 干员宽表各自的滚动条；
-- 图片素材署名和 `prefers-reduced-motion`。
+```text
+web/
+├─ index.html           # 挂载点（保留 title / 字体预载）
+├─ vite.config.ts       # dev 代理 /api → 127.0.0.1:8000；publicDir=assets
+├─ package.json
+├─ src/
+│  ├─ main.tsx          # 入口
+│  ├─ App.tsx           # 状态中枢（模式/查询/结果/缓存/历史）
+│  ├─ api.ts / types.ts # 后端 API 客户端 + 响应类型（与 scripts 返回结构一一对应）
+│  ├─ utils.ts          # 媒体代理 / 历史记录
+│  ├─ styles/           # 分层 CSS：tokens/layout/components/tree/ask/kb/operator/entry/responsive
+│  └─ components/       # EntryCurtain/TopBar/Hero/SearchBox/SideRail/ResultPanel/
+│                       # SynTree/DeviceCards/KbCard/AskResult/OperatorDossier/Tip/EmptyState
+```
 
-修改 DOM id 或交互契约后同步更新 `tests/test_frontend_contract.py`。
+- 开发：`cd web && npm install && npm run dev` → `http://localhost:5173`（自动代理 `/api` 到 8000）；
+- 构建：`cd web && npm run build` → `web/dist/`；FastAPI 自动托管 `dist`（存在时优先，否则回退 `web/`）；
+- 后端 API 变化时同步更新 `src/types.ts`（字段按需存在，前端按存在性判断）；
+- 配方树为纯 React 递归 SVG（不再依赖 d3，布局常量 `X_UNIT/Y_STEP` 与原 d3.tree nodeSize 等价）；
+- 需要保留的交互：配方和问答模式各自的 query；相同问答的会话缓存（`askCacheRef`）；
+  空 query 入口；纵向图片节点和树内横向滚动；干员宽表各自滚动条；`prefers-reduced-motion`；
+  素材署名。
+- 修改 DOM id 或交互契约后同步更新 `tests/test_frontend_contract.py`（静态扫描 `web/src` 源码）。
 
 ## 本地验证
 
@@ -92,8 +107,9 @@ python scripts/quality_gate.py
 python -m uvicorn scripts.api_server:app --host 0.0.0.0 --port 8000
 ```
 
-浏览器使用 `http://127.0.0.1:8000`。前端改动还要实际刷新页面检查；JS 改动可额外提取 `<script>` 后用
-`node --check` 验证语法。
+前端改动：`cd web && npm run dev` 后浏览器访问 `http://localhost:5173`；改完跑
+`npm run build` 并确认 `web/dist` 可被 FastAPI 托管。浏览器直连后端时用 `http://127.0.0.1:8000`。
+JS 改动可提取后用 `npx tsc --noEmit` 检查类型。
 
 ## 常见问题
 

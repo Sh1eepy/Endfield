@@ -74,8 +74,9 @@ python scripts/build_operator_details.py   # → output/operator_details.json
 ```
 
 从原始 WIKI 组件完整提取干员基本信息、章节/页签、富文本颜色与粗体、表格、图片、技能动态图、
-潜能与明信片、档案、官方演示以及多语种语音。详情数据不进入 RAG 切片，直接由前端结构化渲染，
-避免 Top-K 或文本切片破坏表格和媒体关系。`inspect_wiki_entry.py 名称` 可审计单条原始组件结构。
+潜能与明信片、档案、官方演示以及多语种语音。详情结构仍由前端直接渲染，避免 Top-K 或文本切片破坏
+表格和媒体关系；其中“语音记录”章节的中文台词会由 `build_rag.py` 另行规范化进入 RAG。
+`inspect_wiki_entry.py 名称` 可审计单条原始组件结构。
 
 ## RAG 层工具
 
@@ -107,9 +108,12 @@ python scripts/build_rag.py --inputs "endfield_kb/*.jsonl" --incremental
 ```
 产物（output/rag/）：`chroma/`（向量库）、`bm25/{分类}.pkl`（按分类分片）、
 `chunks.json`（manifest，含条目级 content_hash 供增量对比）、`report.txt`。
-增量原理：内容 hash 对比 → ChromaDB upsert/delete → 仅重建变更分类 BM25 分片。
+默认同时读取 `output/operator_details.json`，将“语音记录”中的中文台词作为 `干员语音` 独立记录；
+可用 `--no-operator-audio` 关闭。增量原理：内容、sections 与索引策略版本 hash 对比 → ChromaDB
+分批 upsert/delete → 仅重建变更分类 BM25 分片。
 增量运行还会核对 manifest 与每个 BM25 分片的 chunk 键；分片缺失、陈旧或损坏时自动自愈。
-长条目若没有 `sections`，会回退切分 `full_text`，避免玩家攻略等条目静默漏索引。
+长条目若没有 `sections`，会回退切分 `full_text`；已有 sections 时也会补入未覆盖的描述/其他内容，
+避免档案后半段、玩家攻略或语音线索静默漏索引。全量写 Chroma 按 1000 条分批，避免批量上限失败。
 
 ### 8. `rag_search.py` — 混合检索（向量 + BM25 分片 → RRF 融合）
 ```bash
@@ -158,7 +162,7 @@ WEB_CONCURRENCY=1 python scripts/start_server.py
 | `POST /api/ask` | RAG 问答（意图识别→路由→检索→LLM 带引用回答），body: `{"query":"重息壤是什么","top_k":5,"gen_answer":true}` |
 | `GET /api/media?url=...` | WIKI CDN 图片/音频白名单同源代理（类型与 25MB 上限校验） |
 
-自动托管 `web/index.html`（白色工业制图 + 纵向真实图片配方树 + 知识问答双模式）。
+自动托管前端：优先 `web/dist`（Vite+React 构建产物），无 dist 时回退 `web/`。
 `/api/ask` 的 `query` 限制为 1～300 字符、`top_k` 限制为 1～10；并发满时返回 429。
 当前界面采用多轮廓卡片语言（圆角胶囊、斜切多边形、不对称圆角），背景由圆环、波浪带、
 多边形叠层构成；包含开机式入场动画、滚动视差与分区淡入，并兼容
@@ -180,14 +184,14 @@ llm.available()                    # 是否配置了 key
 配置走环境变量 / `.env`（`LLM_API_KEY` / `LLM_BASE_URL` / `LLM_MODEL`），**代码零明文 key**；
 未配置 key 时优雅降级不崩。密钥安全见 `.gitignore` + `.env.example`。
 
-### 15. `intent_router.py` — 意图识别分层（L1 规则 → L3 LLM 兜底）
+### 15. `intent_router.py` — 意图识别分层（L1 规则 → 可选 L3 LLM 兜底）
 ```python
 from intent_router import classify_query
 classify_query("重息壤怎么合成")   # → ('配方', 1.0, 'rule')
 ```
 意图类别：配方 / 设备 / 知识 / 比较 / 数值。
 
-### 16. `rag_ask.py` — RAG 问答路由（意图 → 枚举/直查/多路检索 → LLM 生成）
+### 16. `rag_ask.py` — RAG 问答路由（强规则 → 语义检索规划 → 多路检索 → LLM 生成）
 ```python
 from rag_ask import ask
 ask("重息壤怎么合成")                  # 配方 → 结构化直查
@@ -196,13 +200,14 @@ ask("终末地至今为止的主线任务有哪些")    # 枚举 → 知识库�
 ask("解锁武陵地区需要什么条件")          # 多路检索 → LLM 整合开放问题
 ask("重息壤是什么", gen_answer_=True)   # 知识 → RAG 检索 + LLM 带引用回答
 ```
-四层路由：
+主要路由：
 1. **枚举查询**（"有哪些/列举/所有"）→ 知识库分类内过滤枚举（主线任务=任务分类含"第一章/进程"；
    干员/武器/活动=直接枚举该分类），LLM 分组整理回答
 2. **结构化直查**：配方/设备意图或纯名称 → 配方库直查（含歧义候选/设备产物反查）
-3. **多路检索**（开放问题）：原查询 + LLM 改写子查询 → 各走 RAG/全文关键词/mention 反查，
-   合并去重后 LLM 整合（"解锁武陵"→ 捞到第二章主线任务链）
+3. **语义检索规划**（开放问题）：一次受约束 LLM 调用输出问题类型、主题、实体、关键词、子查询和
+   白名单 routes；规划器不能回答问题，也不能把猜测答案作为检索事实。随后走 RAG/全文关键词/mention。
 4. **实体直取**：抽到实体（"诀"）→ 直接取该条目全文当上下文，绕开 chunk 切分丢失表格
+5. **解释性关系**：只有“人物—人物/组织/亲属”等关系规划才走证据窗口；“喜欢吃什么”等对象偏好走普通 RAG
 LLM 生成带 `[来源N]` 引用的回答，检索相关度低时诚实拒答。
 
 辅助数据：`output/mention_index.json`（"谁提到了X"反查索引，build_mention_index 生成）；

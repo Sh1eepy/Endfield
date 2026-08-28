@@ -19,6 +19,12 @@ output/rag/chroma/
 logs/
 *.log
 
+# 前端构建产物与依赖（可重建）
+web/node_modules/
+web/dist/
+web/.npm-cache/
+web/tsconfig.tsbuildinfo
+
 # 原始抓取与逆向缓存：体积大、可重新采集，不进入普通 Git 历史
 endfield_wiki_full_*.json
 chunks/

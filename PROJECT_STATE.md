@@ -13,12 +13,12 @@
 |---|---|---|
 | 全量分类知识库 | `endfield_kb/` | 1958 条按 22 子分类提取 jsonl+md（干员/武器/装备/设备/物品/任务/档案…） |
 | 配方库 | `output/recipes.json` | **345 个配方**（recipe_extract.py 提取，不做激进清洗：含设备制造/容器/矿机/原木），合成树数据源 |
-| RAG 索引 | `output/rag/` | 当前 3402 chunks；ChromaDB 向量 + BM25 按分类分片 + chunks.json manifest |
-| RAG 增量更新 | `build_rag.py --incremental` | 内容 hash 对比 → 只重 embedding 变更条目 → 只重建变更分类 BM25 分片 |
+| RAG 索引 | `output/rag/` | 当前 7319 chunks（含 2373 条中文干员语音）；ChromaDB 向量 + BM25 按分类分片 + chunks.json manifest |
+| RAG 增量更新 | `build_rag.py --incremental` | 内容 + sections + 索引策略版本 hash → 只重 embedding 变更条目 → 只重建变更分类 BM25 分片 |
 | 合成树 API | `api_server.py /api/synthesis` | 物品合成树 / 设备配方卡 / 歧义→候选列表 / 无配方→知识库信息；叶子=基础资源，配方≤2，深度≤10，循环剪枝 |
 | 名称建议 | `api_server.py /api/names` | 全部名称（配方物品+设备+知识库条目，1908 个），前端模糊搜索联想 |
 | 媒体结构库 | `output/item_media.json` | extract_media.py 提取：封面图 1957 / 正文图 2046 / 外链 291 / 引用 14693（含数量与链接样式） |
-| 前端 | `web/index.html` | 白色工业档案风格：纵向图片配方树、干员详情、机械开场和响应式布局 |
+| 前端 | `web/` | **Vite + React 18 + TS + framer-motion** 组件化前端（2026-08 重构）：白色工业档案风、纵向图片配方树（纯 React SVG，不再依赖 d3）、知识问答、干员详情、机械开场动效；`npm run build` 产物 `web/dist` 由 FastAPI 自动托管 |
 | 微信小程序 | `miniprogram/` | 首页联想与历史、配方/问答独立查询、Canvas 合成树、知识问答证据与干员档案；静态检查已通过，待开发者工具和真机验收 |
 | 干员详情库 | `output/operator_details.json` | 31 名干员；基本信息、富文本颜色、技能/天赋/潜能/档案多 Tab、图片与多语种语音 |
 | 轻量 GraphRAG | `output/knowledge_graph/graph.db` | 2,129 实体 / 9,358 条可追溯关系；覆盖人物/任务/地点/物品/设备/配方与明确亲属关系，支持解释性关系混合取证、增量更新与问法对称门禁 |
@@ -40,16 +40,16 @@
 - `scripts/gen_eval_set.py` → 评测集自动生成；`scripts/eval_retrieval.py` → 检索评测
 - `scripts/gen_jieba_dict.py` + `scripts/dict_zh.txt` → 游戏专有名词词典
 - `output/eval/` → 评测集与历次评测结果；`output/mention_index.json` → mention 反查索引
-- `web/index.html` → 前端（纵向图片配方树 + 知识问答 + 干员详情）
+- `web/` → 前端（Vite+React+TS；`npm run dev` 开发 / `npm run build` 出 `dist`）；`web/vendor/` 旧 d3 已弃用
 - `miniprogram/` → 微信小程序端；`miniprogram/README.md` 记录开发、真机与发布方法
 - `.env` → 可选（LLM 相关配置，私密勿提交）；`.gitignore` + `.env.example` → 密钥安全
 
 ## 4. 关键技术结论
 - 合成树剪枝规则：叶子=基础资源（免费资源清水/惰气/息壤气 + 无产出配方矿物 + **种子类**）；每个物品最多 2 个配方（排除自循环）；循环/超深分支直接剪掉，不显示"已截断"；植物类（芽针/锦草等）正常展开种植机配方；**无配方物品回退知识库返回物品信息**
-- RAG 增量：条目级 `content_hash`（md5）→ manifest 对比 → ChromaDB upsert/delete → BM25 按分类分片只重建变更分类
+- RAG 增量：条目内容、sections 与索引策略版本共同生成 hash → manifest 对比 → ChromaDB 分批 upsert/delete → BM25 按分类分片只重建变更分类
 - 设备（如"天有洪炉"）走 `/api/synthesis` 的设备分支 → 配方卡片（原料/产物/耗时）
-- 知识问答不是开放式 Agent：当前为确定性路由 + 可选查询改写/生成。开放问题通常 2 次 LLM，
-  图关系通常 1 次，结构化直查可 0 次；是否增加补检索循环由困难集收益决定。
+- 知识问答不是开放式 Agent：当前为确定性强规则 + 一次受约束语义检索规划 + 可选答案生成。
+  开放问题通常 2 次 LLM（规划、回答），图关系通常 1～2 次，结构化直查可 0 次；规划器不能直接提供事实。
 - 长条目生成不再固定截取开头，使用 `focus_long_context()` 从全文分散选择覆盖各子问题的证据窗口。
 
 ## 5. 当前发布边界

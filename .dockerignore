@@ -15,3 +15,8 @@ endfield_wiki_full_*.json
 endfield_devices.*
 endfield_items.*
 output/rag/chroma
+
+# 前端：node_modules 与本地构建产物不进镜像（镜像内重新 npm 构建）
+web/node_modules
+web/.npm-cache
+web/dist

@@ -1,3 +1,17 @@
+# ============ 阶段 1：前端构建（Node） ============
+FROM node:22-slim AS web-build
+WORKDIR /app/web
+
+# 先复制依赖清单安装（利用缓存层）
+COPY web/package.json web/package-lock.json ./
+# --ignore-scripts：esbuild 新版二进制走 optionalDependencies，无需 postinstall 下载
+RUN npm ci --ignore-scripts
+
+# 再复制源码构建
+COPY web/ ./
+RUN npm run build
+
+# ============ 阶段 2：Python 运行时 ============
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -23,6 +37,8 @@ COPY scripts ./scripts
 COPY endfield_kb ./endfield_kb
 COPY output ./output
 COPY web ./web
+# 前端构建产物（阶段 1 产出）
+COPY --from=web-build /app/web/dist ./web/dist
 
 ENV HF_HUB_OFFLINE=1 \
     TRANSFORMERS_OFFLINE=1
