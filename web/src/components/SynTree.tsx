@@ -1,7 +1,8 @@
-import { forwardRef, useCallback, useId, useImperativeHandle, useMemo, useState } from 'react'
+import { forwardRef, useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import type { SynTree as SynTreeApi, SynTreeChild } from '../types'
+import { mediaSrc } from '../utils'
 
 interface Props {
   tree: SynTreeApi
@@ -37,8 +38,8 @@ interface LayoutNode extends TreeNode {
   children: LayoutNode[]
 }
 
-// 纵向布局常量（与原 d3.tree().nodeSize([116, 148]) 等价）
-const X_UNIT = 116
+// 纵向布局常量：X_UNIT 收紧到 100（节点卡片最宽 104，叶间距略紧但可读）
+const X_UNIT = 100
 const Y_STEP = 148
 
 /** 后端树 → 内部树（等价旧版 synToD3） */
@@ -120,6 +121,7 @@ const SynTree = forwardRef<SynTreeHandle, Props>(function SynTree(
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
   const [scale, setScale] = useState(1)
   const [failedCovers, setFailedCovers] = useState<Set<string>>(new Set())
+  const fitAppliedRef = useRef(false)
   // useId 输出含冒号，URL(#id) 无法匹配，需要去冒号
   const uid = useId().replace(/:/g, '')
 
@@ -176,9 +178,22 @@ const SynTree = forwardRef<SynTreeHandle, Props>(function SynTree(
   useImperativeHandle(ref, () => ({
     collapse() { setCollapsed(new Set([source.key])) },
     expand() { setCollapsed(new Set()) },
-    zoom(delta: number) { setScale((s) => Math.max(0.7, Math.min(1.35, s + delta))) },
+    zoom(delta: number) { setScale((s) => Math.max(0.35, Math.min(1.6, s + delta))) },
     reset() { setScale(1) },
   }), [source.key])
+
+  // 首次挂载：如果树比容器宽，自动缩小到适配容器，避免横向大滑动
+  useEffect(() => {
+    if (fitAppliedRef.current) return
+    fitAppliedRef.current = true
+    const container = document.getElementById('syn-tree')
+    if (!container) return
+    const avail = container.clientWidth - 40
+    if (W > avail && avail > 260) {
+      setScale(Math.max(0.4, avail / W))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [W])
 
   const cardPath = (w: number) =>
     `M${-w / 2},-44 H${w / 2 - 12} L${w / 2},-32 V44 H${-w / 2 + 12} L${-w / 2},32 Z`
@@ -244,7 +259,7 @@ const SynTree = forwardRef<SynTreeHandle, Props>(function SynTree(
                     </clipPath>
                     <image
                       className="node-card-image"
-                      href={d.cover}
+                      href={mediaSrc(d.cover)}
                       x={-w / 2 + 7}
                       y={-37}
                       width={w - 14}
