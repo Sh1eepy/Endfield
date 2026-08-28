@@ -111,7 +111,8 @@ const SynTree = forwardRef<SynTreeHandle, Props>(function SynTree(
 ) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
   const [scale, setScale] = useState(1)
-  const uid = useId()
+  // useId 输出含冒号，URL(#id) 无法匹配，需要去冒号
+  const uid = useId().replace(/:/g, '')
 
   const source = useMemo(() => synToTree(tree), [tree])
   const visibleTree = useMemo(() => applyCollapsed(source, collapsed), [source, collapsed])
