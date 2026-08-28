@@ -17,6 +17,7 @@ interface Props {
   errorMsg: string
   result: LoadResult | null
   onPickName: (name: string) => void
+  onRunQuery: (query: string) => void
   showTip: (x: number, y: number, content: ReactNode) => void
   hideTip: () => void
   synTreeRef: RefObject<HTMLDivElement>
@@ -124,7 +125,7 @@ function SynContent({ result, onPickName, showTip, hideTip, treeHandleRef }: {
 
 /** 结果面板：标题 + 树工具条 + 内容分发 */
 export default function ResultPanel({
-  mode, title, state, errorMsg, result, onPickName, showTip, hideTip, synTreeRef,
+  mode, title, state, errorMsg, result, onPickName, onRunQuery, showTip, hideTip, synTreeRef,
 }: Props) {
   const treeHandleRef = useRef<SynTreeHandle>(null)
 
@@ -162,7 +163,7 @@ export default function ResultPanel({
             transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }}
           >
             {state === 'empty' ? (
-              <EmptyState mode={mode} onDemo={(q) => onPickName(q)} />
+              <EmptyState mode={mode} onDemo={onRunQuery} />
             ) : state === 'loading' ? (
               <div id="syn-empty">{mode === 'ask' ? '思考中…（检索 + AI 生成）' : '加载中…'}</div>
             ) : state === 'error' ? (

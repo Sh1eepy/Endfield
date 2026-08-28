@@ -43,10 +43,17 @@ export default function App() {
 
   // 当前页面会话按 query 缓存完整回答：模式切换只重绘缓存，不重复调用 LLM。
   const askCacheRef = useRef(new Map<string, AskResult>())
+  // 每次查询/清空都会使旧请求失效，避免迟到的响应覆盖当前模式与结果。
+  const requestSeqRef = useRef(0)
   // 结果区入场动画计时器
   const enterTimerRef = useRef<number | null>(null)
   // 结果区容器（用于重放入场动画）
   const synTreeRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => () => {
+    requestSeqRef.current += 1
+    if (enterTimerRef.current) window.clearTimeout(enterTimerRef.current)
+  }, [])
 
   useEffect(() => {
     fetchHealth()
@@ -133,6 +140,9 @@ export default function App() {
 
   const runQuery = useCallback((raw: string, m: Mode = mode) => {
     const q = String(raw || '').trim()
+    const requestId = ++requestSeqRef.current
+    const isCurrent = () => requestId === requestSeqRef.current
+    setModeQueries((prev) => ({ ...prev, [mode]: inputValue, [m]: q }))
     setInputValue(q)
     setMode(m)
     if (!q) { showEmpty(m); return }
@@ -140,12 +150,13 @@ export default function App() {
       setLoading(`${q} · 配方树`)
       fetchSynthesis(q)
         .then((d) => {
+          if (!isCurrent()) return
           if (!d.ok) { setError(d.error || '未找到', `${q} · 配方树`); return }
           recordHistory(q, 'syn')
           setHistory(getHistory())
           setReady({ kind: 'syn', data: d, query: q }, `${q} · 配方树`)
         })
-        .catch((e: Error) => setError(e.message, `${q} · 配方树`))
+        .catch((e: Error) => { if (isCurrent()) setError(e.message, `${q} · 配方树`) })
     } else {
       const cached = askCacheRef.current.get(q)
       if (cached) {
@@ -155,31 +166,28 @@ export default function App() {
       setLoading(`${q} · 知识问答`)
       fetchAsk(q)
         .then((d) => {
+          // 成功的旧回答可留作缓存，但不允许更新当前页面。
+          if (d.ok) askCacheRef.current.set(q, d)
+          if (!isCurrent()) return
           if (!d.ok) { setError(d.error || '问答失败', `${q} · 知识问答`); return }
-          askCacheRef.current.set(q, d)
           recordHistory(q, 'ask')
           setHistory(getHistory())
           setReady({ kind: 'ask', data: d, query: q }, `${q} · 知识问答`)
         })
-        .catch((e: Error) => setError(e.message, `${q} · 知识问答`))
+        .catch((e: Error) => { if (isCurrent()) setError(e.message, `${q} · 知识问答`) })
     }
-  }, [mode, setError, setLoading, setReady, showEmpty])
+  }, [inputValue, mode, setError, setLoading, setReady, showEmpty])
 
   const switchMode = useCallback((m: Mode) => {
-    setModeQueries((prev) => ({ ...prev, [mode]: inputValue }))
-    const q = modeQueries[m] ?? ''
-    setMode(m)
-    setInputValue(q)
-    if (q) runQuery(q, m)
-    else showEmpty(m)
-  }, [inputValue, mode, modeQueries, runQuery, showEmpty])
+    if (m === mode) return
+    runQuery(modeQueries[m] ?? '', m)
+  }, [mode, modeQueries, runQuery])
 
   const handleHistoryPick = useCallback((entry: HistoryEntry) => {
-    setModeQueries((prev) => ({ ...prev, [mode]: inputValue }))
-    setMode(entry.mode)
-    setInputValue(entry.q)
     runQuery(entry.q, entry.mode)
-  }, [inputValue, mode, runQuery])
+  }, [runQuery])
+
+  const openEntry = useCallback((name: string) => runQuery(name, 'syn'), [runQuery])
 
   const handleClearHistory = useCallback(() => {
     clearHistory()
@@ -229,7 +237,8 @@ export default function App() {
             state={resultState}
             errorMsg={errorMsg}
             result={result}
-            onPickName={runQuery}
+            onPickName={openEntry}
+            onRunQuery={runQuery}
             showTip={showTip}
             hideTip={hideTip}
             synTreeRef={synTreeRef}

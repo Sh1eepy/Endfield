@@ -39,6 +39,14 @@
   vertical-align: super;
   cursor: pointer;
 }
+.ask-answer .src-ref button { font: inherit; color: inherit; border: 0; background: none; padding: 0 2px; cursor: pointer; }
+.ask-answer ol { margin: 0.45em 0; padding-left: 1.8em; }
+.ask-answer pre { overflow-x: auto; padding: 10px; background: var(--panel3); }
+.ask-answer pre code { border: 0; padding: 0; }
+.ask-table-scroll { max-width: 100%; overflow-x: auto; margin: 12px 0; }
+.ask-table-scroll table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ask-table-scroll th, .ask-table-scroll td { min-width: 100px; padding: 8px 12px; border: 1px solid var(--border); vertical-align: top; }
+.ask-table-scroll th { background: var(--panel3); border-bottom: 2px solid var(--klein); }
 .ask-rejected { color: var(--sub); font-style: italic; }
 .ask-intent-tag {
   display: inline-block;

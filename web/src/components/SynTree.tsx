@@ -279,7 +279,17 @@ const SynTree = forwardRef<SynTreeHandle, Props>(function SynTree(
                 className="node-card-label"
                 textAnchor="middle"
                 y={57}
+                role={isMachine ? undefined : 'button'}
+                tabIndex={isMachine ? undefined : 0}
+                aria-label={isMachine ? undefined : `查看${d.name}`}
                 onClick={(ev) => { ev.stopPropagation(); if (!isMachine) onPickName(d.name) }}
+                onKeyDown={(ev) => {
+                  if (!isMachine && (ev.key === 'Enter' || ev.key === ' ')) {
+                    ev.preventDefault()
+                    ev.stopPropagation()
+                    onPickName(d.name)
+                  }
+                }}
               >
                 {d.name.length > 8 ? `${d.name.slice(0, 8)}…` : d.name}
               </text>

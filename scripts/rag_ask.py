@@ -398,27 +398,38 @@ def multi_search(query, top_k=5, plan=None):
     """
     plan = plan or semantic_plan(query)
     subs = query_expand(query, plan=plan)
+    # 图/结构化路线未命中后仍可回退文本；已有文本路线则严格执行计划。
+    routes = set(plan.get("routes") or []) & {"entity_direct", "rag", "keyword", "mention"}
+    if not routes:
+        routes = {"entity_direct", "rag", "keyword"}
     all_hits = []
-    seen = set()
+    seen = {}
 
     def _add(h):
         name = h["meta"].get("name") or ""
         key = (name, h["meta"].get("category") or "")
         if key in seen:
+            # 同一来源先被向量召回时，仍允许全文关键词结果补全正文和相关性标记。
+            index = seen[key]
+            if h.get("_keyword") and not all_hits[index].get("_direct"):
+                all_hits[index] = h
             return
-        seen.add(key)
+        seen[key] = len(all_hits)
         all_hits.append(h)
 
-    # 1. 原查询 RAG
-    for h in rag_search(query, top_k=top_k):
-        _add(h)
+    if "entity_direct" in routes:
+        for h in kb_direct_hits(query, top_n=1):
+            _add(h)
+    # 1. 原查询 RAG；实体直取由独立路线控制。
+    if "rag" in routes:
+        for h in rag_search(query, top_k=top_k, direct_fallback=False):
+            _add(h)
     # 规划器给出的主题词用于全文补召回。按“实体 + 单个主题词”分别搜索，避免
     # 把过多同义词做成必须同时命中的 AND 条件。
     plan_entities = plan.get("entities") or []
-    for keyword in plan.get("keywords") or []:
-        keyword_sets = [[keyword]]
-        if plan_entities:
-            keyword_sets.insert(0, [plan_entities[0], keyword])
+    for keyword in (plan.get("keywords") or []) if "keyword" in routes else []:
+        # 有明确实体时不再用“吃/喜欢”等单字全库补召回，避免无关任务挤占上下文。
+        keyword_sets = [[entity, keyword] for entity in plan_entities] if plan_entities else [[keyword]]
         for kw_list in keyword_sets:
             for e in keyword_search(kw_list, limit=3):
                 _add({"meta": {"name": e["name"], "category": e["category"],
@@ -428,27 +439,29 @@ def multi_search(query, top_k=5, plan=None):
     # 2. 子查询：RAG + 全文关键词 + mention
     place = extract_place(query)
     for sub in subs:
-        for h in rag_search(sub, top_k=3):
-            _add(h)
+        if "rag" in routes:
+            for h in rag_search(sub, top_k=3, direct_fallback=False):
+                _add(h)
         # 全文关键词：地名 + 条件词（子查询拆分后的词）
-        if place:
+        if place and "keyword" in routes:
             cond_words = [w for w in ["解锁", "开放", "条件", "前往", "任务", "完成", "进入"] if w in sub]
-            for kw_list in ([[place] + cond_words, [place], cond_words]):
+            for kw_list in ([[place] + cond_words, [place]]):
                 for e in keyword_search(kw_list, limit=3):
                     _add({"meta": {"name": e["name"], "category": e["category"], "item_id": e["item_id"],
                                    "chunk_index": 0},
                           "text": e["full_text"], "score": 0.85, "vector_sim": 0.85,
                           "bm25_score": 0.0, "_keyword": True})
         # mention 反查
-        for h in mention_lookup(sub, limit=3):
-            _add(h)
-    # 排序：人工确认的片段（keyword/mention/direct）优先，RAG 结果靠后
+        if "mention" in routes:
+            for h in mention_lookup(sub, limit=3):
+                _add(h)
+    # 实体全文、实体+主题关键词优先；仅仅提到名字不应挤掉主题证据。
     def _rank(h):
         if h.get("_direct"):
             return 0
-        if h.get("_mention"):
-            return 1
         if h.get("_keyword"):
+            return 1
+        if h.get("_mention"):
             return 2
         return 3
     all_hits.sort(key=_rank)
@@ -737,7 +750,7 @@ def rag_search(query, top_k=5, entity_boost=True, direct_fallback=True):
 
     # 实体在知识库存在 → 实体完整条目全文打头（绕开 chunk 切分丢失表格），
     # 再补上检索结果里的其他相关条目（去重），保证上下文既权威又全面。
-    direct = kb_direct_hits(query, top_n=1)
+    direct = kb_direct_hits(query, top_n=1) if direct_fallback else []
     if direct:
         merged = list(direct)
         seen = {name}
