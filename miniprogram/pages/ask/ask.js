@@ -16,6 +16,7 @@ Page({
     result: null,
     // 合成树模式
     synthTree: null,      // /api/synthesis 返回的 tree
+    kbData: null,
     // 结构化直查渲染用
     route: '',            // recipe / device / device_products / ambiguous
     recipeCard: null,     // {title, recipes:[{machine,duration,inputs,outputs}]}
@@ -46,11 +47,27 @@ Page({
     }
   },
 
+  _beginQuery() {
+    this._queryId = (this._queryId || 0) + 1;
+    this.setData({
+      loading: true, error: '', result: null, synthTree: null, kbData: null,
+      route: '', recipeCard: null, deviceProducts: null, ambiguous: null,
+      intent: '', routeTag: '', answerSegs: [], rejected: false,
+      sources: [], hits: [], hitsOpen: false, highlightSrc: 0,
+    });
+    return this._queryId;
+  },
+
+  onUnload() {
+    this._queryId = (this._queryId || 0) + 1;
+  },
+
   // 探测：/api/synthesis 若返回 no_recipe + operator_detail，说明是干员 → 跳详情
   _probeOperator(q) {
-    this.setData({ loading: true });
-    api.operator(q)
+    const queryId = this._beginQuery();
+    return api.operator(q)
       .then((d) => {
+        if (queryId !== this._queryId) return;
         if (d.ok && d.no_recipe && d.kb && d.kb.operator_detail) {
           wx.redirectTo({ url: '/pages/operator/operator?name=' + encodeURIComponent(q) });
           return;
@@ -58,7 +75,9 @@ Page({
         // 非干员 → 直接复用探测结果渲染（避免二次请求）
         this._renderSynResult(q, d);
       })
-      .catch(() => this._loadSynTree(q));
+      .catch(() => {
+        if (queryId === this._queryId) return this._loadSynTree(q, queryId);
+      });
   },
 
   // 渲染 /api/synthesis 结果（合成树/设备/歧义/知识库）
@@ -97,44 +116,14 @@ Page({
   },
 
   // 加载合成树
-  _loadSynTree(q) {
-    this.setData({ loading: true, error: '', synthTree: null });
-    api.synthesis(q, 10)
+  _loadSynTree(q, queryId = this._beginQuery()) {
+    return api.synthesis(q, 10)
       .then((d) => {
-        this.setData({ loading: false });
-        if (!d.ok) {
-          this.setData({ error: d.error || '未找到' });
-          return;
-        }
-        if (d.ambiguous) {
-          this.setData({ route: 'ambiguous', ambiguous: { item: d.item, candidates: d.candidates || [] } });
-          return;
-        }
-        if (d.tree && d.tree.kind === 'device') {
-          // 设备配方卡
-          this.setData({
-            route: 'device',
-            recipeCard: { title: `设备「${d.tree.name}」能造的配方（${(d.tree.recipes || []).length} 个）`, recipes: d.tree.recipes || [] },
-          });
-          return;
-        }
-        if (d.no_recipe && d.kb) {
-          // 无配方 → 知识库信息（含干员详情时跳转）
-          if (d.kb.operator_detail) {
-            wx.redirectTo({ url: '/pages/operator/operator?name=' + encodeURIComponent(q) });
-            return;
-          }
-          // 组织 kb 数据：标题 = 条目名（查得到直接显示，不写"无流水线配方"）
-          this.setData({ route: 'kb', kbData: this._buildKbData(d.kb) });
-          return;
-        }
-        if (d.tree) {
-          this.setData({ synthTree: d.tree });
-        } else {
-          this.setData({ error: '未找到相关数据' });
-        }
+        if (queryId === this._queryId) this._renderSynResult(q, d);
       })
-      .catch((e) => this.setData({ error: e.message || '请求失败', loading: false }));
+      .catch((e) => {
+        if (queryId === this._queryId) this.setData({ error: e.message || '请求失败', loading: false });
+      });
   },
 
   // 合成树叶子点击 → 重新搜索
@@ -224,16 +213,19 @@ Page({
   },
 
   runAsk(q) {
-    this.setData({ loading: true, error: '', result: null });
-    api.ask(q, 5, true)
+    const queryId = this._beginQuery();
+    return api.ask(q, 5, true)
       .then((d) => {
+        if (queryId !== this._queryId) return;
         if (!d.ok) {
           this.setData({ error: d.error || '问答失败', loading: false });
           return;
         }
         this._render(d);
       })
-      .catch((e) => this.setData({ error: e.message || '请求失败', loading: false }));
+      .catch((e) => {
+        if (queryId === this._queryId) this.setData({ error: e.message || '请求失败', loading: false });
+      });
   },
 
   // ===== 渲染分发 =====
@@ -312,11 +304,12 @@ Page({
     this.setData({ hitsOpen: !this.data.hitsOpen });
   },
 
-  // 歧义候选 → 重新查询该名称（配方模式）
+  // 歧义候选 → 按当前模式查询，配方模式不能走知识问答 API。
   onAmbiguousPick(e) {
     const name = e.currentTarget.dataset.name;
+    if (!name) return;
     this.setData({ query: name });
-    this.runAsk(name);
+    return this.data.mode === 'syn' ? this._probeOperator(name) : this.runAsk(name);
   },
 
   // kb 页图片全屏预览

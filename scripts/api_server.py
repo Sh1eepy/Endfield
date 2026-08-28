@@ -20,7 +20,7 @@ import sys
 import threading
 import time
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -48,22 +48,32 @@ def _load_env():
 _load_env()
 
 from recipe_index import load_recipes, build_item_index, find_item_ids_by_name  # noqa: E402
+from scripts.api_security import positive_int_env, require_ask_access, require_admin_access  # noqa: E402
 
 app = FastAPI(title="终末地配方合成树", version="1.0.0")
 
 
-def _positive_int_env(name, default):
-    """读取正整数环境变量；配置无效时使用安全默认值。"""
-    try:
-        return max(1, int(os.environ.get(name) or default))
-    except (TypeError, ValueError):
-        return default
-
-
 # 每个 worker 独立限制同时执行的问答数，避免大量慢 LLM 请求耗尽线程和额度。
-# 公网按 IP 的请求频率限制由 deploy/nginx/endfield.conf 负责。
-ASK_MAX_CONCURRENCY = _positive_int_env("ASK_MAX_CONCURRENCY", 2)
+# 应用层另有共享的频率/每日次数限制；Nginx 为公网入口提供额外保护。
+ASK_MAX_CONCURRENCY = positive_int_env("ASK_MAX_CONCURRENCY", 2)
 _ASK_SEMAPHORE = threading.BoundedSemaphore(ASK_MAX_CONCURRENCY)
+MEDIA_MAX_BYTES = 25 * 1024 * 1024
+MEDIA_MAX_CONCURRENCY = positive_int_env("MEDIA_MAX_CONCURRENCY", 2)
+_MEDIA_SEMAPHORE = threading.BoundedSemaphore(MEDIA_MAX_CONCURRENCY)
+
+
+class _MediaResponse(Response):
+    """Keep the media slot until ASGI finishes sending, including slow clients."""
+    def __init__(self, content, *, slot, **kwargs):
+        super().__init__(content, **kwargs)
+        self._slot = slot
+
+    async def __call__(self, scope, receive, send):
+        try:
+            await super().__call__(scope, receive, send)
+        finally:
+            self.body = b""
+            self._slot.release()
 
 # 展示阶段：放开跨域，便于本地静态页直连
 app.add_middleware(
@@ -80,7 +90,7 @@ def health():
     return {"status": "ok", "service": "endfield-wiki-agent"}
 
 
-@app.get("/api/health/deep")
+@app.get("/api/health/deep", dependencies=[Depends(require_admin_access)])
 def health_deep():
     """无外网、无费用的索引深度检查；LLM 只报告脱敏配置状态。"""
     from rag_audit import audit_index
@@ -98,7 +108,7 @@ def health_deep():
     return result
 
 
-@app.get("/api/metrics")
+@app.get("/api/metrics", dependencies=[Depends(require_admin_access)])
 def rag_metrics():
     """返回当前进程内的问答计数和延迟摘要；服务重启后重新计数。"""
     from rag_monitor import monitor
@@ -110,25 +120,65 @@ def media_proxy(url: str):
     """同源代理 WIKI 图片/音频；严格白名单，避免浏览器跨域与防盗链差异。"""
     from urllib.parse import urlparse
     import httpx
-    parsed = urlparse(url)
-    if parsed.scheme != "https" or parsed.hostname != "bbs.hycdn.cn":
+    try:
+        parsed = urlparse(url)
+        valid = (parsed.scheme == "https" and parsed.hostname == "bbs.hycdn.cn"
+                 and parsed.port in (None, 443) and parsed.username is None
+                 and parsed.password is None and not parsed.fragment)
+    except ValueError:
+        valid = False
+    if not valid:
         raise HTTPException(status_code=400, detail="仅允许 WIKI CDN 媒体")
     if not (parsed.path.startswith("/image/") or parsed.path.startswith("/audio/")):
         raise HTTPException(status_code=400, detail="不支持的媒体路径")
+    # Briefly queue normal bursts of page images; never queue indefinitely.
+    if not _MEDIA_SEMAPHORE.acquire(timeout=5):
+        raise HTTPException(429, "媒体服务繁忙，请稍后重试", headers={"Retry-After": "3"})
+    owns_slot = True
     try:
-        upstream = httpx.get(url, headers={"Referer": "https://wiki.skland.com/",
-                                           "User-Agent": "EndfieldArchive/1.0"},
-                             timeout=25, follow_redirects=True)
-        upstream.raise_for_status()
+        with httpx.stream("GET", url, headers={
+            "Referer": "https://wiki.skland.com/", "User-Agent": "EndfieldArchive/1.0",
+            "Accept-Encoding": "identity",
+        }, timeout=25, follow_redirects=False) as upstream:
+            # Even a redirect to another allowlisted URL is rejected. Never fetch Location.
+            if 300 <= upstream.status_code < 400:
+                raise HTTPException(502, "媒体上游重定向已拒绝")
+            upstream.raise_for_status()
+            content_type = upstream.headers.get("content-type", "").split(";")[0].strip().lower()
+            if not (content_type.startswith("image/") or content_type.startswith("audio/")):
+                raise HTTPException(415, "上游不是图片或音频")
+            # Avoid transparent decompression allocating an unbounded decoded chunk.
+            if upstream.headers.get("content-encoding", "identity").strip().lower() != "identity":
+                raise HTTPException(502, "媒体上游返回了不支持的压缩编码")
+            length = upstream.headers.get("content-length")
+            if length is not None:
+                try:
+                    declared_size = int(length)
+                    if declared_size < 0:
+                        raise ValueError
+                except ValueError as exc:
+                    raise HTTPException(502, "媒体上游长度无效") from exc
+                if declared_size > MEDIA_MAX_BYTES:
+                    raise HTTPException(413, "媒体文件过大")
+            body = bytearray()
+            started = time.monotonic()
+            for chunk in upstream.iter_raw(chunk_size=64 * 1024):
+                if time.monotonic() - started > 25:
+                    raise HTTPException(504, "媒体下载超时")
+                if len(body) + len(chunk) > MEDIA_MAX_BYTES:
+                    raise HTTPException(413, "媒体文件过大")
+                body.extend(chunk)
+            response = _MediaResponse(bytes(body), slot=_MEDIA_SEMAPHORE, media_type=content_type, headers={
+                "Cache-Control": "public, max-age=86400",
+                "X-Content-Type-Options": "nosniff",
+            })
+        owns_slot = False  # Response releases it after send/disconnect, not before.
+        return response
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=502, detail=f"媒体上游不可用:{type(exc).__name__}") from exc
-    if len(upstream.content) > 25 * 1024 * 1024:
-        raise HTTPException(status_code=413, detail="媒体文件过大")
-    content_type = upstream.headers.get("content-type", "application/octet-stream").split(";")[0]
-    if not (content_type.startswith("image/") or content_type.startswith("audio/")):
-        raise HTTPException(status_code=415, detail="上游不是图片或音频")
-    return Response(upstream.content, media_type=content_type,
-                    headers={"Cache-Control": "public, max-age=86400"})
+    finally:
+        if owns_slot:
+            _MEDIA_SEMAPHORE.release()
 
 
 # ===================== WIKI 合成树 =====================
@@ -427,7 +477,7 @@ class AskRequest(BaseModel):
         return value
 
 
-@app.post("/api/ask")
+@app.post("/api/ask", dependencies=[Depends(require_ask_access)])
 def ask_endpoint(req: AskRequest):
     """RAG 问答入口：意图识别 → 路由（配方直查/RAG检索）→ LLM 生成带引用回答。
 

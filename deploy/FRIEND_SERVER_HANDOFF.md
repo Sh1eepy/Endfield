@@ -286,6 +286,8 @@ ASK_MAX_CONCURRENCY=2
 - `.env` 只存在服务器，不进入 Git；
 - `WEB_CONCURRENCY=1`：只加载一份 embedding 模型和索引；
 - `ASK_MAX_CONCURRENCY=2`：同一进程最多同时执行两个知识问答；
+- 应用默认每 IP 每分钟 6 次、每日 60 次，全站每日 200 次（UTC 日窗口）；配置、令牌模式和可信代理 IP 见 [`API_SECURITY.md`](API_SECURITY.md)；
+- Compose 用 `api-security` 命名卷保留计数，不要删除卷或执行 `docker compose down -v`；
 - 不要在聊天、截图或日志中展示 `.env` 内容。
 
 确认权限而不显示密钥：
@@ -320,7 +322,7 @@ docker compose logs --tail=200 app
 
 ```bash
 curl http://127.0.0.1:8000/api/health
-curl http://127.0.0.1:8000/api/health/deep
+docker compose exec -T app python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/api/health/deep').read().decode())"
 curl "http://127.0.0.1:8000/api/synthesis?item=重息壤"
 ```
 
@@ -422,7 +424,8 @@ https://<SUBDOMAIN>
 5. 图片和音频；
 6. 手机浏览器布局。
 
-Nginx 已限制 `/api/ask` 的单 IP频率与并发；公网不能访问 `/api/health/deep` 和 `/api/metrics`，管理员通过 SSH 后请求 `127.0.0.1:8000` 查看。
+应用已限制问答频率、每日次数和并发，Nginx 模板另有限流（须实际部署才生效）。上线前按 `API_SECURITY.md` 配置精确的 `FORWARDED_ALLOW_IPS`；否则同一代理后的访客会共享应用 IP 限额。
+公网不能访问 `/api/health/deep` 和 `/api/metrics`；应用层也要求回环客户端或有效令牌，管理员通过 SSH 后用上面的 `docker compose exec` 命令在容器内查看。
 
 ## 13. 你：微信小程序切换正式域名
 
@@ -454,7 +457,7 @@ git pull --ff-only origin master
 docker compose build
 docker compose up -d
 docker compose ps
-curl http://127.0.0.1:8000/api/health/deep
+docker compose exec -T app python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/api/health/deep').read().decode())"
 ```
 
 - `--ff-only`：远端历史不一致时停止，避免服务器自动生成合并提交；
@@ -470,7 +473,7 @@ cd /opt/endfield
 git switch --detach <PREVIOUS_COMMIT>
 docker compose build
 docker compose up -d
-curl http://127.0.0.1:8000/api/health/deep
+docker compose exec -T app python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/api/health/deep').read().decode())"
 ```
 
 恢复成功后保留现场。需要重新跟随主分支时：
@@ -512,10 +515,10 @@ docker compose logs --tail=300 app
 检查服务器 `.env`、模型服务商状态和：
 
 ```bash
-curl http://127.0.0.1:8000/api/health/deep
+docker compose exec -T app python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/api/health/deep').read().decode())"
 docker compose logs --tail=300 app
 ```
 
 ### 返回 HTTP 429
 
-触发了 Nginx 单 IP 限流或应用问答并发保护，等待后重试；不要通过公开 8000 端口绕过。
+查看响应说明和 `Retry-After`：可能是 Nginx 限流、应用频率/并发限制或当天次数用完；不要通过公开 8000 端口绕过。

@@ -2,9 +2,18 @@ import type {
   AskResult, HealthResponse, NamesResponse, SynthesisResponse,
 } from './types'
 
+async function apiError(res: Response): Promise<Error> {
+  try {
+    const body = await res.json()
+    const detail = body?.detail || body?.error
+    if (typeof detail === 'string' && detail) return new Error(detail)
+  } catch { /* Proxies may return an HTML error page instead of JSON. */ }
+  return new Error(`HTTP ${res.status}`)
+}
+
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url)
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  if (!res.ok) throw await apiError(res)
   return res.json() as Promise<T>
 }
 
@@ -26,6 +35,6 @@ export async function fetchAsk(query: string, topK = 5, genAnswer = true): Promi
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query, top_k: topK, gen_answer: genAnswer }),
   })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  if (!res.ok) throw await apiError(res)
   return res.json() as Promise<AskResult>
 }

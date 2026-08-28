@@ -15,7 +15,8 @@ function request(path, data = {}, method = 'GET') {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data);
         } else {
-          reject(new Error('HTTP ' + res.statusCode));
+          const detail = res.data && (res.data.detail || res.data.error);
+          reject(new Error(typeof detail === 'string' ? detail : 'HTTP ' + res.statusCode));
         }
       },
       fail: (err) => reject(err),

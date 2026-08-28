@@ -4,7 +4,8 @@
 [`FRIEND_SERVER_HANDOFF.md`](FRIEND_SERVER_HANDOFF.md)。
 
 适用架构：子域名 → Nginx/HTTPS → `127.0.0.1:8000` → Docker Compose → FastAPI。
-应用容器不会把 8000 端口暴露到公网，知识问答的 IP 限流由 Nginx 执行，应用内部另有限制同时问答数的信号量。
+应用容器不会把 8000 端口暴露到公网；Nginx 限流之外，应用还限制问答频率、每日次数和并发数。
+鉴权模式、额度持久化、可信代理 IP 与管理接口访问见 [`API_SECURITY.md`](API_SECURITY.md)。
 
 ## 1. 交付前需要的信息
 
@@ -51,7 +52,9 @@ WEB_CONCURRENCY=1
 ASK_MAX_CONCURRENCY=2
 ```
 
-`.env` 只保存在服务器，不能提交到 Git。公开网页无法安全保存一个“前端 API 密钥”，因此费用保护依赖 Nginx 限流、应用并发上限和模型服务商预算报警。
+`.env` 只保存在服务器，不能提交到 Git。默认每 IP 每分钟 6 次、每日 60 次、全站每日 200 次（UTC 日窗口），可在 `.env` 调整。
+公开网页无法安全保存固定令牌；`API_ACCESS_TOKEN` 留空保留有次数限制的匿名服务，设置后问答必须鉴权，当前网页/小程序不能直接使用该私有模式。
+请求次数不是金额预算，仍需模型服务商的预算上限/告警。
 
 ## 3. 构建并启动容器
 
@@ -64,7 +67,7 @@ docker compose up -d
 docker compose ps
 docker compose logs --tail=100 app
 curl http://127.0.0.1:8000/api/health
-curl http://127.0.0.1:8000/api/health/deep
+docker compose exec -T app python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/api/health/deep').read().decode())"
 ```
 
 `compose.yaml` 只绑定 `127.0.0.1:8000`。不要改成 `0.0.0.0:8000`，公网入口统一交给 Nginx。
@@ -90,6 +93,8 @@ curl http://实际子域名/api/health
 
 如果符号链接已经存在，不要重复创建，直接检查文件内容并执行 `nginx -t`。
 如果域名使用 Cloudflare 等代理，首发先使用“仅 DNS”模式；否则 Nginx 看到的可能是代理节点 IP，按 IP 限流会把不同用户误认为同一人。需要开启代理时，应先按服务商官方网段配置 Nginx `real_ip`，不要无条件信任任意来源的 `X-Forwarded-For`。
+
+上线前按 `API_SECURITY.md` 核实并设置 `FORWARDED_ALLOW_IPS` 的精确代理对端地址。Compose 默认不信任转发头，未配置时同一代理后的访客会共享应用层 IP 限额；不要填 `*`。
 
 Nginx 对 `/api/ask` 的默认保护是：
 
@@ -128,7 +133,7 @@ docker compose logs --tail=200 app
 ```
 
 浏览器再检查首页、名称联想、配方树、知识问答、图片和音频。微信小程序正式发布前，把 `miniprogram/app.js` 的 `apiBase` 改为该 HTTPS 子域名，并在微信公众平台配置 request 合法域名。
-`/api/health/deep` 和 `/api/metrics` 在 Nginx 中只允许服务器本机访问；管理员通过 SSH 后直接请求 `http://127.0.0.1:8000` 查看。
+`/api/health/deep` 和 `/api/metrics` 在 Nginx 中禁止公网访问，应用层也要求本机或令牌。Docker 管理员通过上面的 `docker compose exec` 命令在容器内查看。
 
 ## 7. 日常更新
 
@@ -141,10 +146,11 @@ git pull --ff-only origin master
 docker compose build
 docker compose up -d
 docker compose ps
-curl http://127.0.0.1:8000/api/health/deep
+docker compose exec -T app python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/api/health/deep').read().decode())"
 ```
 
 Compose 会先创建新容器，再替换旧容器。应用数据和索引都构建在镜像中，因此不需要挂载本地 Chroma 目录。
+问答次数单独存放于 `api-security` 持久卷；不要删除该卷或使用 `docker compose down -v`，否则计数会清零。
 
 ## 8. 回滚
 
@@ -155,7 +161,7 @@ cd /opt/endfield
 git switch --detach <previous_commit>
 docker compose build
 docker compose up -d
-curl http://127.0.0.1:8000/api/health/deep
+docker compose exec -T app python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/api/health/deep').read().decode())"
 ```
 
 确认旧版本恢复后再决定何时回到主分支：
@@ -182,5 +188,5 @@ sudo journalctl -u nginx --since "30 minutes ago"
 1. 本机 `127.0.0.1:8000` 不通：查容器和应用日志；
 2. 本机通、域名不通：查 DNS、Nginx、防火墙；
 3. HTTP 通、HTTPS 不通：查证书和 Certbot；
-4. 只有 `/api/ask` 返回 429：触发了 Nginx 或应用并发限制，稍后重试；
+4. 只有 `/api/ask` 返回 429：查看响应说明和 `Retry-After`，可能是频率、并发或当日次数超限；503 也可能是次数数据库不可写；
 5. 健康检查正常但问答失败：检查 `.env` 中的 LLM 配置和模型服务商状态。

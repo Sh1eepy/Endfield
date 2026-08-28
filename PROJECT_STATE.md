@@ -62,6 +62,7 @@
 ## 5. 当前发布边界
 
 - 仓库已经具备可复现 Dockerfile、Compose、自有服务器 Nginx/HTTPS/限流模板、Railway 配置、依赖锁定和部署说明。
+- 2026-08-29 API 安全加固：问答可选令牌鉴权、每 IP 频率/每日次数与全站每日次数限制（共享 SQLite、Compose 持久卷）；管理接口仅限本机或令牌；媒体拒绝重定向、分块下载至多 25 MiB 并限制下载/发送并发。默认保留有限额匿名问答，不代表已接入用户登录。部署注意事项见 `deploy/API_SECURITY.md`。
 - 2026-08-21 已完成本地 Docker 镜像构建与容器运行验证，服务可正常启动。
 - GitHub remote 已连接到 `https://github.com/Sh1eepy/Endfield.git`。
 - 已有服务器时按 `deploy/README.md` 使用 Compose + Nginx 发布；Railway 仅作为无自有服务器时的可选方案。

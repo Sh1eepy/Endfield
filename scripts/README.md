@@ -271,6 +271,8 @@ GitHub Actions 的 `rag-quality.yml` 会执行无网络单元测试和落盘指�
 ```bash
 python -m unittest discover -s tests -v
 python -m unittest scripts.test_query_routes -v
+python -m unittest scripts.test_api_security -v
+node --test miniprogram/tests/ask.test.cjs
 python -m compileall -q scripts tests
 ```
 
@@ -303,3 +305,19 @@ Web 答案由 `AnswerMarkdown.tsx` 生成 React 节点，支持表格、列表�
 ## 部署
 
 根目录提供 `Dockerfile`、`compose.yaml`、`requirements.txt` 和 `railway.json`；`deploy/` 提供自有服务器的 Nginx、HTTPS、更新与回滚手册。完整构建会下载 embedding 模型并在镜像内重建 RAG，运行阶段保持离线。密钥只能通过运行环境注入，详见 [`../DEPLOYMENT.md`](../DEPLOYMENT.md)。
+
+### API 安全保护（2026-08-29）
+
+`api_security.py`：可选 Bearer Token、管理接口访问控制、SQLite 事务式频率/每日请求次数限制。
+默认每 IP 每分钟 6 次、每日 60 次，全站每日 200 次（UTC 固定日期窗口）；数据库故障时拒绝问答，不放行付费调用。
+`/api/health/deep` 和 `/api/metrics` 仅限回环客户端或有效令牌；Docker 下请使用容器内检查命令。
+媒体代理禁用所有重定向，分块读取并执行 25 MiB 硬上限、拒绝压缩编码、限制下载及发送并发。
+小程序歧义候选按原模式分发，统一清理旧结果并忽略过期响应。
+Web 和小程序显示后端返回的限额/鉴权说明，非 JSON 错误保留 HTTP 状态兜底。
+
+`test_api_security.py` 模拟上游和 LLM，覆盖重定向、流大小限制、名额释放、鉴权、伪造 IP 头、共享额度和故障关闭；
+`miniprogram/tests/ask.test.cjs` 使用 Node 内置测试器和页面 API 模拟，不需要安装微信运行时。
+配置和限制边界详见 [`../deploy/API_SECURITY.md`](../deploy/API_SECURITY.md)，不要将固定访问令牌写入公开客户端。
+
+本轮验证：54 项后端基础测试、7 项检索编排测试、20 项 API 安全测试、7 项小程序页面测试、21 项 Web 测试全部通过，
+生产构建与 Python 编译检查通过。Compose YAML/回环端口/持久卷声明已校验；本轮环境无 Docker CLI，未重建容器，也未进行微信真机或线上验收。

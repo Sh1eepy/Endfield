@@ -16,6 +16,11 @@ services:
       PORT: 8000
       WEB_CONCURRENCY: ${WEB_CONCURRENCY:-1}
       ASK_MAX_CONCURRENCY: ${ASK_MAX_CONCURRENCY:-2}
+      ASK_BUDGET_DB: /var/lib/endfield-security/ask-budget.sqlite3
+      # Leave forwarding trust empty until the exact reverse-proxy peer is known.
+      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-}
+    volumes:
+      - api-security:/var/lib/endfield-security
     ports:
       - "127.0.0.1:8000:8000"
     healthcheck:
@@ -39,3 +44,6 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+volumes:
+  api-security:

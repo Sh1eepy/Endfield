@@ -30,7 +30,7 @@
 
 ```powershell
 docker build -t endfield-synthesis .
-docker run --rm -p 8000:8000 --env-file .env endfield-synthesis
+docker run --rm -p 127.0.0.1:8000:8000 --env-file .env -e ASK_BUDGET_DB=/var/lib/endfield-security/ask-budget.sqlite3 -v endfield-api-security:/var/lib/endfield-security endfield-synthesis
 ```
 
 浏览器打开 `http://127.0.0.1:8000`，验证：
@@ -57,7 +57,9 @@ WEB_CONCURRENCY=1
 ASK_MAX_CONCURRENCY=2
 ```
 
-FastAPI 还会限制问答 `query` 为 1～300 字符、`top_k` 为 1～10；应用并发满时返回 HTTP 429。
+FastAPI 还会限制问答 `query` 为 1～300 字符、`top_k` 为 1～10；并发或次数超限返回 HTTP 429。
+默认应用层限制：每 IP 每分钟 6 次、每日 60 次、全站每日 200 次（UTC 日期窗口），SQLite 计数通过 Compose 命名卷跨重建保留。
+鉴权、管理接口、可信代理 IP 和计数持久化详见 [`deploy/API_SECURITY.md`](deploy/API_SECURITY.md)。
 公网只开放 80/443，不能直接暴露容器的 8000 端口。
 
 ## Railway
@@ -67,7 +69,8 @@ FastAPI 还会限制问答 `query` 为 1～300 字符、`top_k` 为 1～10；应
 3. 在 Railway Variables 中设置 LLM 环境变量、`ASK_MAX_CONCURRENCY=2`。首次部署建议设置 `WEB_CONCURRENCY=1`，
    确认内存余量后再逐步提高到 2-4；每个 worker 都会各自加载 embedding 模型与 RAG 索引。
    不要上传 `.env`，不要把 Key 写入 Dockerfile。
-4. 等待构建完成；健康检查路径为 `/api/health`，超时为 300 秒。
+4. 挂载持久卷，把 `ASK_BUDGET_DB` 指向卷内文件，避免重建清零；多主机副本不能各用独立计数库。
+   等待构建完成；健康检查路径为 `/api/health`，超时为 300 秒。
 5. 生成公开域名后访问根路径，抽检配方树与知识问答。
 
 Railway 会注入 `PORT`，容器启动命令自动使用它。若模型下载阶段失败，优先检查构建网络和磁盘/内存额度，不要关闭运行阶段的离线设置来绕过问题。
@@ -91,6 +94,8 @@ Railway 会注入 `PORT`，容器启动命令自动使用它。若模型下载�
 
 ```powershell
 python -m unittest discover -s tests -v
+python -m unittest scripts.test_api_security -v
+node --test miniprogram/tests/ask.test.cjs
 python -m compileall -q scripts tests
 python scripts/eval_retrieval.py --out output/eval/final_reviewed.json
 ```
