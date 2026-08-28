@@ -3,6 +3,7 @@ import type { ReactNode, RefObject } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { LoadResult, Mode, ResultState } from '../App'
 import type { RefItem, SynthesisData } from '../types'
+import { mediaSrc } from '../utils'
 import AskResult from './AskResult'
 import DeviceCards from './DeviceCards'
 import EmptyState from './EmptyState'
@@ -39,7 +40,13 @@ function ItemHead({ d, onPickName }: { d: SynthesisData; onPickName: (n: string)
     <>
       {hasCover ? (
         <div className="item-head">
-          <img src={d.cover} alt="" className="item-cover" referrerPolicy="no-referrer" />
+          <img
+            src={mediaSrc(d.cover)}
+            alt=""
+            className="item-cover"
+            referrerPolicy="no-referrer"
+            onError={(e) => { e.currentTarget.style.display = 'none' }}
+          />
           <div>
             <div className="item-head-name">{d.item}</div>
             <div className="item-head-tag">{tag}</div>

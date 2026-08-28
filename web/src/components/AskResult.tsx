@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import type { AskData } from '../types'
 
 interface Props {
@@ -5,18 +6,60 @@ interface Props {
   onPickName: (name: string) => void
 }
 
-/** 把 [来源N] 标记转成可点击引用角标 */
-function renderAnswerWithRefs(answer: string, onJump: (n: number) => void) {
+/** 内联 markdown：**加粗**、*斜体*、`代码` → React 节点（防 XSS，纯文本渲染） */
+function inlineToNodes(text: string, keyBase: string): ReactNode[] {
+  const nodes: ReactNode[] = []
+  const re = /(\*\*[^*\n]+\*\*|`[^`\n]+`|\*[^*\n]+\*)/g
+  let last = 0
+  let m: RegExpExecArray | null
+  let k = 0
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) nodes.push(text.slice(last, m.index))
+    const tok = m[0]
+    if (tok.startsWith('**')) nodes.push(<strong key={`${keyBase}-${k++}`}>{tok.slice(2, -2)}</strong>)
+    else if (tok.startsWith('`')) nodes.push(<code key={`${keyBase}-${k++}`}>{tok.slice(1, -1)}</code>)
+    else nodes.push(<em key={`${keyBase}-${k++}`}>{tok.slice(1, -1)}</em>)
+    last = m.index + tok.length
+  }
+  if (last < text.length) nodes.push(text.slice(last))
+  return nodes
+}
+
+/** 整段 markdown：段落 / 列表 / [来源N] 角标 → React 节点 */
+function mdToNodes(answer: string, onJump: (n: number) => void): ReactNode[] {
   const parts = answer.split(/\[来源(\d+)\]/g)
-  return parts.map((p, i) => {
+  const out: ReactNode[] = []
+  let blockKey = 0
+  parts.forEach((p, i) => {
     if (i % 2 === 1) {
       const n = Number(p)
-      return (
-        <sup key={i} className="src-ref" onClick={() => onJump(n)}>[{n}]</sup>
-      )
+      out.push(<sup key={`src-${i}`} className="src-ref" onClick={() => onJump(n)}>[{n}]</sup>)
+      return
     }
-    return p
+    if (!p) return
+    const lines = p.split('\n')
+    let list: string[] = []
+    const flushList = () => {
+      if (!list.length) return
+      out.push(
+        <ul key={`ul-${blockKey++}`}>
+          {list.map((item, li) => (
+            <li key={li}>{inlineToNodes(item, `li-${li}`)}</li>
+          ))}
+        </ul>,
+      )
+      list = []
+    }
+    lines.forEach((ln, li) => {
+      const t = ln.trim()
+      if (/^[-*•]\s+/.test(t)) { list.push(t.replace(/^[-*•]\s+/, '')); return }
+      flushList()
+      if (!t) return
+      out.push(<p key={`p-${blockKey++}`}>{inlineToNodes(ln, `p-${li}`)}</p>)
+    })
+    flushList()
   })
+  return out
 }
 
 /** 结构化直查结果：配方卡 / 设备配方卡 / 歧义候选 */
@@ -94,7 +137,7 @@ export default function AskResult({ data, onPickName }: Props) {
           {data.answer ? (
             data.rejected
               ? <div className="ask-answer ask-rejected">{data.answer}</div>
-              : <div className="ask-answer">{renderAnswerWithRefs(data.answer, jumpToSource)}</div>
+              : <div className="ask-answer">{mdToNodes(data.answer, jumpToSource)}</div>
           ) : (
             <div className="ask-answer ask-rejected">知识库检索完成，但回答生成暂不可用（未配置 LLM 或调用失败）。</div>
           )}

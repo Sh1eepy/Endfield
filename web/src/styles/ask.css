@@ -7,8 +7,31 @@
   line-height: 1.8;
   color: var(--ink);
   padding: 6px 2px;
-  white-space: pre-wrap;
+  white-space: normal;
   word-break: break-word;
+}
+.ask-answer p { margin: 0.45em 0; }
+.ask-answer strong { font-weight: 800; color: var(--ink); }
+.ask-answer em { font-style: italic; }
+.ask-answer code {
+  font-family: var(--font-tech);
+  font-size: 0.9em;
+  background: var(--panel3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0 5px;
+}
+.ask-answer ul { margin: 0.45em 0; padding-left: 1.4em; list-style: none; }
+.ask-answer ul li { position: relative; margin: 0.3em 0; padding-left: 0.4em; }
+.ask-answer ul li::before {
+  content: "";
+  position: absolute;
+  left: -1em;
+  top: 0.62em;
+  width: 6px;
+  height: 6px;
+  background: var(--yellow, #f0cf16);
+  border-radius: 2px;
 }
 .ask-answer .src-ref {
   color: var(--klein);
