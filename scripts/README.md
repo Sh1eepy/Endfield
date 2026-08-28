@@ -289,6 +289,17 @@ npm run build
 Web 答案由 `AnswerMarkdown.tsx` 生成 React 节点，支持表格、列表、标题、代码及行内引用；
 `AskResult.tsx` 负责引用定位和来源跳转，语音来源打开所属干员档案。
 
+### 前端工具链安全维护（2026-08-29）
+
+- Vite 从 5.4.21 升至 6.4.3，依赖范围为 `~6.4.3`；esbuild 随之升至 0.25.12。
+- React 插件最低版本调整为 4.7.0，兼容 Vite 6；React 18 和 Vitest 3.2.6 保持不变。
+- 选择仍接收安全补丁的 6.4 分支，升级参考 [Vite 支持策略](https://vite.dev/releases) 和
+  [5 → 6 迁移指南](https://v6.vite.dev/guide/migration)，未使用 `npm audit fix --force`。
+- 本次 `npm audit` 为 0 告警；54 项后端基础测试、7 项检索编排测试、16 项前端测试及生产构建通过。
+  前端测试含 3 项回环地址开发服务器检查：首页转换、React TSX 转换、自定义图片资源服务。
+- 正式环境继续使用 `npm run build` 后的 `dist`，由 FastAPI 托管；开发端口不要暴露到公网。
+  后续安装依赖使用 `npm ci`，升级后重新执行 `npm audit`、`npm test` 和 `npm run build`。
+
 ## 部署
 
 根目录提供 `Dockerfile`、`compose.yaml`、`requirements.txt` 和 `railway.json`；`deploy/` 提供自有服务器的 Nginx、HTTPS、更新与回滚手册。完整构建会下载 embedding 模型并在镜像内重建 RAG，运行阶段保持离线。密钥只能通过运行环境注入，详见 [`../DEPLOYMENT.md`](../DEPLOYMENT.md)。
