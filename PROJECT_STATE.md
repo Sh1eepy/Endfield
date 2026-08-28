@@ -18,11 +18,17 @@
 | 合成树 API | `api_server.py /api/synthesis` | 物品合成树 / 设备配方卡 / 歧义→候选列表 / 无配方→知识库信息；叶子=基础资源，配方≤2，深度≤10，循环剪枝 |
 | 名称建议 | `api_server.py /api/names` | 全部名称（配方物品+设备+知识库条目，1908 个），前端模糊搜索联想 |
 | 媒体结构库 | `output/item_media.json` | extract_media.py 提取：封面图 1957 / 正文图 2046 / 外链 291 / 引用 14693（含数量与链接样式） |
-| 前端 | `web/` | **Vite + React 18 + TS + framer-motion** 组件化前端（2026-08 重构）：白色工业档案风、纵向图片配方树（纯 React SVG，不再依赖 d3）、知识问答、干员详情、机械开场动效；`npm run build` 产物 `web/dist` 由 FastAPI 自动托管 |
-| 微信小程序 | `miniprogram/` | 首页联想与历史、配方/问答独立查询、Canvas 合成树、知识问答证据与干员档案；静态检查已通过，待开发者工具和真机验收 |
+| 前端 | `web/` | **Vite + React 18 + TS + framer-motion** 组件化前端（2026-08 重构）：白色工业档案风、纵向图片配方树（纯 React SVG，不再依赖 d3）、知识问答、干员详情、机械开场动效；`npm run build` 产物 `web/dist` 由 FastAPI 自动托管。后续体验优化见下方「前端体验优化」小节 |
+| 微信小程序 | `miniprogram/` | 首页联想与历史、配方/问答独立查询、Canvas 合成树、知识问答证据与干员档案；问答答案经轻量 markdown 渲染（`utils/markdown.js` → rich-text，避免 `**`、`*` 等原始符号暴露）；静态检查已通过，待开发者工具和真机验收 |
 | 干员详情库 | `output/operator_details.json` | 31 名干员；基本信息、富文本颜色、技能/天赋/潜能/档案多 Tab、图片与多语种语音 |
 | 轻量 GraphRAG | `output/knowledge_graph/graph.db` | 2,129 实体 / 9,358 条可追溯关系；覆盖人物/任务/地点/物品/设备/配方与明确亲属关系，支持解释性关系混合取证、增量更新与问法对称门禁 |
 | 评测 | `eval_retrieval.py` | 71 条查询；当前 Recall@5=100%、MRR=97.3%（`final_reviewed.json`） |
+
+## 2.1 前端体验优化（2026-08，web/ + miniprogram/）
+- **问答答案 markdown 渲染**：`**加粗**`/`*斜体*`/`` `代码` ``/列表/表格规范渲染，不再暴露原始符号（web 端 React 节点渲染 `AskResult.tsx`；小程序端 `utils/markdown.js` → rich-text，`[来源N]` 角标保持可点击）
+- **合成树**：节点封面走 `/api/media` 代理（绕防盗链）、X 轴紧凑间距、树自动适配容器、树布局单位/px 爆炸修复
+- **进场动效**：开场进度条动画、进场锁定滚动、恢复滚动视差与 reveal-on-scroll、吉祥物贴纸层级（z-index）与间距
+- **视觉细节**：clip-path 圆角内侧留白（边缘文字完整可见）、SVG clip id 修复、封面图兜底、干员技能动态图放大与图文并排布局
 
 ## 3. 关键文件地图
 - `KNOWLEDGE_SYSTEM_ARCHITECTURE.md` → RAG、知识图谱、结构化查询、LLM 调用与质量门禁总览
