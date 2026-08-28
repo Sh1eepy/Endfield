@@ -87,7 +87,8 @@
   display: grid;
   place-items: center;
   background: linear-gradient(145deg, #fff 0 72%, #e8e7df 72%);
-  clip-path: polygon(13% 0, 100% 0, 87% 100%, 0 100%);
+  /* 斜切放缓：右下只切 4%，保证 logo 完整不被裁 */
+  clip-path: polygon(6% 0, 100% 0, 96% 100%, 0 100%);
   box-shadow: 22px 25px 0 rgba(23, 55, 209, 0.74), -18px -15px 0 rgba(240, 207, 22, 0.88), 0 40px 70px rgba(0, 0, 0, 0.38);
   opacity: 0;
   transform: translate3d(-38vw, -35vh, 120px) rotate(-24deg) scale(0.58);

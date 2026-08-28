@@ -37,6 +37,14 @@ export default function EntryCurtain() {
     }
   }, [])
 
+  // 入场动画期间锁定页面滚动：curtain 是全屏遮罩，滚轮不应看到下层内容
+  useEffect(() => {
+    if (complete) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prev }
+  }, [complete])
+
   return (
     <div className={`entry-curtain${complete ? ' is-complete' : ''}`} id="entry-curtain" aria-hidden="true">
       <div className="entry-mechanism">

@@ -83,7 +83,8 @@ function applyCollapsed(node: TreeNode, collapsed: Set<string>): TreeNode {
   return copy
 }
 
-/** tidy 布局：叶子占 1 单位宽，内部节点取子节点区间中点（等价 d3.tree 叶子对齐布局） */
+/** tidy 布局：叶子占 1 单位宽，内部节点取子节点区间中点（等价 d3.tree 叶子对齐布局）。
+ * 内部全程用单位坐标，最后统一换算成像素，避免单位/像素混用导致坐标指数爆炸。 */
 function buildLayout(source: TreeNode): LayoutNode {
   const widthOf = (n: TreeNode): number =>
     n.children.length ? n.children.reduce((s, c) => s + widthOf(c), 0) : 1
@@ -99,9 +100,16 @@ function buildLayout(source: TreeNode): LayoutNode {
     const x = children.length
       ? (children[0].x + children[children.length - 1].x) / 2
       : x0 + 0.5
-    return { ...n, x: x * X_UNIT, y: depth * Y_STEP, children }
+    return { ...n, x, y: depth, children }
   }
-  return placeNode(source, 0, 0)
+  const unitLayout = placeNode(source, 0, 0)
+  const toPx = (n: LayoutNode): LayoutNode => ({
+    ...n,
+    x: n.x * X_UNIT,
+    y: n.y * Y_STEP,
+    children: n.children.map(toPx),
+  })
+  return toPx(unitLayout)
 }
 
 /** 配方树：纯 React 递归 SVG，不依赖 d3。 */
@@ -111,6 +119,7 @@ const SynTree = forwardRef<SynTreeHandle, Props>(function SynTree(
 ) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
   const [scale, setScale] = useState(1)
+  const [failedCovers, setFailedCovers] = useState<Set<string>>(new Set())
   // useId 输出含冒号，URL(#id) 无法匹配，需要去冒号
   const uid = useId().replace(/:/g, '')
 
@@ -228,7 +237,7 @@ const SynTree = forwardRef<SynTreeHandle, Props>(function SynTree(
                 onClick={(ev) => { ev.stopPropagation(); if (d._hasChildren) toggle(d.key) }}
               >
                 <path className="node-card-bg" d={cardPath(w)} />
-                {d.cover ? (
+                {d.cover && !failedCovers.has(d.key) ? (
                   <>
                     <clipPath id={clipId}>
                       <rect x={-w / 2 + 7} y={-37} width={w - 14} height={56} rx={3} />
@@ -242,6 +251,7 @@ const SynTree = forwardRef<SynTreeHandle, Props>(function SynTree(
                       height={56}
                       preserveAspectRatio="xMidYMid meet"
                       clipPath={`url(#${clipId})`}
+                      onError={() => setFailedCovers((prev) => new Set(prev).add(d.key))}
                     />
                   </>
                 ) : (
