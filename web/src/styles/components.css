@@ -38,7 +38,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 18px;
+  padding: 14px 18px 14px 30px;
   border-bottom: 1px solid #dddcd4;
 }
 
@@ -218,7 +218,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 15px 20px;
+  padding: 15px 20px 15px 34px;
   /* 给右上角 mascot-panel 贴纸让位，避免遮挡标题文字 */
   padding-right: 150px;
   border-bottom: 2px solid var(--klein);

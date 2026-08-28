@@ -217,7 +217,7 @@
   top: 94px;
   border: 1px solid #d2d1c9;
   background: rgba(255, 255, 255, 0.7);
-  padding: 18px 16px;
+  padding: 30px 22px;
   color: #777b73;
   clip-path: polygon(24px 0, 76% 0, calc(76% + 13px) 8px, 100% 8px, calc(100% - 20px) 100%, 26% 100%, calc(26% - 13px) calc(100% - 8px), 0 calc(100% - 8px));
   overflow: visible;
