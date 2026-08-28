@@ -114,11 +114,16 @@
         <text class="intent-tag tag-blue">知识库检索</text>
       </view>
 
-      <!-- 答案正文（引用角标可点击） -->
+      <!-- 答案正文（引用角标可点击；markdown 段经 rich-text 渲染，符号不暴露） -->
       <view class="ask-answer {{rejected ? 'ask-rejected' : ''}}">
-        <text wx:for="{{answerSegs}}" wx:key="index" wx:for-item="seg"
-          class="{{seg.t === 'ref' ? 'src-ref' : ''}} {{highlightSrc === seg.n ? 'src-ref-hi' : ''}}"
-          data-t="{{seg.t}}" data-n="{{seg.n}}" bindtap="onSegTap">{{seg.v}}</text>
+        <view class="ask-md-flow">
+          <block wx:for="{{answerSegs}}" wx:key="index" wx:for-item="seg">
+            <rich-text wx:if="{{seg.t === 'md'}}" class="ask-md" nodes="{{seg.nodes}}" />
+            <text wx:elif="{{seg.t === 'ref'}}"
+              class="src-ref {{highlightSrc === seg.n ? 'src-ref-hi' : ''}}"
+              data-t="{{seg.t}}" data-n="{{seg.n}}" bindtap="onSegTap">{{seg.v}}</text>
+          </block>
+        </view>
       </view>
 
       <!-- 来源 chips -->

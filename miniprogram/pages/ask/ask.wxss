@@ -303,6 +303,22 @@
   word-break: break-word;
 }
 
+/* markdown 渲染流：rich-text 段落块与 [来源N] 角标混排 */
+.ask-md-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+
+.ask-md {
+  display: inline;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--ink);
+  max-width: 100%;
+  word-break: break-word;
+}
+
 .ask-rejected {
   color: var(--sub);
   font-style: italic;

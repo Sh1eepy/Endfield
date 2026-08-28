@@ -5,6 +5,7 @@
 // 手机竖屏：单列堆叠。
 
 const api = require('../../utils/api');
+const { mdToNodes } = require('../../utils/markdown');
 
 Page({
   data: {
@@ -23,7 +24,7 @@ Page({
     // 知识库检索渲染用
     intent: '',
     routeTag: '',
-    answerSegs: [],       // 解析 [来源N] 后的分段 [{t:'plain'|'ref', v, n}]
+    answerSegs: [],       // 解析 [来源N] 后的分段 [{t:'md', nodes} | {t:'ref', v, n}]（md 段经 markdown 渲染）
     rejected: false,
     sources: [],
     hits: [],             // [{name, category, text}]
@@ -278,19 +279,20 @@ Page({
     this.setData(patch);
   },
 
-  // 解析 [来源N] 成可点击角标分段（对齐网页 escRef）
+  // 解析 [来源N] 成可点击角标分段（对齐网页 escRef）；
+  // plain 段内容经 markdown 解析器转成 rich-text nodes，避免 **、* 等符号原样暴露
   _parseRefs(answer) {
     const segs = [];
     const re = /\[来源(\d+)\]/g;
     let last = 0;
     let m;
     while ((m = re.exec(answer)) !== null) {
-      if (m.index > last) segs.push({ t: 'plain', v: answer.slice(last, m.index) });
+      if (m.index > last) segs.push({ t: 'md', nodes: mdToNodes(answer.slice(last, m.index)) });
       segs.push({ t: 'ref', v: `[${m[1]}]`, n: parseInt(m[1], 10) });
       last = m.index + m[0].length;
     }
-    if (last < answer.length) segs.push({ t: 'plain', v: answer.slice(last) });
-    if (!segs.length) segs.push({ t: 'plain', v: answer });
+    if (last < answer.length) segs.push({ t: 'md', nodes: mdToNodes(answer.slice(last)) });
+    if (!segs.length) segs.push({ t: 'md', nodes: mdToNodes(answer) });
     return segs;
   },
 
