@@ -304,43 +304,100 @@ def keyword_search(keywords, category=None, limit=8):
     return out
 
 
-def query_expand(query, max_sub=3):
-    """② 查询改写：LLM 把模糊问题拆成多个子查询（多路检索用）。
+PLAN_TYPES = {"recipe", "device", "enum", "factual", "relation", "preference",
+              "comparison", "numeric", "open"}
+PLAN_ROUTES = {"entity_direct", "rag", "keyword", "mention", "graph",
+               "relationship_evidence", "recipe", "enum"}
 
-    "解锁武陵地区需要什么条件或者做什么任务"
-      → ["武陵 解锁", "武陵 开放条件", "武陵 前置任务"]
-    返回 [sub_query, ...] 或 []（LLM 不可用/失败时返回原查询的实体改写）。
+
+def _clean_plan_list(value, limit, max_chars=60):
+    """把模型返回的列表压缩成安全、去重、有限长的字符串列表。"""
+    out = []
+    for item in value if isinstance(value, list) else []:
+        item = str(item or "").strip()
+        if not item or len(item) > max_chars or item in out:
+            continue
+        out.append(item)
+        if len(out) >= limit:
+            break
+    return out
+
+
+def semantic_plan(query, max_sub=3):
+    """用一次受约束的 LLM 调用生成检索计划；失败时返回确定性降级计划。
+
+    规划器只决定“问题在问什么、该用哪些检索词和检索器”，不产出事实答案，
+    因而最终结论仍必须来自结构化数据、原文或 RAG 命中。
     """
     q = (query or "").strip()
     if not q:
-        return []
+        return {"question_type": "open", "topic": "", "entities": [], "keywords": [],
+                "search_queries": [], "routes": ["rag"], "needs_graph": False,
+                "planner_method": "empty"}
     place = extract_place(q)
+    entity, _info = extract_kb_entity(q)
+    fallback_queries = ([f"{place} 解锁", f"{place} 开放条件", f"{place} 前置任务"]
+                        if place else [q])
+    fallback = {
+        "question_type": "open", "topic": q, "entities": [entity] if entity else [],
+        "keywords": [place] if place else [], "search_queries": fallback_queries[:max_sub],
+        "routes": ["entity_direct", "rag", "keyword", "mention"],
+        "needs_graph": False, "planner_method": "fallback",
+    }
     if llm.available():
         try:
             d = llm.chat_json(
-                f"把下面这个问题改写成 {max_sub} 条更具体的检索子查询（每条 2-6 个词，"
-                f"用于在游戏知识库中搜索），只输出 JSON 数组。\n"
+                "分析下面的游戏知识库问题并生成检索计划，只输出 JSON。你不能回答问题，也不能"
+                "把猜测的答案写进关键词。要同时考虑动词和对象，例如‘喜欢吃什么’的主题是饮食偏好，"
+                "不是人物关系；‘喜欢谁/怎么看某人’才是关系解读。检索词可以使用问题原词和通用同义词，"
+                "并必须保留决定主题的核心动词（如吃、穿、用、去），不要只留下抽象分类名。\n"
                 f"问题：{q}\n"
-                f'输出格式：{{"queries": ["子查询1", "子查询2", "子查询3"]}}',
-                system="你是搜索查询改写器，只输出 JSON。", temperature=0.2, max_tokens=200)
-            qs = [str(x).strip() for x in (d.get("queries") or []) if str(x).strip()]
-            if qs:
-                return qs[:max_sub]
+                "question_type 只能是 recipe/device/enum/factual/relation/preference/"
+                "comparison/numeric/open；routes 只能从 entity_direct/rag/keyword/mention/"
+                "graph/relationship_evidence/recipe/enum 中选择。\n"
+                '{"question_type":"preference","topic":"饮食偏好","entities":["人物名"],'
+                '"keywords":["吃","食物","饮食","喜欢"],"search_queries":["人物名 吃 饮食偏好"],'
+                '"routes":["entity_direct","rag","keyword"],"needs_graph":false}',
+                system="你是检索规划器，只输出 JSON；计划中的词不是事实证据。",
+                temperature=0.1, max_tokens=350)
+            question_type = str(d.get("question_type") or "open").strip()
+            if question_type not in PLAN_TYPES:
+                question_type = "open"
+            known_names = _get_kb_names()
+            entities = [x for x in _clean_plan_list(d.get("entities"), 3, 30) if x in known_names]
+            if entity and entity not in entities:
+                entities.insert(0, entity)
+            routes = [x for x in _clean_plan_list(d.get("routes"), 6, 30) if x in PLAN_ROUTES]
+            queries = _clean_plan_list(d.get("search_queries"), max_sub, 60)
+            return {
+                "question_type": question_type,
+                "topic": str(d.get("topic") or q).strip()[:40],
+                "entities": entities[:3],
+                "keywords": _clean_plan_list(d.get("keywords"), 8, 20),
+                "search_queries": queries or fallback_queries[:max_sub],
+                "routes": routes or ["entity_direct", "rag", "keyword"],
+                "needs_graph": bool(d.get("needs_graph")),
+                "planner_method": "llm",
+            }
         except Exception:
             pass
-    # 降级：地名 + 常见条件词
-    if place:
-        return [f"{place} 解锁", f"{place} 开放", f"{place} 条件"]
-    return [q]
+    return fallback
 
 
-def multi_search(query, top_k=5):
-    """多路检索：原查询 + LLM 改写子查询 → 各走 RAG/全文/mention，合并去重。
+def query_expand(query, max_sub=3, plan=None):
+    """兼容入口：从语义检索计划中取子查询。"""
+    plan = plan or semantic_plan(query, max_sub=max_sub)
+    return (plan.get("search_queries") or [query])[:max_sub]
+
+
+def multi_search(query, top_k=5, plan=None):
+    """多路检索：语义计划 + 原查询 → RAG/全文关键词/mention，合并去重。
 
     用于"解锁武陵"这类开放问题——单一查询捞不到间接信息时，
     多路并进再合并，把散落在不同条目的线索凑齐。
     """
-    subs = query_expand(query)
+    plan = plan or semantic_plan(query)
+    subs = query_expand(query, plan=plan)
     all_hits = []
     seen = set()
 
@@ -355,6 +412,19 @@ def multi_search(query, top_k=5):
     # 1. 原查询 RAG
     for h in rag_search(query, top_k=top_k):
         _add(h)
+    # 规划器给出的主题词用于全文补召回。按“实体 + 单个主题词”分别搜索，避免
+    # 把过多同义词做成必须同时命中的 AND 条件。
+    plan_entities = plan.get("entities") or []
+    for keyword in plan.get("keywords") or []:
+        keyword_sets = [[keyword]]
+        if plan_entities:
+            keyword_sets.insert(0, [plan_entities[0], keyword])
+        for kw_list in keyword_sets:
+            for e in keyword_search(kw_list, limit=3):
+                _add({"meta": {"name": e["name"], "category": e["category"],
+                                "item_id": e["item_id"], "chunk_index": 0},
+                      "text": e["full_text"], "score": 0.85, "vector_sim": 0.85,
+                      "bm25_score": 0.0, "_keyword": True})
     # 2. 子查询：RAG + 全文关键词 + mention
     place = extract_place(query)
     for sub in subs:
@@ -395,7 +465,15 @@ RELATION_CUE_WORDS = ("妹妹", "哥哥", "姐姐", "弟弟", "父亲", "母亲"
 
 def is_interpretive_relation(query):
     """识别需要原文解读、不能直接固化为图谱事实的关系问题。"""
-    return any(word in (query or "") for word in INTERPRETIVE_WORDS)
+    q = query or ""
+    if not any(word in q for word in INTERPRETIVE_WORDS):
+        return False
+    known_entities = [name for name in _get_kb_names() if name and name in q]
+    # “喜欢/讨厌”本身不等于人物关系；还要有第二个人物、泛化关系对象或亲属/队友线索。
+    # 因而“喜欢吃什么”会走偏好检索，“喜欢佩丽卡吗”才走关系证据路线。
+    return (len(known_entities) >= 2 or
+            any(word in q for word in GENERIC_RELATION_TARGETS) or
+            any(word in q for word in RELATION_CUE_WORDS))
 
 
 def relationship_evidence_hits(query, limit=8):
@@ -560,7 +638,7 @@ ENUM_QUERY_PAT = (
 
 
 def _load_all_kb_entries():
-    """加载全部知识库条目（懒加载缓存）：[{name, category, item_id, full_text}]。"""
+    """加载全部知识源（分类条目 + 干员中文语音）的懒加载缓存。"""
     if not hasattr(_load_all_kb_entries, "_cache"):
         import glob as _glob
         entries = []
@@ -578,6 +656,13 @@ def _load_all_kb_entries():
                                     "category": d.get("category", ""),
                                     "item_id": str(d.get("item_id") or ""),
                                     "full_text": (d.get("full_text") or "")})
+        try:
+            from build_rag import load_operator_audio_records
+            for d in load_operator_audio_records(os.path.join(ROOT, "output", "operator_details.json")):
+                entries.append({"name": d["name"], "category": d["category"],
+                                "item_id": d["item_id"], "full_text": d["full_text"]})
+        except (OSError, ValueError, ImportError):
+            pass
         _load_all_kb_entries._cache = entries
     return _load_all_kb_entries._cache
 
@@ -809,31 +894,12 @@ def attach_generated_answer(result, query, hits, top_k, enabled):
 # ===================== 入口 =====================
 
 def ask(query, top_k=5, gen_answer_=False):
-    """问答入口：意图识别 → 枚举/结构化直查 → RAG 检索 → (可选)生成。"""
+    """问答入口：确定性规则 → 一次语义规划 → 数据检索 → (可选)生成。"""
     q = (query or "").strip()
     if not q:
         return {"ok": False, "error": "查询为空"}
-    intent, conf, method = classify_query(q)
-
-    # 解释性人物关系：图只负责事实边，原文窗口负责语气/事件证据，LLM 只做有边界的解读。
-    if is_interpretive_relation(q):
-        evidence = relationship_evidence_hits(q, limit=max(top_k, 8))
-        graph_result = None
-        try:
-            from graph_search import graph_query
-            graph_result = graph_query(q, top_k=top_k)
-        except Exception:
-            pass
-        # 单实体图边（阵营、参与过的任务）通常不能证明“喜欢谁”，只在问题中识别到
-        # 两个图实体时作为事件链补充；原文证据窗口始终排在最前。
-        graph_hits = ((graph_result or {}).get("hits") or []) if (
-            len((graph_result or {}).get("entities") or []) >= 2 or (graph_result or {}).get("predicate")) else []
-        # 明确关系边先回答客观子问题，随后文本证据负责主观评价子问题。
-        hits = (graph_hits + evidence + multi_search(q, top_k=top_k))[:max(top_k + 5, 12)]
-        result = {"ok": True, "intent": "解释性关系", "method": "evidence_hybrid",
-                  "route_used": "hybrid_relation", "graph": graph_result,
-                  "interpretation_policy": "事实边与文本解读分离", "hits": hits}
-        return attach_generated_answer(result, q, hits, max(top_k, 8), gen_answer_)
+    # 这里只运行零成本规则，避免随后语义规划时产生第二次 LLM 意图调用。
+    intent, conf, method = classify_query(q, allow_llm=False)
 
     # 0. 枚举查询："有哪些/列举/所有" → 知识库分类内过滤枚举
     #    （"终末地至今为止的主线任务有哪些" → 任务分类枚举主线）
@@ -875,12 +941,44 @@ def ask(query, top_k=5, gen_answer_=False):
             return {"ok": True, "intent": intent or "配方/设备", "method": method, **direct,
                     "route_used": "structured"}
 
+    # 非确定性问题统一进行一次语义规划。规划只控制检索，不提供答案。
+    plan = semantic_plan(q)
+    type_to_intent = {"recipe": "配方", "device": "设备", "comparison": "比较",
+                      "numeric": "数值", "enum": "枚举", "relation": "关系",
+                      "preference": "偏好", "factual": "知识", "open": "知识"}
+    if plan.get("planner_method") == "llm":
+        # 宽规则只负责抢占能成功直查的路径；直查未命中后，以语义计划纠正宽规则误判。
+        intent = type_to_intent.get(plan.get("question_type"), "知识")
+        method = "semantic_plan"
+    elif intent is None:
+        intent = type_to_intent.get(plan.get("question_type"), "知识")
+        method = "semantic_fallback"
+
+    relation_planned = (plan.get("question_type") == "relation" or
+                        "relationship_evidence" in (plan.get("routes") or []))
+    if relation_planned or (plan.get("planner_method") != "llm" and is_interpretive_relation(q)):
+        evidence = relationship_evidence_hits(q, limit=max(top_k, 8))
+        graph_result = None
+        try:
+            from graph_search import graph_query
+            graph_result = graph_query(q, top_k=top_k)
+        except Exception:
+            pass
+        graph_hits = ((graph_result or {}).get("hits") or []) if (
+            len((graph_result or {}).get("entities") or []) >= 2 or (graph_result or {}).get("predicate")) else []
+        hits = (graph_hits + evidence + multi_search(q, top_k=top_k, plan=plan))[:max(top_k + 5, 12)]
+        result = {"ok": True, "intent": "解释性关系", "method": "evidence_hybrid",
+                  "route_used": "hybrid_relation", "graph": graph_result,
+                  "semantic_plan": plan,
+                  "interpretation_policy": "事实边与文本解读分离", "hits": hits}
+        return attach_generated_answer(result, q, hits, max(top_k, 8), gen_answer_)
+
     # GraphRAG：明确关系/多跳问题优先查询带证据的图路径。没有路径时继续走原 RAG，
     # “图谱尚无证据”不等于“关系不存在”。
     graph_result = None
     try:
         from graph_search import graph_query, should_route_graph
-        if should_route_graph(q):
+        if plan.get("needs_graph") or "graph" in (plan.get("routes") or []) or should_route_graph(q):
             graph_result = graph_query(q, top_k=max(top_k, 5))
             if graph_result.get("paths"):
                 result = {"ok": True, "intent": "关系", "method": "graph_rule",
@@ -891,9 +989,9 @@ def ask(query, top_k=5, gen_answer_=False):
         graph_result = {"available": False, "paths": [], "error": "graph_unavailable"}
 
     # 其他意图 / 直查未命中 → 多路检索（RAG + 改写子查询 + 全文关键词 + mention）
-    hits = multi_search(q, top_k=top_k)
+    hits = multi_search(q, top_k=top_k, plan=plan)
     result = {"ok": True, "intent": intent or "未知", "method": method,
-              "route_used": "rag", "hits": hits}
+              "route_used": "rag", "semantic_plan": plan, "hits": hits}
     if graph_result is not None:
         result["graph_attempted"] = True
         result["graph"] = graph_result

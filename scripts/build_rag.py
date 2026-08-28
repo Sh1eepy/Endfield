@@ -45,6 +45,9 @@ from rank_bm25 import BM25Okapi
 
 MODEL_NAME = "BAAI/bge-small-zh-v1.5"
 BGE_QUERY_INSTRUCTION = "为这个句子生成表示以用于检索相关文章："
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# 切分/前缀/元数据策略变化时递增；让 --incremental 能感知“代码变了但原文没变”。
+INDEX_SCHEMA_VERSION = "3-fulltext-supplement-operator-audio"
 
 # 游戏专有名词词典（gen_jieba_dict.py 生成），防止 jieba 切碎专有名词
 _DICT_LOADED = False
@@ -70,9 +73,71 @@ def content_hash(text):
     return hashlib.md5((text or "").encode("utf-8")).hexdigest()
 
 
-def load_records(paths):
-    """读取分类 JSONL，并按条目 ID 去重；后出现的记录覆盖旧记录。"""
-    """读取知识库 JSONL；支持 glob（如 endfield_kb/*.jsonl）。category 优先取行内字段。"""
+def record_content_hash(record):
+    """对所有会影响检索结果的条目内容和索引策略计算稳定指纹。"""
+    payload = {
+        "schema": INDEX_SCHEMA_VERSION,
+        "name": record.get("name", ""),
+        "category": record.get("category", ""),
+        "full_text": record.get("full_text", ""),
+        "sections": record.get("sections") or {},
+    }
+    return content_hash(json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+
+
+def load_operator_audio_records(path="output/operator_details.json"):
+    """把干员中文语音文本规范化为可独立检索的知识记录。
+
+    只收录“语音记录”章节中的中文文本，避免把同一句台词的英/日/韩译文和
+    EP 演职员信息重复写入中文索引。每条语音使用稳定 audio id，支持增量更新。
+    """
+    if not path:
+        return []
+    path = path if os.path.isabs(path) else os.path.join(ROOT, path)
+    if not os.path.exists(path):
+        return []
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+    records = []
+    for operator_id, operator in (data.get("operators") or {}).items():
+        operator_name = str(operator.get("name") or "").strip()
+        if not operator_name:
+            continue
+        for chapter in operator.get("chapters") or []:
+            chapter_title = str(chapter.get("title") or "").strip()
+            if "语音" not in chapter_title:
+                continue
+            for widget in chapter.get("widgets") or []:
+                widget_title = str(widget.get("title") or "").strip()
+                for tab in widget.get("tabs") or []:
+                    tab_title = str(tab.get("title") or "").strip()
+                    # 当前数据的中文页以“中文：CV”命名；default 兼容旧采集格式。
+                    if tab_title and not (tab_title.startswith("中文") or tab_title == "default"):
+                        continue
+                    for index, audio in enumerate(tab.get("audios") or []):
+                        profile = str(audio.get("profile") or "").strip()
+                        if not profile:
+                            continue
+                        audio_title = str(audio.get("title") or f"语音{index + 1}").strip()
+                        audio_id = str(audio.get("id") or f"{index}").strip()
+                        full_text = (f"干员：{operator_name}\n语音标题：{audio_title}\n"
+                                     f"语音文本：{profile}")
+                        records.append({
+                            "item_id": f"{operator_id}:audio:{audio_id}",
+                            "name": f"{operator_name}｜语音：{audio_title}",
+                            "category": "干员语音",
+                            "full_text": full_text,
+                            "sections": {"语音文本": profile},
+                            "source_kind": "operator_audio",
+                            "operator_name": operator_name,
+                            "audio_title": audio_title,
+                            "audio_url": str(audio.get("url") or ""),
+                        })
+    return records
+
+
+def load_records(paths, operator_details_path="output/operator_details.json"):
+    """读取分类 JSONL 与干员中文语音；支持 glob，后出现的 ID 覆盖旧记录。"""
     files = []
     for p in paths:
         if glob.has_magic(p):
@@ -97,7 +162,11 @@ def load_records(paths):
                         "sections": d.get("sections") or {},
                     }
                 )
-    return records
+    records.extend(load_operator_audio_records(operator_details_path))
+    deduped = {}
+    for record in records:
+        deduped[(record["category"], record["item_id"])] = record
+    return list(deduped.values())
 
 
 def split_section_text(text, max_chars):
@@ -107,6 +176,12 @@ def split_section_text(text, max_chars):
         line = line.rstrip()
         if not line:
             continue
+        if len(line) > max_chars:
+            if cur:
+                pieces.append(cur)
+                cur = ""
+            pieces.extend(line[i:i + max_chars] for i in range(0, len(line), max_chars))
+            continue
         if len(cur) + len(line) + 1 > max_chars and cur:
             pieces.append(cur)
             cur = line
@@ -115,6 +190,29 @@ def split_section_text(text, max_chars):
     if cur:
         pieces.append(cur)
     return pieces
+
+
+def uncovered_full_text(full_text, sections):
+    """返回未被结构化 sections 覆盖的全文行，防止描述/其他内容静默丢失。"""
+    section_blob = "".join(
+        "".join(str(value or "").split())
+        for value in (sections or {}).values()
+    )
+    if not section_blob:
+        return (full_text or "").strip()
+    uncovered = []
+    for line in (full_text or "").splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        normalized = "".join(stripped.split())
+        # 标题本身信息量低；正文已存在于任一 section 时不重复索引。
+        if normalized and normalized in section_blob:
+            continue
+        uncovered.append(stripped)
+    return "\n".join(uncovered)
+
+
 def split_chunks(record, max_chars):
     """条目级 chunk：短条目整条，超长条目按 sections 拆。"""
     full = (record.get("full_text") or "").strip()
@@ -143,7 +241,10 @@ def split_chunks(record, max_chars):
             cur = (cur + "\n" + part).strip() if cur else part
     if cur:
         chunks.append(cur)
-    if not chunks:
+    supplemental = uncovered_full_text(full, record.get("sections") or {})
+    if chunks and supplemental:
+        chunks.extend(split_section_text("全文补充：\n" + supplemental, max_chars))
+    elif not chunks:
         # 部分长条目（如玩家攻略）只有 full_text、没有 sections；必须回退切全文，不能静默丢失。
         chunks = split_section_text(full, max_chars)
     return chunks
@@ -167,6 +268,10 @@ def chunk_records(records, max_chars):
         meta = {"item_id": r["item_id"], "name": r["name"],
                 "category": r["category"], "chunk_index": 0,
                 "chunk_total": len(cs)}
+        for key in ("source_kind", "operator_name", "audio_title", "audio_url"):
+            value = r.get(key)
+            if isinstance(value, (str, int, float, bool)) and value != "":
+                meta[key] = value
         for i, c in enumerate(cs):
             meta_i = dict(meta, chunk_index=i)
             # 元信息前缀：分类 + 名称（名称重复 2 次加权，BM25 更易命中名称查询）
@@ -175,7 +280,7 @@ def chunk_records(records, max_chars):
                 "id": f"{r['category']}-{r['item_id']}-{i}",
                 "text": prefixed,
                 "meta": meta_i,
-                "hash": r.get("content_hash") or content_hash(r.get("full_text", "")),
+                "hash": r.get("content_hash") or record_content_hash(r),
             })
     return chunks
 
@@ -238,6 +343,10 @@ def main():
     ap.add_argument("--out-dir", default="output/rag")
     ap.add_argument("--max-chars", type=int, default=512)
     ap.add_argument("--model", default=MODEL_NAME)
+    ap.add_argument("--operator-details", default="output/operator_details.json",
+                    help="干员详情 JSON（默认把中文语音文本加入索引）")
+    ap.add_argument("--no-operator-audio", action="store_true",
+                    help="不把干员中文语音文本加入索引")
     ap.add_argument("--reset", action="store_true", help="全量重建（清空 out-dir）")
     ap.add_argument("--incremental", action="store_true", help="增量更新（hash 对比）")
     args = ap.parse_args()
@@ -247,9 +356,10 @@ def main():
         shutil.rmtree(out_dir)
     os.makedirs(out_dir, exist_ok=True)
 
-    records = load_records(args.inputs)
+    operator_details = None if args.no_operator_audio else args.operator_details
+    records = load_records(args.inputs, operator_details_path=operator_details)
     for r in records:
-        r["content_hash"] = content_hash(r.get("full_text", ""))
+        r["content_hash"] = record_content_hash(r)
     print(f"记录数: {len(records)} 条")
 
     all_chunks = chunk_records(records, args.max_chars)
@@ -302,11 +412,17 @@ def main():
     client = chromadb.PersistentClient(path=os.path.join(out_dir, "chroma"))
     coll = client.get_or_create_collection(name="endfield_kb", metadata={"hnsw:space": "cosine"})
     if to_embed:
-        coll.upsert(ids=[c["id"] for c in to_embed], embeddings=vecs,
-                    documents=[c["text"] for c in to_embed],
-                    metadatas=[c["meta"] for c in to_embed])
+        # Chroma 的单次批量上限随 SQLite 配置变化；固定小批写入兼容全量大索引。
+        upsert_batch = 1000
+        for start in range(0, len(to_embed), upsert_batch):
+            batch = to_embed[start:start + upsert_batch]
+            coll.upsert(ids=[c["id"] for c in batch],
+                        embeddings=vecs[start:start + upsert_batch],
+                        documents=[c["text"] for c in batch],
+                        metadatas=[c["meta"] for c in batch])
     if deleted_ids:
-        coll.delete(ids=deleted_ids)
+        for start in range(0, len(deleted_ids), 1000):
+            coll.delete(ids=deleted_ids[start:start + 1000])
     print(f"ChromaDB: {coll.count()} 条")
 
     # ---- manifest（全量写最新基线，供下次增量对比）----

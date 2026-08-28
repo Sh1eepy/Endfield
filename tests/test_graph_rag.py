@@ -8,7 +8,7 @@ from unittest.mock import patch
 from scripts.build_knowledge_graph import create_schema
 from scripts.graph_search import GraphRetriever, should_route_graph
 from scripts import rag_ask
-from scripts.rag_ask import focus_long_context, is_interpretive_relation, relationship_evidence_hits
+from scripts.rag_ask import focus_long_context, is_interpretive_relation, relationship_evidence_hits, semantic_plan
 
 
 class GraphRAGTests(unittest.TestCase):
@@ -60,6 +60,38 @@ class GraphRAGTests(unittest.TestCase):
         self.assertTrue(is_interpretive_relation("诀是不是挺中意管理员"))
         self.assertTrue(is_interpretive_relation("狼卫的妹妹是不是很可爱"))
         self.assertFalse(is_interpretive_relation("诀属于哪个组织"))
+        self.assertFalse(is_interpretive_relation("莱万汀喜欢吃什么"))
+
+    def test_semantic_planner_distinguishes_preference_from_relation(self):
+        planned = {"question_type": "preference", "topic": "饮食偏好",
+                   "entities": ["莱万汀"], "keywords": ["食物", "饮食", "喜欢"],
+                   "search_queries": ["莱万汀 饮食偏好"],
+                   "routes": ["entity_direct", "rag", "keyword"], "needs_graph": False}
+        with patch.object(rag_ask.llm, "available", return_value=True), \
+                patch.object(rag_ask.llm, "chat_json", return_value=planned):
+            result = semantic_plan("莱万汀喜欢吃什么")
+        self.assertEqual(result["question_type"], "preference")
+        self.assertNotIn("relationship_evidence", result["routes"])
+        self.assertEqual(result["planner_method"], "llm")
+
+    def test_preference_plan_uses_rag_instead_of_relationship_route(self):
+        plan = {"question_type": "preference", "topic": "饮食偏好", "entities": ["莱万汀"],
+                "keywords": ["食物"], "search_queries": ["莱万汀 饮食偏好"],
+                "routes": ["entity_direct", "rag", "keyword"], "needs_graph": False,
+                "planner_method": "llm"}
+        # 即使宽规则误判为配方，只要结构化直查未命中，语义规划也应纠正为对象偏好。
+        with patch.object(rag_ask, "classify_query", return_value=("配方", 1.0, "rule")), \
+                patch.object(rag_ask, "enum_lookup", return_value=None), \
+                patch.object(rag_ask, "extract_item_name", return_value=(None, None)), \
+                patch.object(rag_ask, "recipe_lookup", return_value=None), \
+                patch.object(rag_ask, "semantic_plan", return_value=plan), \
+                patch.object(rag_ask, "relationship_evidence_hits") as relation_hits, \
+                patch.object(rag_ask, "multi_search", return_value=[]) as search:
+            result = rag_ask.ask("莱万汀喜欢吃什么")
+        relation_hits.assert_not_called()
+        search.assert_called_once_with("莱万汀喜欢吃什么", top_k=5, plan=plan)
+        self.assertEqual(result["route_used"], "rag")
+        self.assertEqual(result["intent"], "偏好")
 
     def test_long_context_finds_evidence_beyond_prefix(self):
         text = ("无关的档案开头。" * 300) + "\n关键记录：测试角色的妹妹叫远端答案。\n" + ("无关结尾。" * 80)

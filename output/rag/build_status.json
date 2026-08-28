@@ -1,13 +1,14 @@
 {
   "status": "ok",
   "consistent": true,
-  "checked_at": "2026-08-19T03:42:49.137019+00:00",
-  "index_built_at": "2026-08-17T09:21:27.081114+00:00",
-  "source_fingerprint": "9c41f2ec52aaa77db8be84a01ba639e9550a258e6964b47f303419fa3d3ae0f9",
-  "kb_entries": 1958,
-  "manifest_entries": 1958,
-  "manifest_chunks": 3402,
-  "chroma_chunks": 3402,
+  "checked_at": "2026-08-26T09:07:17.662496+00:00",
+  "index_built_at": "2026-08-26T09:07:17.146242+00:00",
+  "source_fingerprint": "8668fcdfa96b1d605275edecde8cb4f71cad2aebb12e5645a8c1c3f09397b918",
+  "kb_entries": 4331,
+  "operator_audio_entries": 2373,
+  "manifest_entries": 4331,
+  "manifest_chunks": 7319,
+  "chroma_chunks": 7319,
   "bm25_inconsistent_categories": [],
   "issues": []
 }

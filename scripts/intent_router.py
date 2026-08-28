@@ -82,14 +82,16 @@ def _llm_classify(query):
     return None, 0.0
 
 
-def classify_query(query):
-    """分层漏斗入口。返回 (intent, confidence, method)。"""
+def classify_query(query, allow_llm=True):
+    """分层漏斗入口。allow_llm=False 时只运行确定性规则。"""
     q = (query or "").strip()
     if not q:
         return None, 0.0, "empty"
     intent, conf = _rule_classify(q)
     if intent:
         return intent, conf, "rule"
+    if not allow_llm:
+        return None, 0.0, "none"
     # 规则未命中 → LLM 兜底
     intent, conf = _llm_classify(q)
     if intent:

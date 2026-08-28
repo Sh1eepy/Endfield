@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import glob
 import hashlib
 import json
 import os
@@ -12,17 +11,18 @@ from datetime import datetime, timezone
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def _read_kb(pattern="endfield_kb/*.jsonl"):
-    rows = []
-    for path in sorted(glob.glob(os.path.join(ROOT, pattern))):
-        with open(path, encoding="utf-8") as f:
-            rows.extend(json.loads(line) for line in f if line.strip())
-    return rows
+def _read_sources(pattern="endfield_kb/*.jsonl"):
+    """读取与 build_rag 相同的知识源（分类 JSONL + 干员中文语音）。"""
+    from build_rag import load_records
+    return load_records(
+        [os.path.join(ROOT, pattern)],
+        operator_details_path=os.path.join(ROOT, "output", "operator_details.json"),
+    )
 
 
 def audit_index(index_dir="output/rag", check_chroma=True):
     """只读核对知识库、manifest、Chroma、BM25 和 mention 的一致性。"""
-    from build_rag import content_hash, inconsistent_bm25_categories
+    from build_rag import inconsistent_bm25_categories, record_content_hash
 
     index_dir = index_dir if os.path.isabs(index_dir) else os.path.join(ROOT, index_dir)
     manifest_path = os.path.join(index_dir, "chunks.json")
@@ -33,7 +33,7 @@ def audit_index(index_dir="output/rag", check_chroma=True):
     except Exception as exc:
         return {"status": "fail", "consistent": False, "issues": [f"manifest_unreadable:{type(exc).__name__}"]}
 
-    kb = _read_kb()
+    kb = _read_sources()
     kb_keys = {(str(x.get("category") or ""), str(x.get("item_id") or "")) for x in kb}
     manifest_keys = {(str(x["meta"].get("category") or ""), str(x["meta"].get("item_id") or "")) for x in manifest}
     stale = 0
@@ -42,7 +42,7 @@ def audit_index(index_dir="output/rag", check_chroma=True):
         hash_by_key[(str(x["meta"].get("category") or ""), str(x["meta"].get("item_id") or ""))] = x.get("hash")
     for x in kb:
         key = (str(x.get("category") or ""), str(x.get("item_id") or ""))
-        if hash_by_key.get(key) != content_hash(x.get("full_text", "")):
+        if hash_by_key.get(key) != record_content_hash(x):
             stale += 1
     if kb_keys != manifest_keys:
         issues.append(f"entry_key_mismatch:kb={len(kb_keys)},manifest={len(manifest_keys)}")
@@ -73,6 +73,7 @@ def audit_index(index_dir="output/rag", check_chroma=True):
         "status": "ok" if not issues else "degraded", "consistent": not issues,
         "checked_at": datetime.now(timezone.utc).isoformat(), "index_built_at": mtime,
         "source_fingerprint": fingerprint, "kb_entries": len(kb_keys),
+        "operator_audio_entries": sum(x.get("source_kind") == "operator_audio" for x in kb),
         "manifest_entries": len(manifest_keys), "manifest_chunks": len(manifest),
         "chroma_chunks": chroma_count, "bm25_inconsistent_categories": broken,
         "issues": issues,
