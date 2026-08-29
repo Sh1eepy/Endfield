@@ -1,5 +1,5 @@
 import type {
-  AskResult, HealthResponse, NamesResponse, SynthesisResponse,
+  AskResult, FeedbackResponse, HealthResponse, NamesResponse, SynthesisResponse,
 } from './types'
 
 async function apiError(res: Response): Promise<Error> {
@@ -33,8 +33,21 @@ export async function fetchAsk(query: string, topK = 5, genAnswer = true): Promi
   const res = await fetch('/api/ask', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query, top_k: topK, gen_answer: genAnswer }),
+    body: JSON.stringify({ query, top_k: topK, gen_answer: genAnswer, client_type: 'web' }),
   })
   if (!res.ok) throw await apiError(res)
   return res.json() as Promise<AskResult>
+}
+
+export async function submitFeedback(
+  traceId: string, query: string, vote: 'useful' | 'not_useful', comment = '', observedAnswer = '',
+): Promise<FeedbackResponse> {
+  const res = await fetch('/api/feedback', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ trace_id: traceId, query, vote, comment,
+      observed_answer: observedAnswer, client_type: 'web' }),
+  })
+  if (!res.ok) throw await apiError(res)
+  return res.json() as Promise<FeedbackResponse>
 }

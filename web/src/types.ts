@@ -143,6 +143,8 @@ export interface AskRecipeCard {
 /** /api/ask 响应：字段按路由按需存在（recipe/device/enum/graph/rag…），前端按存在性判断。 */
 export interface AskData {
   ok: boolean
+  trace_id?: string
+  feedback_snapshot?: string
   intent?: string
   method?: string
   route_used?: string
@@ -173,3 +175,4 @@ export type AskResult = AskData
 
 export interface NamesResponse { names: string[]; count: number }
 export interface HealthResponse { status: string; service: string }
+export interface FeedbackResponse { ok: boolean; feedback_id: string; status: 'pending_review' }

@@ -100,6 +100,7 @@ def main():
 
     from rag_search import RAGRetriever
     from recipe_index import load_recipes, build_item_index
+    from build_eval_manifest import evaluation_metadata
 
     recipes = load_recipes(os.path.join(ROOT, "output", "recipes.json"))
     recipes_ix = build_item_index(recipes)
@@ -160,7 +161,8 @@ def main():
     out_path = os.path.join(ROOT, args.out)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
-        json.dump({"summary": summary, "details": details}, f, ensure_ascii=False, indent=1)
+        json.dump({"metadata": evaluation_metadata(), "summary": summary, "details": details},
+                  f, ensure_ascii=False, indent=1)
     print(f"已存档: {args.out}")
 
 

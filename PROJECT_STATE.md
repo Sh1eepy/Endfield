@@ -23,6 +23,7 @@
 | 干员详情库 | `output/operator_details.json` | 31 名干员；基本信息、富文本颜色、技能/天赋/潜能/档案多 Tab、图片与多语种语音 |
 | 轻量 GraphRAG | `output/knowledge_graph/graph.db` | 2,129 实体 / 9,358 条可追溯关系；覆盖人物/任务/地点/物品/设备/配方与明确亲属关系，支持解释性关系混合取证、增量更新与问法对称门禁 |
 | 评测 | `eval_retrieval.py` | 71 条查询；当前 Recall@5=100%、MRR=97.3%（`final_reviewed.json`） |
+| 可观测性与坏例闭环 | `rag_trace.py` / `review_bad_cases.py` / `replay_bad_cases.py` | 脱敏 Trace、用户反馈隔离审核、批准样本回放与建议归因；Web/小程序均有反馈入口 |
 
 ## 2.1 前端体验优化（2026-08，web/ + miniprogram/）
 - **问答答案 markdown 渲染**：`**加粗**`/`*斜体*`/`` `代码` ``/列表/表格渲染（Web 由 `AskResult.tsx` 调用 `AnswerMarkdown.tsx` 生成 React 节点；小程序端 `utils/markdown.js` → rich-text）。Web 表格支持列对齐与横向滚动，`[来源N]` 在段落/列表/表格内部保持可点击；原始 HTML 不执行。
@@ -32,8 +33,7 @@
 - **视觉细节**：clip-path 圆角内侧留白（边缘文字完整可见）、SVG clip id 修复、封面图兜底、干员技能动态图放大与图文并排布局
 
 ## 3. 关键文件地图
-- `KNOWLEDGE_SYSTEM_ARCHITECTURE.md` → RAG、知识图谱、结构化查询、LLM 调用与质量门禁总览
-- `RAG_UPGRADE_PLAN.md` → RAG 优化计划与进度；`RAG_DEVLOG.md` → 开发决策/踩坑记录
+- `KNOWLEDGE_SYSTEM_ARCHITECTURE.md` → 知识系统统一入口（架构 + 路线图 + 门禁一体，含监控评测工具表与结果快照）；`RAG_DEVLOG.md` → 开发决策/踩坑记录
 - `scripts/build_kb_all.py` → WIKI 全量 JSON → `endfield_kb/`（22 分类 jsonl+md）
 - `scripts/recipe_extract.py` → 全量 JSON → `output/recipes.json`（配方）
 - `scripts/recipe_index.py` → 配方索引工具（load_recipes/build_item_index/find_item_ids_by_name）
@@ -45,6 +45,8 @@
 - `scripts/intent_router.py` → 意图识别分层（L1 规则 + L3 LLM 兜底）
 - `scripts/rag_ask.py` → 问答路由（枚举/结构化直查/多路检索/实体直取 → LLM 生成）
 - `scripts/gen_eval_set.py` → 评测集自动生成；`scripts/eval_retrieval.py` → 检索评测
+- `scripts/build_eval_manifest.py` → 固化评测集/索引/参数/Prompt 版本；`scripts/rag_trace.py` → 脱敏 Trace 与反馈存储
+- `scripts/review_bad_cases.py` / `scripts/replay_bad_cases.py` → 反馈隔离审核、批准坏例回放和建议归因
 - `scripts/gen_jieba_dict.py` + `scripts/dict_zh.txt` → 游戏专有名词词典
 - `output/eval/` → 评测集与历次评测结果；`output/mention_index.json` → mention 反查索引
 - `web/` → 前端（Vite+React+TS；`npm run dev` 开发 / `npm run build` 出 `dist`）；`web/vendor/` 旧 d3 已弃用
@@ -58,18 +60,23 @@
 - 知识问答不是开放式 Agent：当前为确定性强规则 + 一次受约束语义检索规划 + 可选答案生成。
   开放问题通常 2 次 LLM（规划、回答），图关系通常 1～2 次，结构化直查可 0 次；规划器不能直接提供事实。
 - 长条目生成不再固定截取开头，使用 `focus_long_context()` 从全文分散选择覆盖各子问题的证据窗口。
+- HTTP 问答会返回 `trace_id`；普通 Trace 只保留查询指纹，用户主动反馈才保存正文。反馈先隔离审核，批准且补齐 Gold 后才能回放，不能自动进入质量门禁。
 
 ## 5. 当前发布边界
 
-- 仓库已经具备可复现 Dockerfile、Compose、自有服务器 Nginx/HTTPS/限流模板、Railway 配置、依赖锁定和部署说明。
+- 仓库已经具备可复现 Dockerfile、Compose、自有服务器 Nginx/HTTPS/限流模板、Railway 配置、依赖锁定和部署说明；2026-08-21 已完成本地 Docker 镜像构建与容器运行验证。
 - 2026-08-29 API 安全加固：问答可选令牌鉴权、每 IP 频率/每日次数与全站每日次数限制（共享 SQLite、Compose 持久卷）；管理接口仅限本机或令牌；媒体拒绝重定向、分块下载至多 25 MiB 并限制下载/发送并发。默认保留有限额匿名问答，不代表已接入用户登录。部署注意事项见 `deploy/API_SECURITY.md`。
-- 2026-08-21 已完成本地 Docker 镜像构建与容器运行验证，服务可正常启动。
-- GitHub remote 已连接到 `https://github.com/Sh1eepy/Endfield.git`。
 - 已有服务器时按 `deploy/README.md` 使用 Compose + Nginx 发布；Railway 仅作为无自有服务器时的可选方案。
 - 小程序主体功能已接入同一套 FastAPI；模拟器默认访问本机，正式发布前还需配置线上 HTTPS API 域名并完成真机验收。
 
-每个阶段的决策、验证方式和维护方法记录在 `PROJECT_PROGRESS.md`。
+## 6. 待办与已知限制
 
-## 6. 环境提醒（详见 AGENTS.md）
-- 终端 GBK 乱码 → 写 UTF-8 文件再读取；模型离线加载；浏览器用 127.0.0.1
-- 边界：业务代码位于 `scripts/ web/ miniprogram/`，生成数据位于 `endfield_kb/ output/ logs/`
+- 答案黄金集仍小（仅 6 条），需继续收集真实困难问题，扩充 holdout/challenge 集；
+- reranker 与受限 Agent Loop 均须先由困难评测证明收益，再决定是否引入（见架构文档路线图）；
+- 公网部署需要对应平台权限，上线后仍需正式域名复核；
+- 检索 Recall@5=100% 不代表端到端正确率 100%；Precision@5≈42% 含 Gold 标注不完整因素，需人工抽查区分。
+
+## 7. 环境提醒（详见 AGENTS.md）
+
+终端 GBK 乱码（写 UTF-8 文件再读取）、模型离线加载、浏览器用 `http://127.0.0.1:8000`；
+业务代码边界 `scripts/ web/ miniprogram/`，生成数据 `endfield_kb/ output/ logs/`。

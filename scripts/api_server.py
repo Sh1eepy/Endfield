@@ -16,9 +16,11 @@ api_server.py — 终末地配方合成树 API（FastAPI）
 """
 import json
 import os
+import subprocess
 import sys
 import threading
 import time
+from typing import Literal
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import Response
@@ -48,7 +50,8 @@ def _load_env():
 _load_env()
 
 from recipe_index import load_recipes, build_item_index, find_item_ids_by_name  # noqa: E402
-from scripts.api_security import positive_int_env, require_ask_access, require_admin_access  # noqa: E402
+from scripts.api_security import (positive_int_env, require_admin_access, require_ask_access,
+                                  require_feedback_access)  # noqa: E402
 
 app = FastAPI(title="终末地配方合成树", version="1.0.0")
 
@@ -466,6 +469,7 @@ class AskRequest(BaseModel):
     query: str = Field(min_length=1, max_length=300)
     top_k: int = Field(default=5, ge=1, le=10)
     gen_answer: bool = True
+    client_type: Literal["web", "miniprogram", "other"] = "other"
 
     @field_validator("query")
     @classmethod
@@ -477,14 +481,14 @@ class AskRequest(BaseModel):
         return value
 
 
-@app.post("/api/ask", dependencies=[Depends(require_ask_access)])
-def ask_endpoint(req: AskRequest):
+def ask_endpoint(req: AskRequest, trace=None):
     """RAG 问答入口：意图识别 → 路由（配方直查/RAG检索）→ LLM 生成带引用回答。
 
     请求体: {"query": "重息壤是什么", "top_k": 5, "gen_answer": true}
     """
     from rag_ask import ask
     from rag_monitor import monitor
+    from llm_client import observe_llm
     if not _ASK_SEMAPHORE.acquire(blocking=False):
         raise HTTPException(
             status_code=429,
@@ -493,7 +497,11 @@ def ask_endpoint(req: AskRequest):
         )
     started = time.perf_counter()
     try:
-        result = ask(req.query, top_k=req.top_k, gen_answer_=req.gen_answer)
+        with observe_llm(trace.record_llm_event if trace else None):
+            kwargs = {"top_k": req.top_k, "gen_answer_": req.gen_answer}
+            if trace:
+                kwargs["trace"] = trace
+            result = ask(req.query, **kwargs)
         monitor.observe(result, (time.perf_counter() - started) * 1000, req.gen_answer)
         return result
     except Exception as exc:
@@ -501,6 +509,91 @@ def ask_endpoint(req: AskRequest):
         raise
     finally:
         _ASK_SEMAPHORE.release()
+
+
+def _index_version():
+    """返回可关联 Trace 的索引指纹；读取失败不阻断问答。"""
+    try:
+        path = os.path.join(ROOT, "output", "rag", "build_status.json")
+        with open(path, encoding="utf-8") as fh:
+            return str(json.load(fh).get("source_fingerprint") or "")
+    except (OSError, ValueError):
+        return ""
+
+
+def _code_version():
+    configured = os.environ.get("APP_VERSION", "").strip()
+    if configured:
+        return configured
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True,
+            stderr=subprocess.DEVNULL).strip()
+    except (OSError, subprocess.SubprocessError):
+        return "unknown"
+
+
+@app.post("/api/ask", dependencies=[Depends(require_ask_access)])
+def ask_http(req: AskRequest, response: Response):
+    """HTTP 包装层：创建脱敏 Trace；核心 ask_endpoint 保持可离线直接测试。"""
+    trace = None
+    result = None
+    error = None
+    try:
+        from scripts.rag_trace import RAGTrace
+        trace = RAGTrace(req.query, req.client_type,
+                         code_commit=_code_version(),
+                         index_version=_index_version())
+        response.headers["X-Trace-ID"] = trace.trace_id
+    except Exception:
+        trace = None  # 可观测性故障不能使知识问答不可用
+    try:
+        result = ask_endpoint(req, trace=trace)
+        if trace and isinstance(result, dict):
+            from scripts.rag_trace import feedback_snapshot
+            result["feedback_snapshot"] = feedback_snapshot(result)
+            result["trace_id"] = trace.trace_id
+        return result
+    except Exception as exc:
+        error = exc
+        raise
+    finally:
+        if trace:
+            try:
+                trace.finish(result, error)
+            except Exception:
+                pass
+
+
+class FeedbackRequest(BaseModel):
+    trace_id: str = Field(pattern=r"^[0-9a-f]{32}$")
+    query: str = Field(min_length=1, max_length=300)
+    vote: Literal["useful", "not_useful"]
+    comment: str = Field(default="", max_length=500)
+    observed_answer: str = Field(min_length=1, max_length=8000)
+    client_type: Literal["web", "miniprogram"]
+
+    @field_validator("query", "comment", "observed_answer")
+    @classmethod
+    def normalize_feedback_text(cls, value):
+        return value.strip()
+
+
+@app.post("/api/feedback", status_code=201, dependencies=[Depends(require_feedback_access)])
+def submit_feedback(req: FeedbackRequest):
+    """用户主动提交的反馈先进入隔离区，绝不自动进入正式评测集。"""
+    from scripts.rag_trace import trace_store
+    try:
+        saved = trace_store.submit_feedback(req.trace_id, req.query, req.vote,
+                                             req.comment, req.client_type, req.observed_answer)
+    except ValueError as exc:
+        code = str(exc)
+        if code in {"trace_not_found", "query_mismatch", "client_mismatch", "answer_mismatch"}:
+            raise HTTPException(400, "反馈与问答记录不匹配") from exc
+        if code == "already_submitted":
+            raise HTTPException(409, "这条回答已经提交过反馈") from exc
+        raise
+    return {"ok": True, **saved}
 
 
 # ---- 静态前端（优先 web/dist 构建产物，回退 web/ 源码目录），放在最后挂载以免覆盖 /api/* ----

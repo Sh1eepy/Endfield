@@ -4,6 +4,8 @@ services:
   app:
     build:
       context: .
+      args:
+        APP_VERSION: ${APP_VERSION:-unknown}
       dockerfile: Dockerfile
     image: endfield-synthesis:local
     container_name: endfield-synthesis
@@ -17,6 +19,8 @@ services:
       WEB_CONCURRENCY: ${WEB_CONCURRENCY:-1}
       ASK_MAX_CONCURRENCY: ${ASK_MAX_CONCURRENCY:-2}
       ASK_BUDGET_DB: /var/lib/endfield-security/ask-budget.sqlite3
+      RAG_TRACE_DB: /var/lib/endfield-security/rag-trace.sqlite3
+      APP_VERSION: ${APP_VERSION:-unknown}
       # Leave forwarding trust empty until the exact reverse-proxy peer is known.
       FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-}
     volumes:

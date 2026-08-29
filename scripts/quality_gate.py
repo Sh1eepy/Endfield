@@ -8,7 +8,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def load(path):
-    return json.load(open(os.path.join(ROOT, path), encoding="utf-8"))
+    with open(os.path.join(ROOT, path), encoding="utf-8") as fh:
+        return json.load(fh)
 
 
 def main():
@@ -25,9 +26,20 @@ def main():
     ap.add_argument("--min-graph-recall", type=float, default=.90)
     ap.add_argument("--min-relation-query-pass", type=float, default=.98)
     args = ap.parse_args()
-    failures = []
+    failures, warnings = [], []
+    from build_eval_manifest import build_manifest
+    current_manifest = build_manifest()
+    stored_manifest = load("output/eval/eval_manifest.json")
+    if stored_manifest.get("manifest_id") != current_manifest["manifest_id"]:
+        failures.append("eval_manifest_stale")
     status = load("output/rag/build_status.json")
-    retrieval = load("output/eval/final_reviewed.json")["summary"]["overall"]
+    retrieval_result = load("output/eval/final_reviewed.json")
+    retrieval = retrieval_result["summary"]["overall"]
+    if (retrieval_result.get("metadata") or {}).get("manifest_id") not in {
+            None, current_manifest["manifest_id"]}:
+        failures.append("retrieval_manifest_mismatch")
+    if "metadata" not in retrieval_result:
+        warnings.append("retrieval_result_unversioned")
     if not status.get("consistent"):
         failures.append("index_inconsistent:" + ";".join(status.get("issues", [])))
     if retrieval["recall"] < args.min_recall:
@@ -36,7 +48,13 @@ def main():
         failures.append(f"mrr:{retrieval['mrr']}<{args.min_mrr}")
     pipeline_path = os.path.join(ROOT, "output/eval/pipeline_result.json")
     if os.path.exists(pipeline_path):
-        p = json.load(open(pipeline_path, encoding="utf-8"))["summary"]
+        pipeline_result = load("output/eval/pipeline_result.json")
+        p = pipeline_result["summary"]
+        if (pipeline_result.get("metadata") or {}).get("manifest_id") not in {
+                None, current_manifest["manifest_id"]}:
+            failures.append("pipeline_manifest_mismatch")
+        if "metadata" not in pipeline_result:
+            warnings.append("pipeline_result_unversioned")
         # 正式意图门禁只接受包含 LLM 兜底的完整评测；离线规则报告用于暴露覆盖缺口。
         if p.get("llm_enabled") and p["intent_accuracy"] < args.min_intent:
             failures.append(f"intent_accuracy:{p['intent_accuracy']}<{args.min_intent}")
@@ -44,7 +62,13 @@ def main():
             failures.append(f"route_accuracy:{p['route_accuracy']}<{args.min_route}")
     answer_path = os.path.join(ROOT, "output/eval/answer_result.json")
     if os.path.exists(answer_path):
-        a = json.load(open(answer_path, encoding="utf-8"))["summary"]
+        answer_result = load("output/eval/answer_result.json")
+        a = answer_result["summary"]
+        if (answer_result.get("metadata") or {}).get("manifest_id") not in {
+                None, current_manifest["manifest_id"]}:
+            failures.append("answer_manifest_mismatch")
+        if "metadata" not in answer_result:
+            warnings.append("answer_result_unversioned")
         for key, threshold in (("refusal_correct", args.min_refusal),
                                ("citation_present", args.min_citation),
                                ("source_overlap", args.min_source_overlap)):
@@ -67,7 +91,8 @@ def main():
         relation_pass = audit_relation_queries(graph_db_path, sample_per_predicate=20)["pass_rate"]
         if relation_pass < args.min_relation_query_pass:
             failures.append(f"relation_query_pass:{relation_pass}<{args.min_relation_query_pass}")
-    print(json.dumps({"passed": not failures, "failures": failures}, ensure_ascii=False, indent=2))
+    print(json.dumps({"passed": not failures, "failures": failures, "warnings": warnings},
+                     ensure_ascii=False, indent=2))
     if failures:
         raise SystemExit(1)
 

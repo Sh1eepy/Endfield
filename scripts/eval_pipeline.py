@@ -20,6 +20,7 @@ def main():
     args = ap.parse_args()
     from intent_router import classify_batch, llm as router_llm
     from rag_ask import ask, llm as ask_llm
+    from build_eval_manifest import evaluation_metadata
     if not args.allow_llm:
         router_llm.api_key = ""
         ask_llm.api_key = ""
@@ -49,7 +50,8 @@ def main():
                "route_accuracy": round(route_ok / len(rows), 4), "llm_enabled": args.allow_llm}
     out = os.path.join(ROOT, args.out)
     with open(out, "w", encoding="utf-8") as f:
-        json.dump({"summary": summary, "details": details}, f, ensure_ascii=False, indent=2)
+        json.dump({"metadata": evaluation_metadata(), "summary": summary, "details": details},
+                  f, ensure_ascii=False, indent=2)
     print(json.dumps(summary, ensure_ascii=False, indent=2))
 
 

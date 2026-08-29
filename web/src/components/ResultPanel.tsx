@@ -177,7 +177,7 @@ export default function ResultPanel({
                 treeHandleRef={treeHandleRef}
               />
             ) : (
-              result && <AskResult data={result.data} onPickName={onPickName} />
+              result && <AskResult data={result.data} query={result.query} onPickName={onPickName} />
             )}
           </motion.div>
         </AnimatePresence>

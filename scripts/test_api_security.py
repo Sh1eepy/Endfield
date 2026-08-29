@@ -215,6 +215,8 @@ class HttpAccessTests(unittest.TestCase):
         self.budget = api_security.AskBudget(Path(self.tmp.name) / "usage.sqlite3", per_minute=2)
         for patcher in (
             patch.object(api_security, "ASK_BUDGET", self.budget),
+            patch.object(api_security, "FEEDBACK_BUDGET", api_security.AskBudget(
+                Path(self.tmp.name) / "usage.sqlite3", per_minute=2, namespace="feedback")),
             patch.object(api_security, "API_ACCESS_TOKEN", ""),
         ):
             patcher.start()
@@ -239,6 +241,20 @@ class HttpAccessTests(unittest.TestCase):
                     self.assertEqual(client.post("/api/ask", json={"query": "test"}, headers={
                         "Authorization": "Bearer test-secret"}).status_code, 200)
                 self.assertEqual(ask.call_count, 2, "bad tokens must not consume daily quota")
+
+    def test_feedback_uses_token_and_independent_rate_limit(self):
+        payload = {"trace_id": "a" * 32, "query": "test", "vote": "useful",
+                   "observed_answer": "answer", "client_type": "web"}
+        with patch.object(api_security, "API_ACCESS_TOKEN", "test-secret"), \
+                patch("scripts.rag_trace.trace_store.submit_feedback",
+                      return_value={"feedback_id": "f", "status": "pending_review"}) as submit, \
+                TestClient(api_server.app) as client:
+            self.assertEqual(client.post("/api/feedback", json=payload).status_code, 401)
+            headers = {"Authorization": "Bearer test-secret"}
+            statuses = [client.post("/api/feedback", json=payload, headers=headers).status_code
+                        for _ in range(3)]
+        self.assertEqual(statuses, [201, 201, 429])
+        self.assertEqual(submit.call_count, 2)
 
     def test_forwarding_headers_cannot_reset_ip_limit(self):
         with TestClient(api_server.app) as client, patch("rag_ask.ask", return_value={"ok": True}):

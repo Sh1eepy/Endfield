@@ -17,6 +17,7 @@ import json
 import os
 import re
 import sys
+from contextlib import nullcontext
 
 if sys.stdout:
     sys.stdout.reconfigure(encoding="utf-8")
@@ -28,6 +29,7 @@ sys.path.insert(0, os.path.join(ROOT, "scripts"))
 
 from intent_router import classify_query  # noqa: E402
 from llm_client import llm  # noqa: E402
+from rag_prompts import ANSWER_SYSTEM as GEN_SYSTEM, SEMANTIC_PLAN_SYSTEM, semantic_plan_prompt  # noqa: E402
 
 # 惰性加载的单例（避免每次 ask 都重载索引）
 _retriever = None
@@ -347,18 +349,7 @@ def semantic_plan(query, max_sub=3):
     if llm.available():
         try:
             d = llm.chat_json(
-                "分析下面的游戏知识库问题并生成检索计划，只输出 JSON。你不能回答问题，也不能"
-                "把猜测的答案写进关键词。要同时考虑动词和对象，例如‘喜欢吃什么’的主题是饮食偏好，"
-                "不是人物关系；‘喜欢谁/怎么看某人’才是关系解读。检索词可以使用问题原词和通用同义词，"
-                "并必须保留决定主题的核心动词（如吃、穿、用、去），不要只留下抽象分类名。\n"
-                f"问题：{q}\n"
-                "question_type 只能是 recipe/device/enum/factual/relation/preference/"
-                "comparison/numeric/open；routes 只能从 entity_direct/rag/keyword/mention/"
-                "graph/relationship_evidence/recipe/enum 中选择。\n"
-                '{"question_type":"preference","topic":"饮食偏好","entities":["人物名"],'
-                '"keywords":["吃","食物","饮食","喜欢"],"search_queries":["人物名 吃 饮食偏好"],'
-                '"routes":["entity_direct","rag","keyword"],"needs_graph":false}',
-                system="你是检索规划器，只输出 JSON；计划中的词不是事实证据。",
+                semantic_plan_prompt(q), system=SEMANTIC_PLAN_SYSTEM,
                 temperature=0.1, max_tokens=350)
             question_type = str(d.get("question_type") or "open").strip()
             if question_type not in PLAN_TYPES:
@@ -390,7 +381,7 @@ def query_expand(query, max_sub=3, plan=None):
     return (plan.get("search_queries") or [query])[:max_sub]
 
 
-def multi_search(query, top_k=5, plan=None):
+def multi_search(query, top_k=5, plan=None, trace=None):
     """多路检索：语义计划 + 原查询 → RAG/全文关键词/mention，合并去重。
 
     用于"解锁武陵"这类开放问题——单一查询捞不到间接信息时，
@@ -422,7 +413,10 @@ def multi_search(query, top_k=5, plan=None):
             _add(h)
     # 1. 原查询 RAG；实体直取由独立路线控制。
     if "rag" in routes:
-        for h in rag_search(query, top_k=top_k, direct_fallback=False):
+        search_kwargs = {"top_k": top_k, "direct_fallback": False}
+        if trace:
+            search_kwargs["trace"] = trace
+        for h in rag_search(query, **search_kwargs):
             _add(h)
     # 规划器给出的主题词用于全文补召回。按“实体 + 单个主题词”分别搜索，避免
     # 把过多同义词做成必须同时命中的 AND 条件。
@@ -440,7 +434,10 @@ def multi_search(query, top_k=5, plan=None):
     place = extract_place(query)
     for sub in subs:
         if "rag" in routes:
-            for h in rag_search(sub, top_k=3, direct_fallback=False):
+            sub_kwargs = {"top_k": 3, "direct_fallback": False}
+            if trace:
+                sub_kwargs["trace"] = trace
+            for h in rag_search(sub, **sub_kwargs):
                 _add(h)
         # 全文关键词：地名 + 条件词（子查询拆分后的词）
         if place and "keyword" in routes:
@@ -717,13 +714,16 @@ def enum_lookup(query, limit=40):
     return None
 
 
-def rag_search(query, top_k=5, entity_boost=True, direct_fallback=True):
+def rag_search(query, top_k=5, entity_boost=True, direct_fallback=True, trace=None):
     """RAG 混合检索（向量+BM25→RRF），带实体加权与知识库直取兜底。
 
     entity_boost:  抽到实体时把实体名注入 BM25 查询（"诀"→ 干员条目顶到前排）
     direct_fallback: 实体在知识库有条目且检索 top1 与实体不一致时，直接用条目全文当上下文
     """
-    hits = _get_retriever().search(query, top_k=top_k)
+    search_kwargs = {"top_k": top_k}
+    if trace:
+        search_kwargs["trace"] = trace
+    hits = _get_retriever().search(query, **search_kwargs)
     if not entity_boost and not direct_fallback:
         return hits
 
@@ -736,7 +736,7 @@ def rag_search(query, top_k=5, entity_boost=True, direct_fallback=True):
         name = name2
 
     # 实体加权重搜：实体名 + 原查询，BM25 更容易把实体条目顶上来
-    boosted = _get_retriever().search(f"{name} {query}", top_k=top_k)
+    boosted = _get_retriever().search(f"{name} {query}", **search_kwargs)
 
     # 主条目判定：只认精确同名（"诀"=="诀(干员)"）。
     # 注意"诀的信物/头像·诀"是独立条目不是衍生，不算主条目——
@@ -769,18 +769,6 @@ def rag_search(query, top_k=5, entity_boost=True, direct_fallback=True):
 
 
 # ===================== 答案生成 =====================
-
-GEN_SYSTEM = (
-    "你是《明日方舟：终末地》百科助手。根据提供的资料回答用户问题，要求：\n"
-    "1. 只基于提供的资料，不要编造资料外的内容\n"
-    "2. 回答末尾用 [来源1] 标注依据哪条资料\n"
-    "3. 若资料不足以回答，明确说'资料中未找到相关内容'\n"
-    "4. 对喜欢、性格、态度、动机等解释性问题，必须分成‘原文明确事实’、"
-    "‘基于证据的合理解读’和‘资料不足’，不得把解读伪装成设定事实\n"
-    "5. 复合问题必须逐项回答；某一小问资料不足时，只说明该小问不足，不能拒绝其他有证据的小问\n"
-    "6. 简洁，中文回答"
-)
-
 
 QUERY_STOP_WORDS = {
     "什么", "怎么", "怎样", "如何", "是不是", "是否", "来着", "叫啥", "叫什么", "哪个",
@@ -894,11 +882,12 @@ def gen_answer(query, hits, top_k=5):
                          "score": h["score"]} for h in hits[:top_k]]}
 
 
-def attach_generated_answer(result, query, hits, top_k, enabled):
+def attach_generated_answer(result, query, hits, top_k, enabled, trace=None):
     """按需生成答案并合并到路由结果；LLM 不可用或失败时保留原检索结果。"""
     if not enabled:
         return result
-    generated = gen_answer(query, hits, top_k=top_k)
+    with trace.span("llm_generation") if trace else nullcontext():
+        generated = gen_answer(query, hits, top_k=top_k)
     if generated:
         result.update(generated)
     return result
@@ -906,13 +895,14 @@ def attach_generated_answer(result, query, hits, top_k, enabled):
 
 # ===================== 入口 =====================
 
-def ask(query, top_k=5, gen_answer_=False):
+def ask(query, top_k=5, gen_answer_=False, trace=None):
     """问答入口：确定性规则 → 一次语义规划 → 数据检索 → (可选)生成。"""
     q = (query or "").strip()
     if not q:
         return {"ok": False, "error": "查询为空"}
     # 这里只运行零成本规则，避免随后语义规划时产生第二次 LLM 意图调用。
-    intent, conf, method = classify_query(q, allow_llm=False)
+    with trace.span("intent_classify") if trace else nullcontext():
+        intent, conf, method = classify_query(q, allow_llm=False)
 
     # 0. 枚举查询："有哪些/列举/所有" → 知识库分类内过滤枚举
     #    （"终末地至今为止的主线任务有哪些" → 任务分类枚举主线）
@@ -949,13 +939,15 @@ def ask(query, top_k=5, gen_answer_=False):
     #   - 意图不明（None）或纯名称查询（用户直接输入"天有洪炉"）→ 也试
     pure_name = extract_item_name(q)[0] == q
     if intent in ("配方", "设备") or intent is None or pure_name:
-        direct = recipe_lookup(q, intent=intent)
+        with trace.span("structured_lookup") if trace else nullcontext():
+            direct = recipe_lookup(q, intent=intent)
         if direct:
             return {"ok": True, "intent": intent or "配方/设备", "method": method, **direct,
                     "route_used": "structured"}
 
     # 非确定性问题统一进行一次语义规划。规划只控制检索，不提供答案。
-    plan = semantic_plan(q)
+    with trace.span("semantic_plan") if trace else nullcontext():
+        plan = semantic_plan(q)
     type_to_intent = {"recipe": "配方", "device": "设备", "comparison": "比较",
                       "numeric": "数值", "enum": "枚举", "relation": "关系",
                       "preference": "偏好", "factual": "知识", "open": "知识"}
@@ -974,17 +966,22 @@ def ask(query, top_k=5, gen_answer_=False):
         graph_result = None
         try:
             from graph_search import graph_query
-            graph_result = graph_query(q, top_k=top_k)
+            with trace.span("graph_retrieval") if trace else nullcontext():
+                graph_result = graph_query(q, top_k=top_k)
         except Exception:
             pass
         graph_hits = ((graph_result or {}).get("hits") or []) if (
             len((graph_result or {}).get("entities") or []) >= 2 or (graph_result or {}).get("predicate")) else []
-        hits = (graph_hits + evidence + multi_search(q, top_k=top_k, plan=plan))[:max(top_k + 5, 12)]
+        search_kwargs = {"top_k": top_k, "plan": plan}
+        if trace:
+            search_kwargs["trace"] = trace
+        hits = (graph_hits + evidence + multi_search(q, **search_kwargs))[:max(top_k + 5, 12)]
         result = {"ok": True, "intent": "解释性关系", "method": "evidence_hybrid",
                   "route_used": "hybrid_relation", "graph": graph_result,
                   "semantic_plan": plan,
                   "interpretation_policy": "事实边与文本解读分离", "hits": hits}
-        return attach_generated_answer(result, q, hits, max(top_k, 8), gen_answer_)
+        answer_kwargs = {"trace": trace} if trace else {}
+        return attach_generated_answer(result, q, hits, max(top_k, 8), gen_answer_, **answer_kwargs)
 
     # GraphRAG：明确关系/多跳问题优先查询带证据的图路径。没有路径时继续走原 RAG，
     # “图谱尚无证据”不等于“关系不存在”。
@@ -992,23 +989,29 @@ def ask(query, top_k=5, gen_answer_=False):
     try:
         from graph_search import graph_query, should_route_graph
         if plan.get("needs_graph") or "graph" in (plan.get("routes") or []) or should_route_graph(q):
-            graph_result = graph_query(q, top_k=max(top_k, 5))
+            with trace.span("graph_retrieval") if trace else nullcontext():
+                graph_result = graph_query(q, top_k=max(top_k, 5))
             if graph_result.get("paths"):
                 result = {"ok": True, "intent": "关系", "method": "graph_rule",
                           "route_used": "graph", "graph": graph_result,
                           "hits": graph_result.get("hits") or []}
-                return attach_generated_answer(result, q, result["hits"], top_k, gen_answer_)
+                answer_kwargs = {"trace": trace} if trace else {}
+                return attach_generated_answer(result, q, result["hits"], top_k, gen_answer_, **answer_kwargs)
     except Exception:
         graph_result = {"available": False, "paths": [], "error": "graph_unavailable"}
 
     # 其他意图 / 直查未命中 → 多路检索（RAG + 改写子查询 + 全文关键词 + mention）
-    hits = multi_search(q, top_k=top_k, plan=plan)
+    search_kwargs = {"top_k": top_k, "plan": plan}
+    if trace:
+        search_kwargs["trace"] = trace
+    hits = multi_search(q, **search_kwargs)
     result = {"ok": True, "intent": intent or "未知", "method": method,
               "route_used": "rag", "semantic_plan": plan, "hits": hits}
     if graph_result is not None:
         result["graph_attempted"] = True
         result["graph"] = graph_result
-    return attach_generated_answer(result, q, hits, top_k, gen_answer_)
+    answer_kwargs = {"trace": trace} if trace else {}
+    return attach_generated_answer(result, q, hits, top_k, gen_answer_, **answer_kwargs)
 
 
 if __name__ == "__main__":

@@ -159,6 +159,15 @@
   <view class="poly-panel ask-body" wx:else>
     <view class="empty-code tech-label">NO QUERY / READY</view>
   </view>
+
+  <view class="feedback-panel" wx:if="{{mode === 'ask' && result && result.trace_id && !loading}}">
+    <text wx:if="{{feedbackState === 'sent'}}">感谢反馈，已进入人工审核队列。</text>
+    <block wx:else>
+      <text>{{feedbackState === 'error' ? '反馈提交失败，请稍后重试。' : '这个回答有用吗？'}}</text>
+      <button size="mini" disabled="{{feedbackState === 'sending'}}" data-vote="useful" bindtap="onFeedback">有用</button>
+      <button size="mini" disabled="{{feedbackState === 'sending'}}" data-vote="not_useful" bindtap="onFeedback">没用</button>
+    </block>
+  </view>
 </view>
 
 <view class="asset-credit">图片素材来自：呵纹Hevon　·　画师：仓鼠饭团c</view>

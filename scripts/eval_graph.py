@@ -38,6 +38,8 @@ def main():
     ap.add_argument("--min-recall", type=float, default=0.90)
     args = ap.parse_args()
     result = evaluate(args.eval)
+    from build_eval_manifest import evaluation_metadata
+    result["metadata"] = evaluation_metadata()
     out = args.out if os.path.isabs(args.out) else os.path.join(ROOT, args.out)
     with open(out, "w", encoding="utf-8") as fh:
         json.dump(result, fh, ensure_ascii=False, indent=2)

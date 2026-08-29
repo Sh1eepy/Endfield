@@ -97,14 +97,7 @@ python scripts/audit_relation_queries.py
 python scripts/quality_gate.py
 ```
 
-当前固定评测结果：
-
-- 单元测试：45 项；
-- 检索集：71 条，Recall@5 100%，MRR 0.973；
-- 图关系集：10/10；
-- 关系正向、反向和是非问审查：1656/1656。
-
-这些数字用于防止已知能力回退，不代表所有自然语言问题都能达到 100% 正确率。
+最新固定评测数字（防回退基准）见 [PROJECT_STATE.md](PROJECT_STATE.md) ——这些数字不代表所有自然语言问题都能达到 100% 正确率。
 
 ## 项目目录
 
@@ -112,20 +105,19 @@ python scripts/quality_gate.py
 scripts/       数据构建、检索、图谱、API 和评测工具
 endfield_kb/   按分类整理的知识库
 output/        配方、索引 manifest、图谱和评测结果
-web/           Vite+React+TS 前端（src 源码 + dist 构建产物）
+web/           Vite+React+TS 前端（src 源码 + dist 构建产物；设计说明见 web/README.md）
 miniprogram/   微信小程序端页面、组件、主题与本地素材
 tests/         离线回归测试
 ```
 
 ## 继续阅读
 
-- [项目当前状态](PROJECT_STATE.md)
-- [开发说明](DEVELOPER_GUIDE.md)
-- [知识库、RAG 与知识图谱总览](KNOWLEDGE_SYSTEM_ARCHITECTURE.md)
-- [工具命令](scripts/README.md)
-- [部署说明](DEPLOYMENT.md)
-- [微信小程序说明](miniprogram/README.md)
-- [RAG 开发记录](RAG_DEVLOG.md)
+- [项目当前状态](PROJECT_STATE.md)（成果、待办、发布边界）
+- [知识系统架构总览](KNOWLEDGE_SYSTEM_ARCHITECTURE.md)（架构 + 路线图 + 门禁）
+- [开发说明](DEVELOPER_GUIDE.md) / [工具命令](scripts/README.md)
+- [部署总纲](DEPLOYMENT.md) / [自有服务器部署手册](deploy/README.md) / [API 安全](deploy/API_SECURITY.md)
+- [前端设计与实现](web/README.md) / [微信小程序说明](miniprogram/README.md)
+- [RAG 开发记录（踩坑）](RAG_DEVLOG.md) / [Agent 设计原理](AGENT_WORKFLOW_DESIGN.md)
 
 ## 数据与素材说明
 

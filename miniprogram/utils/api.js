@@ -37,7 +37,14 @@ module.exports = {
 
   /** RAG 问答（意图识别→路由→检索→可选 LLM 生成） */
   ask: (query, topK = 5, genAnswer = true) =>
-    request('/api/ask', { query, top_k: topK, gen_answer: genAnswer }, 'POST'),
+    request('/api/ask', { query, top_k: topK, gen_answer: genAnswer, client_type: 'miniprogram' }, 'POST'),
+
+  /** 用户主动反馈；只进入待人工审核隔离区 */
+  feedback: (traceId, query, vote, comment = '', observedAnswer = '') =>
+    request('/api/feedback', {
+      trace_id: traceId, query, vote, comment, observed_answer: observedAnswer,
+      client_type: 'miniprogram',
+    }, 'POST'),
 
   /** 干员详情走 synthesis 的知识库回退分支（item=干员名 → kb.sections_struct） */
   operator: (name) => request(`/api/synthesis?item=${encodeURIComponent(name)}`),

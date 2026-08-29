@@ -1,9 +1,8 @@
 # scripts - 通用工具集
 
 RAG、图谱、结构化查询的完整流程、协作规则、LLM 调用次数、截断预算和 Agent Loop 决策见
-[`../KNOWLEDGE_SYSTEM_ARCHITECTURE.md`](../KNOWLEDGE_SYSTEM_ARCHITECTURE.md)。本文件维护工具与命令。
-
-RAG 专项细节见 [`../output/RAG_TECHNICAL_OVERVIEW.md`](../output/RAG_TECHNICAL_OVERVIEW.md)。
+[`../KNOWLEDGE_SYSTEM_ARCHITECTURE.md`](../KNOWLEDGE_SYSTEM_ARCHITECTURE.md)（架构 + 路线图 + 门禁一体，
+含监控评测工具表与结果快照）。本文件只维护工具与命令。
 
 《明日方舟：终末地》**配方合成树** 项目的工具集。
 （早期「生产流水线空间规划」工具已全部移除，勿重建。）
@@ -164,13 +163,7 @@ WEB_CONCURRENCY=1 python scripts/start_server.py
 
 自动托管前端：优先 `web/dist`（Vite+React 构建产物），无 dist 时回退 `web/`。
 `/api/ask` 的 `query` 限制为 1～300 字符、`top_k` 限制为 1～10；并发满时返回 429。
-当前界面采用多轮廓卡片语言（圆角胶囊、斜切多边形、不对称圆角），背景由圆环、波浪带、
-多边形叠层构成；包含开机式入场动画、滚动视差与分区淡入，并兼容
-`prefers-reduced-motion` 减少动态效果设置。
-主工作区使用平行斜切边界与 3D 景深，背景不使用网格；克莱因蓝用于表格边缘和立体投影，
-与工业黄形成局部撞色。字体层级按标题、说明与元数据分别强化，搜索输入尺寸保持稳定。
-前端本地内置 Noto Sans SC（中文）与 Oxanium（英文/数字），许可证随字体保存；配方与问答
-分别保留独立输入。透明小人作为框边贴纸和低透明分散背景，终末地图标用于开场、顶栏与首屏。
+前端视觉设计与交互规则见 [`../web/README.md`](../web/README.md)。
 
 ## RAG 问答工具
 
@@ -259,6 +252,33 @@ p50/p95/max 延迟。指标是进程内滚动数据，服务重启会清零；�
 GitHub Actions 的 `rag-quality.yml` 会执行无网络单元测试和落盘指标门禁。在线 LLM 评判结果
 由维护者显式刷新后提交，CI 不读取密钥、也不产生模型费用。
 
+### 21. Trace、用户反馈与坏例回放（本地闭环）
+
+```bash
+# 固化数据集、索引、检索参数与 Prompt 版本
+python scripts/build_eval_manifest.py
+
+# 查看隔离区；批准时必须明确正确 route，并提供 Gold 事实、来源或“应拒答”标签
+python scripts/review_bad_cases.py list
+python scripts/review_bad_cases.py approve <feedback_id> --route rag --facts "必要事实" --sources "可接受来源"
+
+# 默认是生产检索探针：保留直取兜底，不伪造 route，也不调用 LLM
+python scripts/replay_bad_cases.py --mode retrieval
+# pipeline 会调用生产语义规划器；answer 还会生成答案，二者均需明确允许在线费用
+python scripts/replay_bad_cases.py --mode pipeline --allow-llm
+python scripts/replay_bad_cases.py --mode answer --allow-llm
+```
+
+`rag_config.py` 是模型和检索参数的单一来源；`rag_prompts.py` 是实际生产/评测 Prompt 的单一来源，
+版本由内容哈希自动生成，不再维护手写 `v1`。`build_eval_manifest.py` 会读取这些真实运行配置。
+
+`rag_trace.py` 将阶段耗时、路由、检索排名、上下文引用、模型/token 用量和版本写入
+`RAG_TRACE_DB` 指向的 SQLite。普通问答只保存查询 SHA-256 与长度，不保存查询/回答正文；
+只有用户主动点“没用”或“有用”提交时，`POST /api/feedback` 才把当次问题、可选说明和后端校验的已展示答案
+写入 `pending_review` 隔离区。反馈不会自动进入评测集或质量门禁，必须人工批准并补 Gold。
+固定评测和 Replay 共用 `eval_case.py` 的 Gold schema/确定性评分；Replay 按 retrieval → pipeline → answer
+瀑布式归因，上一层失败就停止。报告写入已忽略的 `output/eval/replay/`，避免含用户文本的产物误提交。
+
 ## 注意
 - 输出一律写 UTF-8 文件，不要只 print 到终端（Windows GBK 乱码）
 - 模型加载必须离线（HF_HUB_OFFLINE + local_files_only）
@@ -272,6 +292,7 @@ GitHub Actions 的 `rag-quality.yml` 会执行无网络单元测试和落盘指�
 python -m unittest discover -s tests -v
 python -m unittest scripts.test_query_routes -v
 python -m unittest scripts.test_api_security -v
+python -m unittest scripts.test_rag_trace -v
 node --test miniprogram/tests/ask.test.cjs
 python -m compileall -q scripts tests
 ```
@@ -302,22 +323,12 @@ Web 答案由 `AnswerMarkdown.tsx` 生成 React 节点，支持表格、列表�
 - 正式环境继续使用 `npm run build` 后的 `dist`，由 FastAPI 托管；开发端口不要暴露到公网。
   后续安装依赖使用 `npm ci`，升级后重新执行 `npm audit`、`npm test` 和 `npm run build`。
 
-## 部署
+## 部署与 API 安全
 
-根目录提供 `Dockerfile`、`compose.yaml`、`requirements.txt` 和 `railway.json`；`deploy/` 提供自有服务器的 Nginx、HTTPS、更新与回滚手册。完整构建会下载 embedding 模型并在镜像内重建 RAG，运行阶段保持离线。密钥只能通过运行环境注入，详见 [`../DEPLOYMENT.md`](../DEPLOYMENT.md)。
+根目录提供 `Dockerfile`、`compose.yaml`、`requirements.txt`、`railway.json`；`deploy/` 提供 Nginx/HTTPS/更新/回滚手册。
+完整构建会下载 embedding 模型并在镜像内重建 RAG，运行阶段离线；密钥只能通过运行环境注入。
+部署路径与设计决策见 [`../DEPLOYMENT.md`](../DEPLOYMENT.md)，操作步骤见 [`../deploy/README.md`](../deploy/README.md)。
 
-### API 安全保护（2026-08-29）
-
-`api_security.py`：可选 Bearer Token、管理接口访问控制、SQLite 事务式频率/每日请求次数限制。
-默认每 IP 每分钟 6 次、每日 60 次，全站每日 200 次（UTC 固定日期窗口）；数据库故障时拒绝问答，不放行付费调用。
-`/api/health/deep` 和 `/api/metrics` 仅限回环客户端或有效令牌；Docker 下请使用容器内检查命令。
-媒体代理禁用所有重定向，分块读取并执行 25 MiB 硬上限、拒绝压缩编码、限制下载及发送并发。
-小程序歧义候选按原模式分发，统一清理旧结果并忽略过期响应。
-Web 和小程序显示后端返回的限额/鉴权说明，非 JSON 错误保留 HTTP 状态兜底。
-
-`test_api_security.py` 模拟上游和 LLM，覆盖重定向、流大小限制、名额释放、鉴权、伪造 IP 头、共享额度和故障关闭；
-`miniprogram/tests/ask.test.cjs` 使用 Node 内置测试器和页面 API 模拟，不需要安装微信运行时。
-配置和限制边界详见 [`../deploy/API_SECURITY.md`](../deploy/API_SECURITY.md)，不要将固定访问令牌写入公开客户端。
-
-本轮验证：54 项后端基础测试、7 项检索编排测试、20 项 API 安全测试、7 项小程序页面测试、21 项 Web 测试全部通过，
-生产构建与 Python 编译检查通过。Compose YAML/回环端口/持久卷声明已校验；本轮环境无 Docker CLI，未重建容器，也未进行微信真机或线上验收。
+API 安全（`api_security.py`：可选 Bearer Token、管理接口访问控制、SQLite 事务式频率/每日次数限制、
+媒体代理重定向禁用 + 25 MiB 上限 + 并发限制）的配置与边界见 [`../deploy/API_SECURITY.md`](../deploy/API_SECURITY.md)。
+`test_api_security.py` 模拟上游和 LLM，覆盖重定向、流大小限制、名额释放、鉴权、伪造 IP 头、共享额度和故障关闭。

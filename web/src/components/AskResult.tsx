@@ -1,9 +1,13 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { AskData } from '../types'
+import { submitFeedback } from '../api'
 import AnswerMarkdown from './AnswerMarkdown'
+
+const submittedTraceIds = new Set<string>()
 
 interface Props {
   data: AskData
+  query?: string
   onPickName: (name: string) => void
 }
 
@@ -52,8 +56,14 @@ function StructuredResult({ d, onPickName }: { d: AskData; onPickName: (n: strin
 }
 
 /** 知识问答结果（/api/ask） */
-export default function AskResult({ data, onPickName }: Props) {
+export default function AskResult({ data, query = '', onPickName }: Props) {
   const rootRef = useRef<HTMLDivElement>(null)
+  const [feedback, setFeedback] = useState<'idle' | 'sending' | 'sent' | 'error'>(
+    () => data.trace_id && submittedTraceIds.has(data.trace_id) ? 'sent' : 'idle',
+  )
+  useEffect(() => {
+    setFeedback(data.trace_id && submittedTraceIds.has(data.trace_id) ? 'sent' : 'idle')
+  }, [data.trace_id])
   if (!data.ok) return null
   const intent = data.intent || '未知'
   const structured = data.route_used === 'structured'
@@ -64,6 +74,18 @@ export default function AskResult({ data, onPickName }: Props) {
     if (target) {
       target.scrollIntoView({ behavior: 'smooth', block: 'center' })
       target.style.boxShadow = '0 0 0 3px rgba(79,70,229,.25)'
+    }
+  }
+
+  const sendFeedback = async (vote: 'useful' | 'not_useful') => {
+    if (!data.trace_id || !query || feedback === 'sending' || feedback === 'sent') return
+    setFeedback('sending')
+    try {
+      await submitFeedback(data.trace_id, query, vote, '', data.feedback_snapshot || '')
+      submittedTraceIds.add(data.trace_id)
+      setFeedback('sent')
+    } catch {
+      setFeedback('error')
     }
   }
 
@@ -119,6 +141,17 @@ export default function AskResult({ data, onPickName }: Props) {
           ) : null}
         </>
       )}
+      {data.trace_id ? (
+        <div className="ask-feedback" aria-live="polite">
+          {feedback === 'sent' ? <span>感谢反馈，已进入人工审核队列。</span> : (
+            <>
+              <span>{feedback === 'error' ? '反馈提交失败，请稍后重试。' : '这个回答有用吗？'}</span>
+              <button type="button" disabled={feedback === 'sending'} onClick={() => sendFeedback('useful')}>有用</button>
+              <button type="button" disabled={feedback === 'sending'} onClick={() => sendFeedback('not_useful')}>没用</button>
+            </>
+          )}
+        </div>
+      ) : null}
     </div>
   )
 }

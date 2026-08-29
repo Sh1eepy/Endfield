@@ -16,6 +16,7 @@ env/
 
 # ===== 运行时产物（大文件/可重建） =====
 output/rag/chroma/
+output/eval/replay/
 logs/
 *.log
 

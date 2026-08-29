@@ -449,6 +449,24 @@
   font-size: 14px;
 }
 
+.feedback-panel {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 22rpx;
+  padding: 18rpx 22rpx;
+  border-top: 1px dashed var(--border);
+  color: var(--sub);
+  font-size: 22rpx;
+}
+.feedback-panel button {
+  margin: 0;
+  color: var(--klein);
+  background: var(--panel2);
+  border-radius: 2rpx;
+}
+
 .empty-code {
   font-size: 10px;
   color: #867600;

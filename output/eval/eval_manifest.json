@@ -1,0 +1,58 @@
+{
+  "schema_version": 2,
+  "index_manifest_sha256": "f69ba69927e5f2979e2f2fbd764b7afb55171841945ee565b0aed003f3865e91",
+  "embedding_model": "BAAI/bge-small-zh-v1.5",
+  "llm_model": "deepseek-v4-flash",
+  "prompt_versions": {
+    "intent": "sha256:c5856069f5ef4abc",
+    "semantic_plan": "sha256:086f8212123a4767",
+    "answer": "sha256:aac1e18c8eee287b",
+    "judge": "sha256:f4610cda14bcc64f"
+  },
+  "retrieval": {
+    "bm25_top_n": 20,
+    "vector_top_n": 20,
+    "name_top_n_min": 10,
+    "rrf_k": 60,
+    "final_top_k": 5
+  },
+  "datasets": {
+    "retrieval": {
+      "path": "output/eval/eval_set.jsonl",
+      "sha256": "1955ea0f1e74b7f26131ae3a8f6e7be874d371e3565c933a61a5342511545b92",
+      "rows": 71
+    },
+    "routing": {
+      "path": "output/eval/routing_eval_set.jsonl",
+      "sha256": "fac4edc4d582d445d44e62a7c44e7f88cca7ff3217995322e7bc7df3b60a0fa2",
+      "rows": 25
+    },
+    "answer": {
+      "path": "output/eval/answer_eval_set.jsonl",
+      "sha256": "fa9fcb4fb0a1764e43f86d25f66983900687847dc7d31d128fc305f3e334a21b",
+      "rows": 6
+    },
+    "graph": {
+      "path": "output/eval/graph_eval_set.jsonl",
+      "sha256": "599e4672a971e0ba68d83ee9d506c9292fb401325f9e55c9a84325994d0495e3",
+      "rows": 10
+    }
+  },
+  "sets": {
+    "dev": [
+      "retrieval",
+      "routing"
+    ],
+    "holdout": [],
+    "challenge": [],
+    "production_sample": []
+  },
+  "privacy": {
+    "ordinary_trace_query": "sha256+length",
+    "feedback_query": "explicit_user_submission"
+  },
+  "manifest_id": "sha256:68c487ffcdcb2ec36fe690c8659707b0bbee60c6e04498ed4fc81d788fbd52f2",
+  "git_commit": "ab085c1467346f47d6f24668b9b6ed3866d2b36d",
+  "git_dirty": true,
+  "generated_at": "2026-08-29T07:53:26.754803+00:00"
+}

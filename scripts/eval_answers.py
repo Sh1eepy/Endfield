@@ -3,29 +3,17 @@
 import argparse
 import json
 import os
-import re
 import sys
 
 if sys.stdout:
     sys.stdout.reconfigure(encoding="utf-8")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
+from rag_prompts import PROMPT_VERSIONS, load_judge_prompt  # noqa: E402
+from scripts.eval_case import deterministic_score  # noqa: E402
 
-
-def deterministic_score(case, result):
-    """用必要词、引用和拒答标注做可复现的基础答案评分。"""
-    answer = str(result.get("answer") or "")
-    should_refuse = bool(case.get("should_refuse"))
-    refused = bool(result.get("rejected")) or "未找到" in answer or "不足" in answer
-    terms = case.get("required_terms") or []
-    sources = {str(x.get("name") or "") for x in result.get("sources") or []}
-    accepted = set(case.get("acceptable_sources") or [])
-    return {
-        "refusal_correct": refused == should_refuse,
-        "required_terms_coverage": round(sum(t in answer for t in terms) / len(terms), 4) if terms else 1.0,
-        "citation_present": should_refuse or bool(re.search(r"\[来源\d+\]", answer)),
-        "source_overlap": should_refuse or not accepted or bool(sources & accepted),
-    }
+JUDGE_PROMPT_VERSION = PROMPT_VERSIONS["judge"]
 
 
 JUDGE_KEYS = {
@@ -72,13 +60,17 @@ def main():
     args = ap.parse_args()
     from rag_ask import ask
     from llm_client import llm
-    cases = [json.loads(x) for x in open(os.path.join(ROOT, args.eval), encoding="utf-8") if x.strip()]
+    from build_eval_manifest import evaluation_metadata
+    with open(os.path.join(ROOT, args.eval), encoding="utf-8") as fh:
+        cases = [json.loads(x) for x in fh if x.strip()]
     selected = [c for c in cases if not args.only or args.only in c["query"]]
     details = []
     out = os.path.join(ROOT, args.out)
     if args.merge_existing and os.path.exists(out):
-        details = json.load(open(out, encoding="utf-8")).get("details", [])
+        with open(out, encoding="utf-8") as fh:
+            details = json.load(fh).get("details", [])
     replacements = {}
+    judge_system, judge_suffix = load_judge_prompt()
     for case in selected:
         result = ask(case["query"], top_k=5, gen_answer_=True)
         scores = deterministic_score(case, result)
@@ -88,8 +80,8 @@ def main():
                                  "answer": result.get("answer"), "sources": result.get("sources", [])}, ensure_ascii=False)
             try:
                 item["judge"] = llm.chat_json(
-                    prompt + "\n按忠实度、完整性、相关性、引用正确性分别给0/1/2分，并给reason。",
-                    system="你是严格的RAG答案审计员，只输出JSON；没有来源支持的事实不得给忠实度满分。")
+                    prompt + "\n" + judge_suffix, system=judge_system)
+                item["judge_prompt_version"] = JUDGE_PROMPT_VERSION
             except Exception as exc:
                 item["judge_error"] = type(exc).__name__
         replacements[case["query"]] = item
@@ -97,7 +89,8 @@ def main():
     details.extend(replacements.values())
     summary = summarize(details)
     with open(out, "w", encoding="utf-8") as f:
-        json.dump({"summary": summary, "details": details}, f, ensure_ascii=False, indent=2)
+        json.dump({"metadata": evaluation_metadata(), "summary": summary, "details": details},
+                  f, ensure_ascii=False, indent=2)
     print(json.dumps(summary, ensure_ascii=False, indent=2))
 
 

@@ -1,103 +1,76 @@
-# DEPLOYMENT.md — Docker、自有服务器与 Railway 部署
+# DEPLOYMENT.md — 部署总纲
+
+> 更新日期：2026-08-29。本文是部署入口总纲：路径选择、关键设计决策与验收清单；
+> 详细操作步骤见 [`deploy/README.md`](deploy/README.md)（自有服务器）、`deploy/API_SECURITY.md`（安全与限流）。
 
 ## 推荐架构
 
-已有服务器和子域名时，推荐直接使用 `compose.yaml` 运行应用，并由宿主机 Nginx 提供 HTTPS、反向代理和 `/api/ask` 限流：
+已有服务器和子域名时，推荐 `compose.yaml` 运行应用 + 宿主机 Nginx 提供 HTTPS/反向代理/限流：
 
 ```text
 子域名 → Nginx/HTTPS → 127.0.0.1:8000 → Docker Compose → FastAPI + Web + RAG
 ```
 
-完整命令、更新和回滚步骤见 [`deploy/README.md`](deploy/README.md)。没有自有服务器时才需要 Railway。
-朋友提供服务器时的逐步权限交接见 [`deploy/FRIEND_SERVER_HANDOFF.md`](deploy/FRIEND_SERVER_HANDOFF.md)。
-网页使用相对路径访问 `/api/*`，因此两种部署都不需要拆分前端服务。
+网页使用相对路径访问 `/api/*`，因此任何部署都不需要拆分前端服务。没有自有服务器时才用 Railway。
+朋友提供服务器时的权限分工见 `deploy/README.md` 第 0 节「协作模式」。
 
-## 为什么镜像构建时重建 RAG
+## 关键设计决策（为什么这么做）
 
-`output/rag/chroma/` 和本机 Hugging Face 模型缓存不进入 Git：前者可重建，后者体积大。Dockerfile 在构建阶段：
+- **镜像构建时重建 RAG**：`output/rag/chroma/` 和 HF 模型缓存不进入 Git（前者可重建、后者体积大）。
+  Dockerfile 构建阶段装 CPU 版 torch（避免 CUDA 库入镜像）→ 下载 `bge-small-zh-v1.5` → `HF_HUB_OFFLINE=1`
+  → 从 `endfield_kb/*.jsonl` 全量重建 Chroma/BM25/manifest → 运行阶段完全离线。
+  首次构建慢且镜像大，这是完整离线 RAG 的成本；不要把真实密钥烘焙进镜像。
+- **容器只监听 127.0.0.1:8000**：公网入口统一交给 Nginx，绝不改成 `0.0.0.0:8000`。
+- **应用层也有保护**：问答 `query` 1~300 字符、`top_k` 1~10；每 IP 每分钟 6 次 / 每日 60 次 /
+  全站每日 200 次（UTC 日窗口，SQLite 计数走 Compose 命名卷跨重建保留）；可选 Bearer 令牌私有模式；
+  反馈接口使用同一 SQLite 的独立限额，并校验 Trace、客户端、问题和回答快照；
+  详见 `deploy/API_SECURITY.md`。
+- **问答 Trace 数据**：`RAG_TRACE_DB` 配置，Compose 默认放持久卷。普通 Trace 不含问题/答案正文，
+  用户主动反馈才保存当次文本——该库与回放报告应按用户内容处理（限制管理员访问、纳入保留期、不提交 Git）。
+- **公网只开 80/443**，不能直接暴露容器 8000 端口。
 
-1. 安装锁定版本的 Python 依赖，并从 PyTorch 官方 CPU 仓库安装 CPU 版 torch，避免把无用 CUDA 运行库打进镜像；
-2. 下载 `BAAI/bge-small-zh-v1.5` 到镜像缓存；
-3. 切换 `HF_HUB_OFFLINE=1`；
-4. 从 `endfield_kb/*.jsonl` 全量重建 Chroma、BM25 和 manifest；
-5. 运行阶段保持离线，不再访问 Hugging Face。
+## 三条部署路径
 
-首次构建会较慢且镜像较大，这是完整离线 RAG 的成本。后续如果构建时间成为问题，可把索引和模型制作成单独基础镜像，但不要把真实密钥烘焙进镜像。
+| 路径 | 何时用 | 入口 |
+|---|---|---|
+| 本地 Docker | 本机验证/离线开发 | 见下「本地 Docker」 |
+| 自有服务器 + 子域名 | 正式生产（推荐） | [`deploy/README.md`](deploy/README.md) 完整步骤 |
+| Railway | 无自有服务器 | 见下「Railway」 |
 
-## 本地 Docker
+### 本地 Docker
 
-需要先安装并启动 Docker Desktop：
+需要 Docker Desktop。不传 `.env` 时配方树/设备卡/知识库回退仍可用；在线 LLM 回答才需要注入 `LLM_API_KEY` 等：
 
 ```powershell
 docker build -t endfield-synthesis .
 docker run --rm -p 127.0.0.1:8000:8000 --env-file .env -e ASK_BUDGET_DB=/var/lib/endfield-security/ask-budget.sqlite3 -v endfield-api-security:/var/lib/endfield-security endfield-synthesis
 ```
 
-浏览器打开 `http://127.0.0.1:8000`，验证：
+浏览器打开 `http://127.0.0.1:8000`；`curl http://127.0.0.1:8000/api/health` 验证。
 
-```powershell
-curl http://127.0.0.1:8000/api/health
-curl "http://127.0.0.1:8000/api/synthesis?item=重息壤"
-```
+### Railway
 
-不传 `.env` 时，配方树、设备卡和知识库回退仍可用；需要在线 LLM 生成回答时，通过运行环境注入 `LLM_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL`。
+1. 推仓库到 GitHub，Railway 建项目选该仓库（`railway.json` 选 Dockerfile 构建）；
+2. 设置 LLM 环境变量 + `ASK_MAX_CONCURRENCY=2`；首次 `WEB_CONCURRENCY=1`，确认内存余量后再提（每 worker 独立加载模型/索引）；不要上传 `.env`；
+3. 挂持久卷，`ASK_BUDGET_DB` 指向卷内文件（避免重建清零；多主机副本不能共用独立计数库）；健康检查 `/api/health` 超时 300s；
+4. 生成域名后抽检配方树与问答。Railway 注入 `PORT`，容器自动使用。
 
-## 自有服务器 + 子域名
-
-仓库已提供：
-
-- `compose.yaml`：只绑定 `127.0.0.1:8000`、默认单 worker、容器健康检查、自动重启和日志轮转；
-- `deploy/nginx/endfield.conf`：反向代理、付费问答按 IP 限流、并发限制和代理超时；
-- `deploy/README.md`：DNS、Docker、Nginx、Certbot、上线验收、更新、回滚和排障步骤。
-
-首次上线保持：
-
-```dotenv
-WEB_CONCURRENCY=1
-ASK_MAX_CONCURRENCY=2
-```
-
-FastAPI 还会限制问答 `query` 为 1～300 字符、`top_k` 为 1～10；并发或次数超限返回 HTTP 429。
-默认应用层限制：每 IP 每分钟 6 次、每日 60 次、全站每日 200 次（UTC 日期窗口），SQLite 计数通过 Compose 命名卷跨重建保留。
-鉴权、管理接口、可信代理 IP 和计数持久化详见 [`deploy/API_SECURITY.md`](deploy/API_SECURITY.md)。
-公网只开放 80/443，不能直接暴露容器的 8000 端口。
-
-## Railway
-
-1. 把仓库推送到 GitHub。
-2. Railway 新建项目并选择该 GitHub 仓库；`railway.json` 会选择 Dockerfile 构建。
-3. 在 Railway Variables 中设置 LLM 环境变量、`ASK_MAX_CONCURRENCY=2`。首次部署建议设置 `WEB_CONCURRENCY=1`，
-   确认内存余量后再逐步提高到 2-4；每个 worker 都会各自加载 embedding 模型与 RAG 索引。
-   不要上传 `.env`，不要把 Key 写入 Dockerfile。
-4. 挂载持久卷，把 `ASK_BUDGET_DB` 指向卷内文件，避免重建清零；多主机副本不能各用独立计数库。
-   等待构建完成；健康检查路径为 `/api/health`，超时为 300 秒。
-5. 生成公开域名后访问根路径，抽检配方树与知识问答。
-
-Railway 会注入 `PORT`，容器启动命令自动使用它。若模型下载阶段失败，优先检查构建网络和磁盘/内存额度，不要关闭运行阶段的离线设置来绕过问题。
+模型下载失败先查构建网络与磁盘/内存额度，不要关闭运行阶段离线设置绕过。
 
 ## 微信小程序连接后端
 
-开发者工具模拟器可以使用 `miniprogram/app.js` 中默认的 `http://127.0.0.1:8000`。真机调试时需要改成电脑局域网 IP，
-并确保 FastAPI 监听 `0.0.0.0`、手机与电脑同网且 Windows 防火墙允许对应端口。
-
-正式发布时使用 Railway 或其他服务生成的 HTTPS 域名：
-
-1. 把 `miniprogram/app.js` 的 `apiBase` 改为该 HTTPS 域名，不要带末尾斜杠；
-2. 在微信公众平台把域名加入 request 合法域名；
-3. 用真机分别抽检 `/api/health`、名称联想、配方树、知识问答、图片和语音；
-4. 不要上传 `.env`，API Key 只放在后端服务变量中，不能写进小程序代码。
-
-微信开发者工具的 `project.private.config.json` 只记录个人本地设置，已加入 `.gitignore`；公共的
-`project.config.json` 继续进入版本控制。
+模拟器用默认 `http://127.0.0.1:8000`；真机改 `miniprogram/app.js` 的 `apiBase` 为电脑局域网 IP（后端绑 `0.0.0.0`、同网、防火墙放行）。
+正式发布改为 HTTPS 域名 + 微信公众平台配置 request 合法域名，API Key 只放后端。详见 `miniprogram/README.md`。
 
 ## 发布前验收
 
 ```powershell
 python -m unittest discover -s tests -v
 python -m unittest scripts.test_api_security -v
+python -m unittest scripts.test_rag_trace -v
 node --test miniprogram/tests/ask.test.cjs
 python -m compileall -q scripts tests
 python scripts/eval_retrieval.py --out output/eval/final_reviewed.json
 ```
 
-2026-08-21 已完成本地 Docker 镜像构建、容器启动和基础接口验证。任何公网环境上线后仍需使用正式域名复核健康检查、配方树与知识问答。
+任何公网环境上线后，仍需用正式域名复核健康检查、配方树与知识问答（本机模拟不能当线上验收）。

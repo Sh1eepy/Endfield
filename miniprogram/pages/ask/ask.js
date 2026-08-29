@@ -31,6 +31,7 @@ Page({
     hits: [],             // [{name, category, text}]
     hitsOpen: false,
     highlightSrc: 0,      // 高亮来源序号（引用角标点击后短暂高亮）
+    feedbackState: 'idle', // idle / sending / sent / error
   },
 
   onLoad(options) {
@@ -54,6 +55,7 @@ Page({
       route: '', recipeCard: null, deviceProducts: null, ambiguous: null,
       intent: '', routeTag: '', answerSegs: [], rejected: false,
       sources: [], hits: [], hitsOpen: false, highlightSrc: 0,
+      feedbackState: 'idle',
     });
     return this._queryId;
   },
@@ -302,6 +304,17 @@ Page({
   // 检索片段折叠开关
   onHitsToggle() {
     this.setData({ hitsOpen: !this.data.hitsOpen });
+  },
+
+  onFeedback(e) {
+    const vote = e.currentTarget.dataset.vote;
+    const result = this.data.result;
+    if (!result || !result.trace_id || !this.data.query ||
+        this.data.feedbackState === 'sending' || this.data.feedbackState === 'sent') return;
+    this.setData({ feedbackState: 'sending' });
+    return api.feedback(result.trace_id, this.data.query, vote, '', result.feedback_snapshot || '')
+      .then(() => this.setData({ feedbackState: 'sent' }))
+      .catch(() => this.setData({ feedbackState: 'error' }));
   },
 
   // 歧义候选 → 按当前模式查询，配方模式不能走知识问答 API。

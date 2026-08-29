@@ -42,8 +42,12 @@ if sys.stdout:
 
 import jieba
 from rank_bm25 import BM25Okapi
+try:
+    from scripts.rag_config import EMBEDDING_MODEL
+except ModuleNotFoundError:  # `python scripts/build_rag.py`
+    from rag_config import EMBEDDING_MODEL
 
-MODEL_NAME = "BAAI/bge-small-zh-v1.5"
+MODEL_NAME = EMBEDDING_MODEL
 BGE_QUERY_INSTRUCTION = "为这个句子生成表示以用于检索相关文章："
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # 切分/前缀/元数据策略变化时递增；让 --incremental 能感知“代码变了但原文没变”。

@@ -4,8 +4,8 @@
 > 它是 `KNOWLEDGE_SYSTEM_ARCHITECTURE.md`（现状）、`RAG_DEVLOG.md`（决策记录）、`DEPLOYMENT.md`（运维）与
 > `tests/`（验收）的"设计理由"合订本：架构文档讲"是什么"，本文讲"为什么"。
 >
-> 阅读建议：先看 §1 现状快照，再看 §2 核心概念（一句话理解这个 Agent），§4 是 Agent Loop 设计重点，
-> §8 是踩坑索引（可直接检索），§9 是给别人项目可搬走的经验。
+> 阅读建议：先看 §1 现状快照，再看 §2 核心概念（一句话理解这个 Agent），§3.3 是线上质量闭环，
+> §4 是 Agent Loop 设计重点，§8 是踩坑索引（可直接检索），§9 是给别人项目可搬走的经验。
 
 ---
 
@@ -13,7 +13,7 @@
 
 ### 1.1 一句话
 
-用户输入物品/设备名（搜索框模糊联想）→ 前端 D3 配方合成树（叶子收敛到基础资源）；
+用户输入物品/设备名（搜索框模糊联想）→ 前端 React SVG 配方合成树（叶子收敛到基础资源）；
 无配方物品回退知识库显示其信息；知识问答模式由"确定性编排管线 + 可选 LLM"回答。
 
 ### 1.2 当前进度快照
@@ -25,15 +25,17 @@
 | 图谱 | ✅ 2129 实体 / 9358 关系，带来源与原文证据，增量更新 | `output/knowledge_graph/graph.db` |
 | 问答 | ✅ 路由漏斗（枚举/直查/图/多路 RAG）+ 可选 LLM 生成带引用回答 | `scripts/rag_ask.py` |
 | 评测 | ✅ 71 条检索集 Recall@5=100%、MRR=97.3%；图评测 10/10；关系审查 1656/1656 | `output/eval/` |
-| 验收 | ✅ 54 个离线单测 + CI 质量门禁（`rag-quality.yml`） | `tests/` |
+| 可观测与坏例闭环 | ✅ 脱敏 Trace、LLM token usage、Web/小程序反馈入口、隔离审核、Replay 与建议归因 | `scripts/rag_trace.py`、`scripts/replay_bad_cases.py` |
+| 验收 | ✅ 54 个基础单测 + 34 个路由/安全/Trace 专项测试 + Web/小程序测试 + CI 质量门禁 | `tests/`、`scripts/test_*.py` |
 | 发布 | ✅ Docker 镜像本地构建与容器运行验证通过；Compose/Nginx/HTTPS/回滚手册齐备 | `DEPLOYMENT.md` |
-| 待办 | ⏳ 公网部署（需服务器权限）；小程序真机验收；困难评测集扩充；reranker / 受限补检索循环**未经评测证明收益前不引入** | `RAG_UPGRADE_PLAN.md` |
+| 待办 | ⏳ 公网部署（需服务器权限）；小程序真机验收；困难集积累与 Judge 校准；reranker / 受限补检索循环**未经评测证明收益前不引入** | `KNOWLEDGE_SYSTEM_ARCHITECTURE.md`（路线图） |
 
 ### 1.3 发布边界（为什么长这样）
 
 - 服务默认单 worker（每个 worker 会独立加载 embedding 模型与索引，小内存服务器扛不住多份）；
-- 公网只开 80/443，容器只绑 `127.0.0.1:8000`，知识问答的 IP 限流由 Nginx 执行；
-- `/api/health/deep` 与 `/api/metrics` 仅服务器本机可见（Nginx `allow 127.0.0.1`）。
+- 公网只开 80/443，容器只绑 `127.0.0.1:8000`；Nginx 与应用层 SQLite 共同限制问答频率和额度；
+- `/api/health/deep` 与 `/api/metrics` 只允许回环客户端或有效管理令牌访问；
+- 问答 Trace 与请求额度库放在持久卷中，部署更新不清零；包含用户主动反馈正文的数据库按用户内容保护。
 
 ---
 
@@ -98,7 +100,8 @@ query ──► 规则/正则（零成本）
 ```text
 POST /api/ask {query, top_k, gen_answer}
   │  ① Pydantic 校验：query 1~300 字、top_k 1~10、空白拒绝
-  │  ② 信号量限流：每 worker 同时最多 ASK_MAX_CONCURRENCY 个问答，满则 429
+  │  ② Bearer Token（可选）+ SQLite 每 IP/每日/全站额度 + worker 信号量，超限 429
+  │  ③ 创建脱敏 trace_id（存查询哈希和长度，不存问题正文）
   ▼
 ask() 路由漏斗（rag_ask.py）
   0. 枚举查询（"有哪些/列举"）→ 知识库分类内过滤枚举 →（可选）LLM 分组整理
@@ -108,7 +111,49 @@ ask() 路由漏斗（rag_ask.py）
      ├─ 明确关系/多跳 → 图谱路径 + 证据 → 图未命中回退 RAG
      └─ 开放问题 → 多路检索（RAG + 子查询 + 全文关键词 + mention）→ 合并去重
   3. （可选）LLM 基于检索片段生成带 [来源N] 引用的回答；低相关 → 诚实拒答
+  4. 写入阶段耗时、路由、检索排名、引用、模型/token 用量与版本；响应体和 X-Trace-ID 返回 trace_id
 ```
+
+Trace 是旁路能力：创建或落盘失败时直接降级为无 Trace 问答，不允许可观测性故障拖垮主请求。
+`llm_client.py` 通过请求上下文 observer 透出 usage，但 `chat()` / `chat_json()` 的返回类型保持不变，
+因此旧调用和离线测试不需要理解 Trace。
+
+### 3.3 线上质量闭环（从“答错了”到“以后不再错”）
+
+```text
+固定基线：数据集 hash + 索引 hash + Git commit + 检索参数 + Prompt 版本
+      │
+线上问答 ──► 脱敏 Trace（阶段/路由/排名/耗时/usage，不存正文）
+      │
+用户主动点“有用/没用” ──► feedback 隔离区（此时才保存问题与当时答案）
+      │
+管理员审核 ──► 无效样本驳回 / 补必要事实、可接受来源、正确路线或应拒答 Gold
+      │
+approved_regression ──► retrieval / pipeline / answer Replay
+      │
+候选结果 + 建议归因 ──► 人工确认 ──► 修代码/数据/索引 ──► 固定集防回归
+```
+
+这条链路是本项目“Agent 会越来越可靠”的工程基础，但它**不是让 Agent 自动学习线上输入**：
+
+- `rag_config.py` 集中模型/检索参数，`rag_prompts.py` 集中实际 Prompt 并按内容自动生成版本哈希；
+  `build_eval_manifest.py` 从这两个运行时真相源固化比较条件，不保存无法解析的静态占位符；
+- 普通 Trace 只保存查询 SHA-256、长度和脱敏阶段元数据。语义计划中的实体、关键词、改写文本也不原样落库，
+  只保留数量、白名单路由和查询哈希；
+- `POST /api/feedback` 受独立额度/可选令牌保护，必须提交真实 `trace_id`、匹配的 query hash、客户端和
+  后端回答快照；同一 Trace 的相同提交幂等，冲突提交拒绝；
+- 所有反馈先进入 `pending_review`，**不会自动进入评测集、索引、Prompt 或质量门禁**；
+- 管理员批准样本时必须明确 `expected_route`；非拒答样本还要补必要事实或可接受来源，防止 Gold 残缺；
+- 固定评测和 Replay 共用 `eval_case.py` 的 Gold schema 与确定性评分，避免两套口径漂移；
+- Replay 默认 `retrieval` 是保留生产直取兜底的纯检索探针，不伪造 `route_used`；`pipeline` 和 `answer`
+  都可能调用语义规划 LLM，必须显式添加 `--allow-llm`；
+- 归因按 retrieval → pipeline → answer 瀑布执行，上一层失败就停止，图缺边/实体单列 `GRAPH_MISSING`；
+- 自动归因只给建议（如 `ROUTE_WRONG`、`RECALL_MISS`、`FUSION_DROP`、`GRAPH_MISSING`、
+  `GENERATION_INCOMPLETE`），最终结论必须人工确认。
+
+**为什么不直接把点踩样本拿去训练/调参**：用户反馈可能是误触、主观不满、恶意输入或过期事实；
+如果未经隔离和 Gold 审核就进入门禁，系统会把噪声当目标，甚至让线上输入反向污染正式知识库。
+所以这套闭环追求的是“可复现地发现和修复失败”，不是“无人审核的在线自学习”。
 
 ---
 
@@ -265,8 +310,12 @@ L3 LLM 兜底：仅当规则未命中且配置了 key 才调用 chat_json（conf
 
 - `AskRequest`：`query` 1~300 字（strip 后拒绝空白）、`top_k` 1~10（Pydantic `ge/le`）；
 - `/api/synthesis`：空 item 拒绝、负 max_depth 拒绝；
+- `/api/ask` 可配置 Bearer Token；未配置时仍不是无限匿名服务，SQLite 会以事务方式执行
+  每 IP 每分钟、每 IP 每日和全站每日额度，多个 worker 共享同一计数库；计数库异常时付费问答 fail closed；
 - 每 worker 用 `threading.BoundedSemaphore(ASK_MAX_CONCURRENCY=2)` 限制同时执行的付费问答，
   满则返回 429 + `Retry-After: 3`（**进程内并发上限，防止慢 LLM 请求耗尽线程和额度**）；
+- `/api/feedback` 不凭空接受问题：独立限流并复用可选 Bearer Token；必须绑定已有随机 `trace_id`，
+  query hash、客户端和后端回答快照均须一致；相同重试幂等、冲突提交拒绝，避免直接向隔离区灌入文本；
 - worker 数默认 1（`WEB_CONCURRENCY` 环境变量控制），避免小内存服务器重复加载模型。
 
 ### 5.3 网络与容器安全
@@ -275,19 +324,21 @@ L3 LLM 兜底：仅当规则未命中且配置了 key 才调用 chat_json（conf
 |---|---|
 | 防火墙 | 公网只开放 80/443，**不开放 8000** |
 | Nginx | `/api/ask` 单 IP 平均 6 次/分钟、burst 2、并发 1，超限返回 JSON 429 + `Retry-After` |
-| Nginx | `/api/health/deep`、`/api/metrics` 仅允许 127.0.0.1 / ::1（`allow/deny`） |
+| 应用 | `/api/health/deep`、`/api/metrics` 仅允许回环客户端或有效管理令牌；不信任未配置代理来源的转发头 |
 | Nginx | `server_tokens off`、`client_max_body_size 16k`、nosniff/SAMEORIGIN/Referrer-Policy 头 |
 | Nginx | 代理模式（Cloudflare）需按官方网段配置 `real_ip`，**不无条件信任 X-Forwarded-For** |
-| Compose | 只绑 `127.0.0.1:8000`、`cap_drop: ALL`、`no-new-privileges`、`pids_limit: 256`、日志轮转 10m×3 |
+| Compose | 只绑 `127.0.0.1:8000`、安全计数/Trace SQLite 持久卷、`cap_drop: ALL`、`no-new-privileges`、`pids_limit: 256`、日志轮转 10m×3 |
 | 容器 | 健康检查（`/api/health`）、`restart: unless-stopped`、`init: true` |
 
 **设计理由**：知识问答调用付费 LLM，必须把"谁能触发付费"和"触发频率"都管住。
-限流放 Nginx（按 IP）而不只靠应用内信号量（按进程），两层各管一件事。
+Nginx 处理边缘突发，应用 SQLite 处理跨 worker 的分钟/每日总额度，信号量限制当前进程资源占用；
+三层解决的问题不同，任何一层都不能替代另外两层。
 
 ### 5.4 内容安全
 
 - **媒体代理白名单**（`/api/media`）：仅 `https` + 主机名必须 `bbs.hycdn.cn` + 路径必须以
-  `/image/` 或 `/audio/` 开头 + 大小 ≤25MB + 上游 content-type 必须是 image/audio ——
+  `/image/` 或 `/audio/` 开头 + **禁止跟随重定向** + 流式读取硬限制 ≤25MB + 拒绝压缩编码 +
+  上游 content-type 必须是 image/audio + 下载/发送并发有界 ——
   这是**SSRF 的最小化实践**：代理必须明确"允许代理什么"，而不是"禁止代理什么"；
 - **图谱写入白名单**：LLM 永远不能写正式图；只有规则构建器能加边，且每条边带来源与证据；
 - **规划器输出白名单**：LLM 计划字段枚举校验（§4.3）；
@@ -298,6 +349,18 @@ L3 LLM 兜底：仅当规则未命中且配置了 key 才调用 chat_json（conf
 - 原始 WIKI JSON 只读；解析不到的内容**如实报告，不补写猜测数据**；
 - 抓取、提取失败如实上报（"抓不到如实报告，禁止编造"是项目级纪律，见 `AGENTS.md`）；
 - 评测数字是"固定规则和固定数据上的回归结果"，文档明确"不应表述为所有自然语言问题 100% 正确"。
+
+### 5.6 Trace 与用户反馈隐私
+
+| 数据 | 默认保存 | 明确不保存 / 约束 |
+|---|---|---|
+| 普通 Trace | query SHA-256、长度、客户端类型、路由、阶段耗时、脱敏检索引用、usage、版本 | 不保存问题/答案正文；不原样保存实体、关键词和改写查询 |
+| 主动反馈 | 问题、可选说明、当时显示的答案、vote、关联 trace_id | 仅用户点击后写入；先隔离，不自动训练或进入门禁 |
+| Replay 报告 | 已批准样本的 baseline/candidate 与建议归因 | 写入 Git 忽略目录；答案模式需显式允许在线调用 |
+
+Trace SQLite 和 Replay 报告可能含用户主动提交的正文，所以它们属于运行数据而不是源码：默认位于
+`logs/` 或 `output/eval/replay/`（均不进 Git），生产环境放受限持久卷并设置访问权限与保留周期。
+可观测性的目标是定位失败，不是尽可能多地收集用户内容。
 
 ---
 
@@ -313,6 +376,8 @@ L3 LLM 兜底：仅当规则未命中且配置了 key 才调用 chat_json（conf
 | 问答并发满 | HTTP 429 + Retry-After | 不排队打爆 LLM 额度 |
 | 媒体上游失败 | HTTP 502；前端显示明确加载失败状态 | 页面不白屏 |
 | 索引/BM25 分片损坏 | `build_rag --incremental` 自愈（缺失/陈旧/损坏/多余分片自动重建） | 索引可恢复 |
+| Trace 创建/写入失败 | 捕获异常，继续执行原问答；响应不带 trace_id | 可观测性故障不扩大为业务故障 |
+| token usage 缺失 | 该调用仍记录模型、阶段、耗时和状态，token 字段为空 | 兼容不返回 usage 的 OpenAI 兼容服务 |
 | 容器崩溃 | `restart: unless-stopped` + 健康检查 | 自动拉起 |
 | 新版本失败 | git 回滚到上一提交重新构建（§7.4） | 版本可恢复 |
 
@@ -332,6 +397,8 @@ L3 LLM 兜底：仅当规则未命中且配置了 key 才调用 chat_json（conf
 | 事实源（只读） | WIKI 原始 JSON | ❌（大文件，可重新采集） | 重新采集 |
 | 规范产物 | `endfield_kb/` | ✅ | 由 build_kb_all 重建 |
 | 派生产物 | `output/rag/`（含 Chroma）、`graph.db` | ❌（可重建） | Dockerfile 构建时自动重建 |
+| 评测基线 | 固定评测集、`eval_manifest.json`、已审定结果 | ✅ | 用于复现和比较版本，不含线上用户正文 |
+| 运行状态 | 请求额度 SQLite、Trace/feedback SQLite、Replay 报告 | ❌ | 独立持久化；可能含用户主动反馈，不能随源码公开 |
 | 模型缓存 | `BAAI/bge-small-zh-v1.5` | ❌（体积大） | 构建阶段下载 |
 
 **设计理由**：把"可重建的东西"排除出版本控制，仓库保持轻量且可复现；
@@ -381,6 +448,16 @@ git switch master                   # 确认恢复后再回主分支
 Railway：Variables 设置，不上传 .env，不把 Key 写入 Dockerfile
 小程序：apiBase 指向 HTTPS 域名，Key 只放后端，绝不写进小程序代码
 ```
+
+### 7.6 评测版本与坏例资产的恢复边界
+
+`eval_manifest.json` 把 Git commit、工作区是否 dirty、四类固定数据集 hash、索引 manifest hash、
+实际 embedding/LLM 模型、按内容自动生成的 Prompt 版本以及 BM25/向量/RRF/top-k 参数绑成可比较基线。
+它解决的是“这两个分数是否在同一条件下产生”，不是替代实际评测结果。
+
+线上 feedback 数据库不随 Git 回滚：代码回到旧版本后，历史 Trace 与反馈仍保留在持久卷中；
+Replay 报告按时间戳新建、不覆盖旧运行。这样代码版本、索引版本、当时回答和候选回答能同时追溯，
+也避免为了回滚应用而误删坏例证据。若必须清理用户数据，应按明确的反馈 ID/保留期执行，而不是删除整个项目目录。
 
 ---
 
@@ -441,6 +518,17 @@ Railway：Variables 设置，不上传 .env，不把 Key 写入 Dockerfile
 | 27 | 多 worker 小内存服务器 **OOM** | 每个 worker 各加载一份模型+索引 | 默认 `WEB_CONCURRENCY=1`，确认内存余量后再逐步提高 |
 | 28 | 部署密钥泄漏（截图/日志/聊天） | 人为疏忽 | 手册明令禁止展示 `.env`；权限 600；`.env` 不入 Git |
 
+### 8.6 评测、Trace 与坏例闭环
+
+| # | 坑 | 根因 | 修复与防线 |
+|---|---|---|---|
+| 29 | Recall@5=100% 被误解为“检索已解决” | 71 条集偏小且生成时存在 core 子串约束；同时 Precision@5 约 0.42 | 把它定义为开发回归集而非真实用户分布；后续另建 holdout/challenge/hard negatives |
+| 30 | 只看本次分数，无法解释为什么变化 | 数据、索引、Prompt、代码或参数可能同时变化 | `eval_manifest.json` 固化各层 hash、版本和检索参数；dirty 状态明确记录 |
+| 31 | Trace 为排障方便而意外保存用户语义文本 | semantic plan 内含实体、关键词和改写查询 | 普通 Trace 只存原查询/子查询哈希；计划只留类型、路由、计数和哈希，正文只在主动反馈后保存 |
+| 32 | 可观测性数据库故障导致主问答失败 | Trace 被放进业务主路径且异常外溢 | HTTP 包装层 fail open：Trace 创建/finish 均独立捕获；单测模拟不可写数据库 |
+| 33 | 点踩直接进入回归集会污染 Gold | 误触、恶意反馈、主观偏好和事实错误混在一起 | `pending_review` 隔离；批准时必须补事实/来源/路线/拒答标签，Replay 只读取批准样本 |
+| 34 | Replay 结果覆盖旧运行或自动归因被当成结论 | 缺少时间/版本边界，规则归因只能看到部分证据 | 报告按 UTC 时间戳新建，记录 commit/mode/trace；归因标记 `human_confirmation_required` |
+
 ---
 
 ## 9. 可迁移的思路或设计
@@ -457,6 +545,7 @@ Railway：Variables 设置，不上传 .env，不把 Key 写入 Dockerfile
 | **受限 Agent Loop 门槛** | 不默认引入开放式 Loop；只有评测证明"第一轮证据不全"是主要错误才加，最多补一次 | 任何考虑 Agent 化的 RAG 项目 | 写清上线门槛（正确率提升 + 拒答不降），没有收益不加复杂度 |
 | **事实与解释分离** | 事实（图/表）与主观（原文证据）分通道，子问独立评估 | 人物关系/评价类问答 | 复合问题逐项评估，不能一票否决整题 |
 | **诚实拒答** | 低相关不硬编，输出"资料中未找到" | 一切面向事实的 LLM 应用 | 拒答阈值要配合"人工确认命中豁免"，否则会误杀有证据的答案 |
+| **离线执行链 + 线上改进链分离** | 问答管线只负责稳定回答；反馈/审核/Replay 在旁路闭环进行 | 专精 RAG、非在线学习系统 | 不要让线上反馈直接修改 Prompt、索引、图谱或长期记忆 |
 
 ### 9.2 数据工程级
 
@@ -467,6 +556,8 @@ Railway：Variables 设置，不上传 .env，不把 Key 写入 Dockerfile
 | **先删后建防幽灵数据** | 增量时先删来源旧产物再重建 | 图谱、派生表、聚合缓存 | 删除范围要和来源 ID 严格绑定，防止误删他源数据 |
 | **索引自愈** | 审计检测缺失/陈旧/损坏分片并自动重建 | 分片式索引 | 自愈逻辑本身要幂等、可审计，并在测试里覆盖 |
 | **审计与 manifest** | 每份产物有机器可读基线（chunks.json / build_status.json） | 一切需要"坏了能说清坏在哪"的数据管道 | manifest 是审计基线不是唯一真相，要与实际产物交叉核对 |
+| **版本矩阵而非单个 run id** | 一次评测同时绑定代码、数据集、索引、Prompt、模型和参数 | 所有需要比较前后效果的 AI 系统 | run id 只标识一次运行；没有输入版本矩阵，两个 run 仍不可公平比较 |
+| **运行状态与源码分层** | Trace/反馈是持久运行数据，评测基线是可提交审计资产 | 含用户反馈的应用 | 用户正文库和 Replay 报告不进 Git；基线 manifest 可进 Git但不得含正文 |
 
 ### 9.3 安全与运维级
 
@@ -474,7 +565,7 @@ Railway：Variables 设置，不上传 .env，不把 Key 写入 Dockerfile
 |---|---|---|---|
 | **代理白名单而非黑名单** | 媒体代理只允许特定域名+路径+类型+大小 | SSRF 高发场景（图片/文件代理） | 白名单要够窄（scheme+host+path+content-type+size） |
 | **降级可观测** | 每种降级都有计数器（llm_degraded/empty/rejected）和门禁 | 依赖外部 LLM 的服务 | 降级路径要和主路径一样有测试，不能"侥幸不崩" |
-| **双层限流** | Nginx 按 IP + 应用按进程并发 | 付费 LLM 的公开服务 | 明确两层各管什么（IP 频率 vs 进程并发），别混 |
+| **三层费用保护** | Nginx 边缘限流 + 应用事务式配额 + 进程并发上限 | 付费 LLM 的公开服务 | 分别处理突发流量、跨 worker 总额度和资源占用；计数库故障应 fail closed |
 | **镜像内数据自包含** | 索引/模型构建进镜像，运行离线 | 需要离线运行的部署 | 构建要可复现（锁版本、固定源），密钥绝不进镜像 |
 | **git 提交回滚 + .env 独立** | 回滚只动代码版本，密钥文件独立存在 | 任何自托管部署 | 记录更新前 commit；`--ff-only` 防合并提交；回滚不删数据目录 |
 | **真实 IP 处理** | 代理/CDN 场景按官方网段配 real_ip | 部署在 Cloudflare 等代理后面 | 不无条件信任 X-Forwarded-For |
@@ -486,7 +577,11 @@ Railway：Variables 设置，不上传 .env，不把 Key 写入 Dockerfile
 | **分层门禁** | 索引/检索/路由/答案/运行/变更六层各自有指标与阈值（`quality_gate.py`） | 任何"改了怕回退"的系统 | 阈值是回归基线不是绝对正确率，文档要写明边界 |
 | **离线单测 + CI 无密钥** | CI 只跑无网络测试与落盘指标，在线 LLM 评测由维护者显式刷新 | 避免 CI 产生模型费用/依赖密钥 | 评测产物落盘提交，CI 只做门禁不产生调用 |
 | **前后端契约测试** | DOM id / 接口契约有测试守着（`test_frontend_contract.py`） | 单页应用频繁改 UI | 契约测试随 DOM 改动同步更新 |
-| **金标小而真** | 评测集宁可小，必须人工审计（`final_reviewed.json` 71 条） | 一切自动生成评测集 | 自动生成 gold 要由结构化数据核对，不让 LLM 自问自答 |
+| **开发集小而审慎** | 当前 71 条集适合回归，不包装成真实分布或最终 Gold | 一切自动生成评测集 | 自动生成 gold 要由结构化数据核对；另建人工双标 holdout/challenge，避免在开发集上反复调到 ceiling |
+| **反馈先隔离再回归** | 点踩只产生候选坏例，人工补 Gold 后才允许 Replay | 有真实用户输入的 AI 应用 | 正例/负例都可能含噪声；审核状态和正式门禁必须物理/逻辑隔离 |
+| **Replay 分层且默认零费用** | retrieval / pipeline / answer 分别定位召回、编排、生成 | RAG 坏例归因 | 默认跑到 pipeline；答案回放必须显式授权费用并保存候选版本 |
+| **归因是建议，不是裁决** | 根据来源是否入库/入索引/入候选、路由和答案事实给失败类别 | 半自动排障 | 一类现象可能有多重根因；自动结果必须由人结合原始证据确认 |
+| **Judge 也要版本和校准** | Judge Prompt 独立文件带版本，后续用人工双标校准 | LLM-as-a-Judge | 有序 0/1/2 分优先看加权 Kappa 与假通过率，不能机械套单一阈值 |
 
 ---
 
@@ -494,12 +589,11 @@ Railway：Variables 设置，不上传 .env，不把 Key 写入 Dockerfile
 
 | 文档 | 内容 |
 |---|---|
-| `KNOWLEDGE_SYSTEM_ARCHITECTURE.md` | 知识系统统一架构（现状） |
+| `KNOWLEDGE_SYSTEM_ARCHITECTURE.md` | 知识系统统一架构 + 路线图 + 门禁一体（现状与计划） |
 | `RAG_DEVLOG.md` | 开发决策与踩坑记录（历史） |
-| `RAG_UPGRADE_PLAN.md` | 保留项与新能力上线条件 |
-| `output/RAG_TECHNICAL_OVERVIEW.md` | RAG 专项细节 |
 | `output/GRAPHRAG_ARCHITECTURE.md` | 图谱专项细节 |
-| `DEPLOYMENT.md` / `deploy/README.md` / `deploy/FRIEND_SERVER_HANDOFF.md` | 部署、回滚、权限交接 |
+| `DEPLOYMENT.md` / `deploy/README.md` / `deploy/API_SECURITY.md` | 部署总纲、自有服务器手册、API 安全 |
+| `web/README.md` / `miniprogram/README.md` | 前端设计与实现 / 小程序 |
 | `scripts/README.md` | 全部工具与命令 |
 | `tests/` | 离线回归测试（验收） |
 | `.github/workflows/rag-quality.yml` | CI 质量门禁（验收自动化） |
@@ -515,3 +609,8 @@ Railway：Variables 设置，不上传 .env，不把 Key 写入 Dockerfile
 | `scripts/graph_search.py` / `graph_audit.py` | 图检索 / 图审计 |
 | `scripts/api_server.py` | FastAPI（输入边界/并发/媒体代理） |
 | `scripts/rag_monitor.py` / `quality_gate.py` | 运行指标 / 质量门禁 |
+| `scripts/build_eval_manifest.py` | 固化评测数据、索引、代码、参数和 Prompt 版本 |
+| `scripts/rag_trace.py` | 脱敏 Trace、反馈隔离区 schema 与持久化 |
+| `scripts/review_bad_cases.py` | 本地管理员审核反馈并补齐 Gold |
+| `scripts/replay_bad_cases.py` | 批准坏例的分层回放与建议归因 |
+| `scripts/prompts/judge/v1.txt` | 可版本化的答案 Judge Prompt |

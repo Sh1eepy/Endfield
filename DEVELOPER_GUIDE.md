@@ -8,11 +8,13 @@
 WIKI JSON
   ├─ build_kb_all.py → endfield_kb/ → RAG + 知识图谱
   ├─ recipe_extract.py → output/recipes.json → 配方树
-  └─ extract_media.py / build_operator_details.py → 图片、音频、干员详情
-FastAPI → web/index.html
+  ├─ extract_media.py / build_operator_details.py → 图片、音频、干员详情
+  └─ build_knowledge_graph.py → knowledge_graph/graph.db（关系图谱）
+FastAPI → web/dist（Vite 构建产物，FastAPI 自动托管）
 ```
 
-RAG 和图谱的详细协作见 `KNOWLEDGE_SYSTEM_ARCHITECTURE.md`，工具命令见 `scripts/README.md`。
+RAG 和图谱的详细协作见 `KNOWLEDGE_SYSTEM_ARCHITECTURE.md`，工具命令见 `scripts/README.md`，
+前端设计与交互见 `web/README.md`。
 
 ## 数据层
 

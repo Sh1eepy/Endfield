@@ -29,6 +29,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 
 from llm_client import llm  # noqa: E402
+from rag_prompts import (INTENT_BATCH_SYSTEM, INTENT_SINGLE_SYSTEM,
+                         intent_batch_prompt, intent_single_prompt)  # noqa: E402
 
 # ===================== L1 规则层 =====================
 # 每条规则: (意图, 正则模式)。按顺序匹配，先命中优先（比较类规则放最前，
@@ -70,9 +72,8 @@ def _llm_classify(query):
     if not llm.available():
         return None, 0.0
     try:
-        d = llm.chat_json(
-            f"判断下面这条查询的意图类别，只输出 JSON。\n类别候选：配方（问怎么合成/制造/获取物品）、设备（问什么设备能做什么）、知识（问是什么/介绍/背景）、比较（问两个东西哪个好/区别）、数值（问具体数值/属性/倍率）。\n查询：{query}\n输出格式：{{\"intent\": \"配方\", \"confidence\": 0.9}}",
-            system="你是意图分类器，只输出 JSON。", temperature=0.1, max_tokens=100)
+        d = llm.chat_json(intent_single_prompt(query), system=INTENT_SINGLE_SYSTEM,
+                          temperature=0.1, max_tokens=100)
         intent = str(d.get("intent") or "").strip()
         conf = float(d.get("confidence") or CONF_LLM)
         if intent in {"配方", "设备", "知识", "比较", "数值"}:
@@ -112,12 +113,9 @@ def classify_batch(queries):
             llm_qs.append(q)
     if llm_qs and llm.available():
         try:
-            d = llm.chat_json(
-                "对每条查询判断意图。只输出形如 "
-                '{"results":[{"index":0,"intent":"知识","confidence":0.9}]} 的JSON。\n'
-                "类别只能是：配方、设备、知识、比较、数值。\n查询列表：\n" +
-                "\n".join(f"{i}. {q}" for i, q in enumerate(llm_qs)),
-                system="你是意图分类器，必须按输入index逐条返回，只输出JSON。", temperature=0.1, max_tokens=1200)
+            query_list = "\n".join(f"{i}. {q}" for i, q in enumerate(llm_qs))
+            d = llm.chat_json(intent_batch_prompt(query_list), system=INTENT_BATCH_SYSTEM,
+                              temperature=0.1, max_tokens=1200)
             for item in d.get("results", []):
                 idx = item.get("index")
                 intent = str(item.get("intent") or "").strip()

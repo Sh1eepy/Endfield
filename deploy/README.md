@@ -1,11 +1,33 @@
 # 自有服务器部署手册
 
-如果使用朋友的服务器，并采用“你管理应用、朋友保留主机/Nginx 管理权”的权限分工，请优先阅读
-[`FRIEND_SERVER_HANDOFF.md`](FRIEND_SERVER_HANDOFF.md)。
-
 适用架构：子域名 → Nginx/HTTPS → `127.0.0.1:8000` → Docker Compose → FastAPI。
 应用容器不会把 8000 端口暴露到公网；Nginx 限流之外，应用还限制问答频率、每日次数和并发数。
 鉴权模式、额度持久化、可信代理 IP 与管理接口访问见 [`API_SECURITY.md`](API_SECURITY.md)。
+
+## 0. 协作模式（朋友提供的服务器）
+
+如果主机由朋友管理，采用"**你管应用、朋友管主机**"的权限分工：
+
+| 你负责（应用） | 朋友负责（主机） |
+|---|---|
+| GitHub、SSH 登录、项目目录、`.env`、Docker Compose、应用日志、后续更新 | 创建部署用户、添加 SSH 公钥、DNS、Docker 权限、Nginx、HTTPS、防火墙 |
+
+边界：朋友不交出 root 密码；你不修改朋友服务器上的其他站点。
+
+执行前先统一四个占位符（命令里必须替换，不能原样复制）：
+`<SERVER_IP>` 公网 IPv4、`<SSH_PORT>`（默认 22）、`<DEPLOY_USER>`（建议 `endfielddeploy`）、`<SUBDOMAIN>` 实际子域名。
+
+关键安全点：
+
+- 生成本次部署**专用** ed25519 密钥（`ssh-keygen -t ed25519 -f "$env:USERPROFILE\.ssh\endfield_deploy"`），只把 `.pub` 公钥发给朋友，私钥绝不出本机；
+- 朋友创建独立部署用户 + `authorized_keys`（目录 700 / 文件 600），加入 `docker` 组（**Docker 组权限极高**，朋友须同意；不愿授予则由朋友代执行 compose 命令）；加组后必须退出重登才生效；
+- Docker `permission denied` 时：退出重登 → 朋友检查 `id <DEPLOY_USER>` 是否含 docker 组，**不要**把 socket 改成 777；
+- `.env` 只在服务器（`chmod 600`），不在聊天/截图/日志中展示；
+- DNS 用 Cloudflare 时**首发只选"仅 DNS"**，否则按 IP 限流会把不同用户当同一人；
+- HTTP 通之前不要申请证书；`/opt/endfield` 非空时先 `ls -la` 确认，不要直接删除；
+- 上线前按 `API_SECURITY.md` 配置精确 `FORWARDED_ALLOW_IPS`，禁止填 `*`。
+
+其余步骤与下方操作手册相同（本机 PowerShell 侧命令按需从下方 bash 命令等价转换）。
 
 ## 1. 交付前需要的信息
 

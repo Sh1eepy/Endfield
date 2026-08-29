@@ -141,3 +141,24 @@
   border: 1px solid rgba(240, 207, 22, 0.35);
   color: var(--accent3);
 }
+
+.ask-feedback {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+  color: var(--sub);
+  font-size: 12px;
+}
+.ask-feedback button {
+  border: 1px solid var(--border2);
+  background: var(--panel2);
+  color: var(--klein);
+  padding: 4px 12px;
+  cursor: pointer;
+}
+.ask-feedback button:hover:not(:disabled) { background: var(--yellow); color: var(--ink); }
+.ask-feedback button:disabled { opacity: .55; cursor: wait; }

@@ -11,6 +11,9 @@
   已准入的请求即使后续失败、参数校验失败或并发满，也不退还次数；未授权或超过次数限制的请求不扣次数。
 - 次数超限返回 429 和 `Retry-After`；计数数据库不可用返回 503，不放行付费调用。
 - `/api/health/deep`、`/api/metrics`：应用层仅允许回环客户端或有效访问令牌；Nginx 继续禁止公网访问。
+- `/api/feedback`：使用相同 SQLite 文件但独立计数，不占用问答额度；默认每 IP 每分钟 20 次、每日 200 次、
+  全站每日 1000 次，可用 `FEEDBACK_RATE_PER_MINUTE`、`FEEDBACK_IP_DAILY_LIMIT`、`FEEDBACK_DAILY_LIMIT` 调整。
+  它与问答使用同一可选 Bearer 令牌，并校验 `trace_id`、客户端、问题指纹和后端生成的回答快照，不能凭空写入反馈库。
 - `/api/health`、`/api/names`、`/api/synthesis`、媒体和静态网页仍可公开访问，未添加用户注册/登录系统。
 
 这些是**请求次数上限，不是人民币或 token 预算**。一次问答可能产生多次 LLM 调用、重试，仍需设置模型服务商的预算上限/告警。
@@ -18,7 +21,8 @@
 
 ## 可选私有模式
 
-在后端运行环境设置独立随机 `API_ACCESS_TOKEN`（不要复用 `LLM_API_KEY`）。之后调用 `/api/ask` 必须携带：
+在后端运行环境设置独立随机 `API_ACCESS_TOKEN`（不要复用 `LLM_API_KEY`）。之后调用 `/api/ask` 和
+`/api/feedback` 必须携带：
 
 ```http
 Authorization: Bearer <你的访问令牌>

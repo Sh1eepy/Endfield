@@ -14,10 +14,13 @@ RUN npm run build
 # ============ 阶段 2：Python 运行时 ============
 FROM python:3.12-slim
 
+ARG APP_VERSION=unknown
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
-    HF_HOME=/opt/hf-cache
+    HF_HOME=/opt/hf-cache \
+    APP_VERSION=${APP_VERSION}
 
 WORKDIR /app
 
@@ -30,8 +33,9 @@ RUN python -m pip install --no-cache-dir --retries 8 --timeout 120 \
     && python -m pip install --no-cache-dir --retries 8 --timeout 120 \
       -r requirements.txt
 
-# 先缓存 embedding 模型；随后切离线模式重建可复现的 Chroma 索引。
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-small-zh-v1.5')"
+# 先复制单一配置源并缓存 embedding 模型；随后切离线模式重建可复现的 Chroma 索引。
+COPY scripts/rag_config.py ./scripts/rag_config.py
+RUN python -c "from sentence_transformers import SentenceTransformer; from scripts.rag_config import EMBEDDING_MODEL; SentenceTransformer(EMBEDDING_MODEL)"
 
 COPY scripts ./scripts
 COPY endfield_kb ./endfield_kb

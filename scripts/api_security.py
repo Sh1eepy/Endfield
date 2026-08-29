@@ -28,22 +28,24 @@ def positive_int_env(name, default):
 
 
 class AskBudget:
-    def __init__(self, path, per_minute=6, per_ip_day=60, per_day=200):
+    def __init__(self, path, per_minute=6, per_ip_day=60, per_day=200, namespace=""):
         self.path = Path(path)
         self.per_minute = per_minute
         self.per_ip_day = per_ip_day
         self.per_day = per_day
+        self.namespace = namespace.strip()
 
     def consume(self, client, now=None):
         now = time.time() if now is None else now
         minute, day = int(now // 60), int(now // 86400)
         client_key = hashlib.sha256(client.encode("utf-8")).hexdigest()
+        prefix = f"{self.namespace}-" if self.namespace else ""
         limits = (
-            ("ip-minute", client_key, minute, (minute + 1) * 60,
+            (prefix + "ip-minute", client_key, minute, (minute + 1) * 60,
              self.per_minute, "请求过于频繁，请稍后重试"),
-            ("ip-day", client_key, day, (day + 1) * 86400,
+            (prefix + "ip-day", client_key, day, (day + 1) * 86400,
              self.per_ip_day, "此 IP 今日问答次数已用完"),
-            ("global-day", "all", day, (day + 1) * 86400,
+            (prefix + "global-day", "all", day, (day + 1) * 86400,
              self.per_day, "本站今日问答次数已用完"),
         )
         try:
@@ -84,6 +86,13 @@ ASK_BUDGET = AskBudget(
     positive_int_env("ASK_IP_DAILY_LIMIT", 60),
     positive_int_env("ASK_DAILY_LIMIT", 200),
 )
+FEEDBACK_BUDGET = AskBudget(
+    os.environ.get("ASK_BUDGET_DB") or ROOT / "logs" / "api-security" / "ask-budget.sqlite3",
+    positive_int_env("FEEDBACK_RATE_PER_MINUTE", 20),
+    positive_int_env("FEEDBACK_IP_DAILY_LIMIT", 200),
+    positive_int_env("FEEDBACK_DAILY_LIMIT", 1000),
+    namespace="feedback",
+)
 
 
 def _valid_token(request):
@@ -99,6 +108,14 @@ def require_ask_access(request: Request):
     # Only use ASGI client identity; do not parse arbitrary forwarding headers.
     client = request.client.host if request.client else "unknown"
     ASK_BUDGET.consume(client)
+
+
+def require_feedback_access(request: Request):
+    if API_ACCESS_TOKEN and not _valid_token(request):
+        raise HTTPException(401, "需要有效的访问令牌",
+                            headers={"WWW-Authenticate": "Bearer"})
+    client = request.client.host if request.client else "unknown"
+    FEEDBACK_BUDGET.consume(client)
 
 
 def require_admin_access(request: Request):

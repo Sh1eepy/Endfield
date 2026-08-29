@@ -21,6 +21,14 @@ import os
 import pickle
 import re
 import sys
+from contextlib import nullcontext
+
+try:
+    from scripts.rag_config import (BM25_TOP_N, EMBEDDING_MODEL, NAME_TOP_N_MIN, RRF_K,
+                                    VECTOR_TOP_N)
+except ModuleNotFoundError:  # `python scripts/rag_search.py`
+    from rag_config import (BM25_TOP_N, EMBEDDING_MODEL, NAME_TOP_N_MIN, RRF_K,
+                            VECTOR_TOP_N)
 
 if sys.stdout:
     sys.stdout.reconfigure(encoding="utf-8")
@@ -50,7 +58,7 @@ def _load_userdict():
 
 class RAGRetriever:
     """加载本地索引，执行名称、BM25、向量三路召回并用 RRF 合并。"""
-    def __init__(self, index_dir="output/rag", model_name="BAAI/bge-small-zh-v1.5"):
+    def __init__(self, index_dir="output/rag", model_name=EMBEDDING_MODEL):
         self.index_dir = index_dir
         # ---------- 加载 BM25（按分类分片，跨分片合并）----------
         import glob as _glob
@@ -150,20 +158,32 @@ class RAGRetriever:
 
     # ---------- RRF 融合 ----------
     @staticmethod
-    def rrf_fuse(*ranked_lists, k=60):
+    def rrf_fuse(*ranked_lists, k=RRF_K):
         scores = {}
         for ranked in ranked_lists:
             for rank, (i, _s) in enumerate(ranked):
                 scores[i] = scores.get(i, 0.0) + 1.0 / (k + rank + 1)
         return sorted(scores.items(), key=lambda x: x[1], reverse=True)
 
-    def search(self, query, top_k=5, bm25_top_n=20, vec_top_n=20, fuse_k=60):
-        bm25_hits = self.bm25_search(query, bm25_top_n)
-        vec_hits = self.vector_search(query, vec_top_n)
-        name_hits = self.name_search(query, max(top_k, 10))
+    def search(self, query, top_k=5, bm25_top_n=BM25_TOP_N,
+               vec_top_n=VECTOR_TOP_N, fuse_k=RRF_K, trace=None):
+        with trace.span("bm25_retrieval") if trace else nullcontext():
+            bm25_hits = self.bm25_search(query, bm25_top_n)
+        with trace.span("vector_retrieval") if trace else nullcontext():
+            vec_hits = self.vector_search(query, vec_top_n)
+        with trace.span("name_retrieval") if trace else nullcontext():
+            name_hits = self.name_search(query, max(top_k, NAME_TOP_N_MIN))
+        if trace:
+            def channel_hits(ranked, score_key):
+                return [{"meta": self.metas[i], "score": score, score_key: score}
+                        for i, score in ranked]
+            trace.record_retrieval("bm25", channel_hits(bm25_hits, "bm25_score"), query)
+            trace.record_retrieval("vector", channel_hits(vec_hits, "vector_sim"), query)
+            trace.record_retrieval("name", channel_hits(name_hits, "name_score"), query)
         vec_score = dict(vec_hits)
         bm25_score = dict(bm25_hits)
-        fused = self.rrf_fuse(bm25_hits, vec_hits, name_hits, k=fuse_k)
+        with trace.span("rrf_fusion") if trace else nullcontext():
+            fused = self.rrf_fuse(bm25_hits, vec_hits, name_hits, k=fuse_k)
         # 明确的攻略/视频请求中，名称+分类是强证据；只提升名称通道第一名，避免影响普通配方查询。
         explicit_name_intent = any(x in query for x in ("攻略", "怎么玩", "怎么用", "配队", "养成", "视频", "哪里看", "在哪看")) or "pv" in query.lower()
         if explicit_name_intent and name_hits:
@@ -181,6 +201,8 @@ class RAGRetriever:
                     "bm25_score": round(bm25_score.get(i, 0.0), 5),
                 }
             )
+        if trace:
+            trace.record_retrieval("rrf", results, query)
         return results
 
 
@@ -190,7 +212,7 @@ def main():
     ap.add_argument("query", help="查询语句")
     ap.add_argument("--top-k", type=int, default=5, help="返回条数")
     ap.add_argument("--index-dir", default="output/rag", help="索引目录")
-    ap.add_argument("--model", default="BAAI/bge-small-zh-v1.5", help="embedding 模型名")
+    ap.add_argument("--model", default=EMBEDDING_MODEL, help="embedding 模型名")
     ap.add_argument("--json", action="store_true", help="以 JSON 输出（供系统集成）")
     args = ap.parse_args()
 

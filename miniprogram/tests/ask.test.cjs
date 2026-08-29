@@ -95,3 +95,29 @@ test('unloaded page ignores late ask response', async () => {
   await pending;
   assert.equal(p.data.result, null);
 });
+
+test('feedback sends trace, query and observed answer once', async () => {
+  let payload;
+  const p = page({ feedback: async (...args) => { payload = args; } });
+  p.data.query = 'item';
+  p.data.result = { trace_id: 'a'.repeat(32), answer: 'answer', feedback_snapshot: 'answer' };
+  await p.onFeedback({ currentTarget: { dataset: { vote: 'not_useful' } } });
+  assert.deepEqual(payload, ['a'.repeat(32), 'item', 'not_useful', '', 'answer']);
+  assert.equal(p.data.feedbackState, 'sent');
+  await p.onFeedback({ currentTarget: { dataset: { vote: 'useful' } } });
+});
+
+test('failed feedback can be retried', async () => {
+  let calls = 0;
+  const p = page({ feedback: async () => {
+    calls += 1;
+    if (calls === 1) throw new Error('temporary');
+  } });
+  p.data.query = 'item';
+  p.data.result = { trace_id: 'b'.repeat(32), feedback_snapshot: 'answer' };
+  await p.onFeedback({ currentTarget: { dataset: { vote: 'not_useful' } } });
+  assert.equal(p.data.feedbackState, 'error');
+  await p.onFeedback({ currentTarget: { dataset: { vote: 'not_useful' } } });
+  assert.equal(calls, 2);
+  assert.equal(p.data.feedbackState, 'sent');
+});

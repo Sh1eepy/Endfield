@@ -31,14 +31,41 @@ import json
 import os
 import re
 import sys
+import time
+from contextlib import contextmanager
+from contextvars import ContextVar
 
 if sys.stdout:
     sys.stdout.reconfigure(encoding="utf-8")
 
 import httpx
+try:
+    from scripts.rag_config import DEFAULT_LLM_MODEL
+except ModuleNotFoundError:  # `python scripts/llm_client.py`
+    from rag_config import DEFAULT_LLM_MODEL
 
 DEFAULT_BASE_URL = "https://api.deepseek.com/v1"
-DEFAULT_MODEL = "deepseek-chat"
+DEFAULT_MODEL = DEFAULT_LLM_MODEL
+_LLM_OBSERVER = ContextVar("llm_observer", default=None)
+
+
+@contextmanager
+def observe_llm(callback):
+    """临时接收脱敏调用元数据；不改变 chat/chat_json 的返回类型。"""
+    token = _LLM_OBSERVER.set(callback)
+    try:
+        yield
+    finally:
+        _LLM_OBSERVER.reset(token)
+
+
+def _emit_event(event):
+    callback = _LLM_OBSERVER.get()
+    if callback:
+        try:
+            callback(event)
+        except Exception:
+            pass  # 可观测性故障不能改变问答结果
 
 
 def _load_dotenv():
@@ -118,19 +145,40 @@ class LLMClient:
         }
         last_err = None
         for attempt in range(self.max_retries + 1):
+            started = time.perf_counter()
             try:
                 with httpx.Client(timeout=timeout or self.timeout) as client:
                     resp = client.post(url, json=payload, headers=headers)
                 if resp.status_code == 200:
-                    return resp.json()
+                    data = resp.json()
+                    usage = data.get("usage") if isinstance(data, dict) else None
+                    _emit_event({
+                        "status": "ok", "model": data.get("model", self.model),
+                        "attempt": attempt + 1,
+                        "elapsed_ms": round((time.perf_counter() - started) * 1000, 2),
+                        "prompt_tokens": (usage or {}).get("prompt_tokens"),
+                        "completion_tokens": (usage or {}).get("completion_tokens"),
+                        "total_tokens": (usage or {}).get("total_tokens"),
+                    })
+                    return data
                 # 4xx 不重试（key 错误/参数错误重试无意义）；5xx/网络错误重试
                 if 400 <= resp.status_code < 500:
+                    _emit_event({"status": "error", "model": self.model, "attempt": attempt + 1,
+                                 "elapsed_ms": round((time.perf_counter() - started) * 1000, 2),
+                                 "error_type": f"HTTP_{resp.status_code}"})
                     raise RuntimeError(f"LLM 接口返回 {resp.status_code}: {self._safe_body(resp)}")
+                _emit_event({"status": "retry" if attempt < self.max_retries else "error",
+                             "model": self.model, "attempt": attempt + 1,
+                             "elapsed_ms": round((time.perf_counter() - started) * 1000, 2),
+                             "error_type": f"HTTP_{resp.status_code}"})
                 last_err = RuntimeError(f"LLM 接口返回 {resp.status_code}: {self._safe_body(resp)}")
             except httpx.HTTPError as e:
+                _emit_event({"status": "retry" if attempt < self.max_retries else "error",
+                             "model": self.model, "attempt": attempt + 1,
+                             "elapsed_ms": round((time.perf_counter() - started) * 1000, 2),
+                             "error_type": e.__class__.__name__})
                 last_err = RuntimeError(f"LLM 网络错误: {e.__class__.__name__} ({e})")
             if attempt < self.max_retries:
-                import time
                 time.sleep(1.5 * (attempt + 1))  # 1.5s / 3s 退避
         raise last_err or RuntimeError("LLM 调用失败（未知错误）")
 

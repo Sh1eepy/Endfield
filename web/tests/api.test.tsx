@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from 'vitest'
-import { fetchAsk, fetchHealth } from '../src/api'
+import { fetchAsk, fetchHealth, submitFeedback } from '../src/api'
 
 afterEach(() => vi.unstubAllGlobals())
 
@@ -17,4 +17,15 @@ test('non-JSON proxy errors keep the HTTP status', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 502,
     json: async () => { throw new SyntaxError('not JSON') } }))
   await expect(fetchHealth()).rejects.toThrow('HTTP 502')
+})
+
+test('feedback carries the trace and explicit reviewed content', async () => {
+  const fetch = vi.fn().mockResolvedValue({ ok: true, status: 201,
+    json: async () => ({ ok: true, feedback_id: 'f', status: 'pending_review' }) })
+  vi.stubGlobal('fetch', fetch)
+  await submitFeedback('a'.repeat(32), 'query', 'not_useful', '', 'answer')
+  expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({
+    trace_id: 'a'.repeat(32), query: 'query', vote: 'not_useful', comment: '',
+    observed_answer: 'answer', client_type: 'web',
+  })
 })

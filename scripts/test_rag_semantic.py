@@ -8,8 +8,9 @@ os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts"))
 
 from rag_search import RAGRetriever
+from rag_config import EMBEDDING_MODEL
 
-r = RAGRetriever("output/rag", "BAAI/bge-small-zh-v1.5")
+r = RAGRetriever("output/rag", EMBEDDING_MODEL)
 
 queries = [
     ("中等容量的电池", ["中容谷地电池", "中容武陵电池"]),
