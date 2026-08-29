@@ -136,8 +136,9 @@ approved_regression ──► retrieval / pipeline / answer Replay
 
 这条链路是本项目“Agent 会越来越可靠”的工程基础，但它**不是让 Agent 自动学习线上输入**：
 
-- `rag_config.py` 集中模型/检索参数，`rag_prompts.py` 集中实际 Prompt 并按内容自动生成版本哈希；
-  `build_eval_manifest.py` 从这两个运行时真相源固化比较条件，不保存无法解析的静态占位符；
+- `rag_config.py` 集中 embedding/检索参数，`rag_prompts.py` 集中实际 Prompt 并按内容自动生成版本哈希；
+  `build_eval_manifest.py` 固化可跨机器复现的离线比较条件；实际 LLM/Git 状态写入每次评测元数据和 Trace，
+  不把本机 `.env` 模型或无法解析的占位符混进静态清单；
 - 普通 Trace 只保存查询 SHA-256、长度和脱敏阶段元数据。语义计划中的实体、关键词、改写文本也不原样落库，
   只保留数量、白名单路由和查询哈希；
 - `POST /api/feedback` 受独立额度/可选令牌保护，必须提交真实 `trace_id`、匹配的 query hash、客户端和
@@ -451,8 +452,9 @@ Railway：Variables 设置，不上传 .env，不把 Key 写入 Dockerfile
 
 ### 7.6 评测版本与坏例资产的恢复边界
 
-`eval_manifest.json` 把 Git commit、工作区是否 dirty、四类固定数据集 hash、索引 manifest hash、
-实际 embedding/LLM 模型、按内容自动生成的 Prompt 版本以及 BM25/向量/RRF/top-k 参数绑成可比较基线。
+`eval_manifest.json` 把四类固定数据集 hash、索引 manifest hash、embedding 模型、按内容自动生成的
+Prompt 版本以及 BM25/向量/RRF/top-k 参数绑成可跨 Windows/Linux 比较的静态基线；文本哈希统一换行。
+实际 Git commit、工作区 dirty 状态和 LLM 模型由每次评测结果与 Trace 实时记录。
 它解决的是“这两个分数是否在同一条件下产生”，不是替代实际评测结果。
 
 线上 feedback 数据库不随 Git 回滚：代码回到旧版本后，历史 Trace 与反馈仍保留在持久卷中；

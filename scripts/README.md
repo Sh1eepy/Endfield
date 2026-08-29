@@ -270,7 +270,9 @@ python scripts/replay_bad_cases.py --mode answer --allow-llm
 ```
 
 `rag_config.py` 是模型和检索参数的单一来源；`rag_prompts.py` 是实际生产/评测 Prompt 的单一来源，
-版本由内容哈希自动生成，不再维护手写 `v1`。`build_eval_manifest.py` 会读取这些真实运行配置。
+版本由内容哈希自动生成，不再维护手写 `v1`。`build_eval_manifest.py` 固化跨机器一致的离线配置，
+并统一文本换行后计算哈希；本机 `.env` 的实际 LLM 模型和 Git 状态写进每次评测元数据/Trace，
+不会再让 GitHub Actions 因本机模型不同而误报 `eval_manifest_stale`。
 
 `rag_trace.py` 将阶段耗时、路由、检索排名、上下文引用、模型/token 用量和版本写入
 `RAG_TRACE_DB` 指向的 SQLite。普通问答只保存查询 SHA-256 与长度，不保存查询/回答正文；

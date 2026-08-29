@@ -9,7 +9,6 @@ ROOT = Path(__file__).resolve().parent.parent
 import sys
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from llm_client import llm  # noqa: E402
 from rag_config import EMBEDDING_MODEL, retrieval_config  # noqa: E402
 from rag_prompts import PROMPT_VERSIONS  # noqa: E402
 DATASETS = {
@@ -20,8 +19,10 @@ DATASETS = {
 }
 
 
-def sha256(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+def text_sha256(path):
+    """对文本内容统一换行后哈希，避免 Windows CRLF 与 Linux LF 让 CI 假性失效。"""
+    normalized = path.read_text(encoding="utf-8").replace("\r\n", "\n").replace("\r", "\n")
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
 
 
 def git_commit():
@@ -40,18 +41,17 @@ def git_dirty():
 
 
 def build_manifest():
-    """从真实运行配置生成版本矩阵；除 generated_at 外的内容共同决定 manifest_id。"""
+    """生成可跨机器复现的离线基线；运行时模型/Git 状态写入每次评测元数据。"""
     datasets = {}
     for name, rel in DATASETS.items():
         path = ROOT / rel
-        datasets[name] = {"path": rel, "sha256": sha256(path),
+        datasets[name] = {"path": rel, "sha256": text_sha256(path),
                           "rows": sum(bool(x.strip()) for x in path.read_text(encoding="utf-8").splitlines())}
     manifest_path = ROOT / "output" / "rag" / "chunks.json"
     comparable = {
         "schema_version": 2,
-        "index_manifest_sha256": sha256(manifest_path),
+        "index_manifest_sha256": text_sha256(manifest_path),
         "embedding_model": EMBEDDING_MODEL,
-        "llm_model": llm.model,
         "prompt_versions": PROMPT_VERSIONS,
         "retrieval": retrieval_config(),
         "datasets": datasets,
@@ -63,13 +63,14 @@ def build_manifest():
     encoded = json.dumps(comparable, ensure_ascii=False, sort_keys=True,
                          separators=(",", ":")).encode("utf-8")
     return {**comparable, "manifest_id": "sha256:" + hashlib.sha256(encoded).hexdigest(),
-            "git_commit": git_commit(), "git_dirty": git_dirty(),
             "generated_at": datetime.now(timezone.utc).isoformat()}
 
 
 def evaluation_metadata():
+    from llm_client import llm
     manifest = build_manifest()
-    return {"manifest_id": manifest["manifest_id"], "git_commit": manifest["git_commit"],
+    return {"manifest_id": manifest["manifest_id"], "git_commit": git_commit(),
+            "git_dirty": git_dirty(), "llm_model": llm.model,
             "index_manifest_sha256": manifest["index_manifest_sha256"],
             "prompt_versions": manifest["prompt_versions"], "retrieval": manifest["retrieval"]}
 

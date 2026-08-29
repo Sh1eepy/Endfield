@@ -1,8 +1,7 @@
 {
   "schema_version": 2,
-  "index_manifest_sha256": "f69ba69927e5f2979e2f2fbd764b7afb55171841945ee565b0aed003f3865e91",
+  "index_manifest_sha256": "226af200cf8cea9f5d51ffc58814b2d494d3a8861d2bab69f410c045b2bea31c",
   "embedding_model": "BAAI/bge-small-zh-v1.5",
-  "llm_model": "deepseek-v4-flash",
   "prompt_versions": {
     "intent": "sha256:c5856069f5ef4abc",
     "semantic_plan": "sha256:086f8212123a4767",
@@ -19,7 +18,7 @@
   "datasets": {
     "retrieval": {
       "path": "output/eval/eval_set.jsonl",
-      "sha256": "1955ea0f1e74b7f26131ae3a8f6e7be874d371e3565c933a61a5342511545b92",
+      "sha256": "c0ecf5a4cd592cdb798ad580e2ff78612cfd3fae14de00eec4e80d1710df67a4",
       "rows": 71
     },
     "routing": {
@@ -51,8 +50,6 @@
     "ordinary_trace_query": "sha256+length",
     "feedback_query": "explicit_user_submission"
   },
-  "manifest_id": "sha256:68c487ffcdcb2ec36fe690c8659707b0bbee60c6e04498ed4fc81d788fbd52f2",
-  "git_commit": "ab085c1467346f47d6f24668b9b6ed3866d2b36d",
-  "git_dirty": true,
-  "generated_at": "2026-08-29T07:53:26.754803+00:00"
+  "manifest_id": "sha256:233aaa296a53be01301bd597a95266ce40717903658bec5b78792cf2efe09b8b",
+  "generated_at": "2026-08-29T08:15:58.890184+00:00"
 }

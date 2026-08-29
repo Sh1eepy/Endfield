@@ -108,9 +108,12 @@ class LLMUsageTests(unittest.TestCase):
     def test_manifest_uses_runtime_config_and_prompt_single_source(self):
         manifest = build_eval_manifest.build_manifest()
         self.assertNotIn("runtime:", json.dumps(manifest))
+        self.assertNotIn("llm_model", manifest)
         self.assertEqual(manifest["embedding_model"], rag_config.EMBEDDING_MODEL)
         self.assertEqual(manifest["prompt_versions"], rag_prompts.PROMPT_VERSIONS)
         self.assertEqual(manifest["retrieval"], rag_config.retrieval_config())
+        self.assertEqual(build_eval_manifest.evaluation_metadata()["llm_model"],
+                         llm_client.llm.model)
 
 
 class TraceHttpTests(unittest.TestCase):
