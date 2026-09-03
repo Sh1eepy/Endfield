@@ -1,6 +1,6 @@
 # DEPLOYMENT.md — 部署总纲
 
-> 更新日期：2026-08-29。本文是部署入口总纲：路径选择、关键设计决策与验收清单；
+> 更新日期：2026-09（增补流式问答的 Nginx 与启动预热说明）。本文是部署入口总纲：路径选择、关键设计决策与验收清单；
 > 详细操作步骤见 [`deploy/README.md`](deploy/README.md)（自有服务器）、`deploy/API_SECURITY.md`（安全与限流）。
 
 ## 推荐架构
@@ -21,6 +21,9 @@
   → 从 `endfield_kb/*.jsonl` 全量重建 Chroma/BM25/manifest → 运行阶段完全离线。
   首次构建慢且镜像大，这是完整离线 RAG 的成本；不要把真实密钥烘焙进镜像。
 - **容器只监听 127.0.0.1:8000**：公网入口统一交给 Nginx，绝不改成 `0.0.0.0:8000`。
+- **流式问答与启动预热**：容器入口是 `start_server.py`，单进程默认预热 embedding 模型与索引（冷启动落在健康检查
+  `start_period` 内；内存极紧可设 `RAG_PREWARM=0`）。Nginx 模板（`deploy/nginx/endfield.conf`）已为
+  `/api/ask/stream` 关闭 `proxy_buffering` 并把读超时放宽到 300s；更新线上 Nginx 时需同步，否则网页问答会失去逐字效果。
 - **应用层也有保护**：问答 `query` 1~300 字符、`top_k` 1~10；每 IP 每分钟 6 次 / 每日 60 次 /
   全站每日 200 次（UTC 日窗口，SQLite 计数走 Compose 命名卷跨重建保留）；可选 Bearer 令牌私有模式；
   反馈接口使用同一 SQLite 的独立限额，并校验 Trace、客户端、问题和回答快照；

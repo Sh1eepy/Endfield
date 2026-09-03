@@ -4,7 +4,14 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import App from '../src/App'
 import * as api from '../src/api'
 
-vi.mock('../src/api', () => ({ fetchHealth: vi.fn(), fetchNames: vi.fn(), fetchAsk: vi.fn(), fetchSynthesis: vi.fn() }))
+vi.mock('../src/api', async () => {
+  const actual = await vi.importActual<typeof api>('../src/api')
+  return {
+    ...actual,
+    fetchHealth: vi.fn(), fetchNames: vi.fn(), fetchAsk: vi.fn(),
+    fetchSynthesis: vi.fn(), fetchAskStream: vi.fn(),
+  }
+})
 vi.mock('../src/components/EntryCurtain', () => ({ default: () => null }))
 // 保留真实搜索框与答案组件，仅跳过动效和复杂详情展示。
 vi.mock('../src/components/ResultPanel', async () => {
@@ -26,6 +33,9 @@ beforeEach(async () => {
   vi.mocked(api.fetchNames).mockResolvedValue({ names: [], count: 0 })
   vi.mocked(api.fetchSynthesis).mockResolvedValue({ ok: true })
   vi.mocked(api.fetchAsk).mockResolvedValue({ ok: true, answer: '回答' })
+  // 历史测试默认把“流式端点不可用”当旧后端：App 自动回退整包 /api/ask，
+  // 行为与改造前一致（覆盖回退分支）。流式正常路径另有 askstream.test.tsx 覆盖。
+  vi.mocked(api.fetchAskStream).mockRejectedValue(new api.StreamUnavailableError())
   host = document.createElement('div')
   document.body.append(host)
   root = createRoot(host)

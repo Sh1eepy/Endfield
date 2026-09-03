@@ -167,6 +167,12 @@ export interface AskData {
   names?: string[]
   count?: number
   error?: string
+  /** 流式问答期间为 true（/api/ask/stream 的 meta/delta 阶段）；done 后为 false。 */
+  streaming?: boolean
+  /** 流式期间的阶段提示文案（phase 事件）。 */
+  phase_text?: string
+  /** 生成中断提示；保留已生成内容时附带。 */
+  stream_error?: string
 }
 
 export type AskResult = AskData

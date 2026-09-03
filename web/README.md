@@ -1,6 +1,6 @@
 # 前端设计与实现（web/）
 
-> 更新日期：2026-08-29。本文合并原 `WEB_UI_PLAN.md`（设计语言与交互规则）与
+> 更新日期：2026-09（增补流式问答输出）。本文合并原 `WEB_UI_PLAN.md`（设计语言与交互规则）与
 > `output/OPERATOR_DETAIL_IMPLEMENTATION.md`（干员详情展示），按 React 组件视角重写维护重点。
 > 技术栈：Vite + React 18 + TypeScript + framer-motion，构建产物 `web/dist` 由 FastAPI 托管。
 
@@ -36,6 +36,16 @@
 `AskResult`/`AnswerMarkdown` 负责渲染 `/api/ask` 的答案：`**加粗**`、`*斜体*`、`` `代码` ``、列表、表格
 转成 React 节点（防 XSS：全库无 `dangerouslySetInnerHTML`，渲染一律走受控节点），`[来源N]` 渲染为可点击角标。
 小程序端有等价实现（`miniprogram/utils/markdown.js` → rich-text）。
+
+### 3.1 流式输出（网页问答默认）
+
+网页知识问答优先走 `POST /api/ask/stream`（SSE），事件序列：`phase`（受理/检索中）→ `meta`（意图 + 来源先亮）→
+`delta`×N（回答逐段文字）→ `done`（完整结果，含 trace_id/feedback_snapshot）。
+
+- `api.ts` 的 `fetchAskStream` 负责 SSE 解析（fetch + ReadableStream，无第三方依赖），支持 AbortSignal 中断；
+- `App.tsx` 维护流式状态机：`meta` 一到就把来源渲染出来，`delta` 按约 80ms 节流合并重渲染（避免逐 token 全量解析 markdown）；
+- `AskResult` 在流式期间显示阶段提示与光标，`done` 后进入与旧 `/api/ask` 完全一致的完整渲染（反馈按钮、来源跳转等）；
+- 旧后端没有 `/api/ask/stream` 时抛 `StreamUnavailableError`，自动回退整包 `/api/ask`；小程序仍走旧接口（`wx.request` 不支持流式读取）。
 
 ## 4. 干员详情展示规则
 

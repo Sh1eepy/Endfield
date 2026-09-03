@@ -4,6 +4,21 @@
 
 ## 关键改动
 
+### 流式输出与问答提速（2026-09）
+
+- 新增 `POST /api/ask/stream`（SSE）：路由/检索与 `/api/ask` 共用 `rag_ask.ask_stream`，答案生成改为增量推送；
+  事件 `phase → meta（意图+来源先亮）→ delta×N → done（完整结果）`，`done` 等价非流式返回体。
+- `llm_client.chat_stream()`：OpenAI 兼容 `stream:true` 增量解析；首字前失败按退避重试、吐字后失败不重试；
+  支持 `abort` 事件（客户端断开时在 chunk 边界中止，释放并发名额）。
+- `prepare_generation()` 抽出 gen_answer 的确定性准备（拒答判断/上下文组装），流式与非流式共用，保证逐字一致；
+  枚举整理同样改为流式。
+- 启动预热：`start_server.py` 单进程默认预加载 embedding 模型与索引（`RAG_PREWARM=0` 关闭），
+  把冷启动从首个问答请求移进健康检查 start_period。
+- 旧 `/api/ask` 保持不变（小程序、评测、门禁继续使用）；web 前端优先走流式，旧后端自动回退整包。
+- 前端增量渲染按 80ms 节流，避免逐 token 全量重渲染 markdown；Nginx 部署须对 `/api/ask/stream` 关 `proxy_buffering`。
+- 说明：流式改善的是**感知延迟**（等待从"整段生成完"变成"首字后持续流动"），不减少最后一个字的完成时间；
+  真正减总耗时的一步（简单实体问题跳过 LLM 语义规划）仍按门禁要求评估后再决定是否启用。
+
 ### 索引和检索
 
 - 给 chunk 加“分类 + 条目名”前缀，并生成游戏专名词典。严格检索集 Recall@5 从 72% 提升到 85%。

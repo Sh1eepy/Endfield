@@ -849,37 +849,59 @@ def focus_long_context(text, query, max_chars=1800, max_windows=7):
     return "\n…\n".join(parts) or text[:max_chars]
 
 
-def gen_answer(query, hits, top_k=5):
-    """用在线 LLM 基于检索片段生成带引用的回答。
+def _source_list(hits, top_k):
+    """把命中片段整理成前端来源 chips（与旧 gen_answer 的 sources 字段完全一致）。"""
+    return [{"name": h["meta"].get("name"), "category": h["meta"].get("category"),
+             "score": h["score"]} for h in hits[:top_k]]
 
-    - 实体直取命中（_direct）：实体已确认在知识库，直接给完整条目，不拒答
-    - 普通检索：top-1 相似度 < 阈值 → 诚实拒答
+
+def prepare_generation(query, hits, top_k=5):
+    """gen_answer 的确定性准备阶段（不调用 LLM），可离线单测并被流式路径复用。
+
+    返回（kind 决定后续动作，行为与旧 gen_answer 逐字一致）:
+      {"kind": "prompt", "system": ..., "prompt": ..., "sources": [...]}  可以生成
+      {"kind": "reject", "answer": ..., "rejected": True, "hits": [...]}   直接拒答
+      {"kind": "no_llm"}                                                   未配置 LLM，不生成
     """
     if not llm.available():
-        return None
+        return {"kind": "no_llm"}
     top = hits[0] if hits else None
     if not top:
-        return {"answer": "知识库中未找到足够相关的资料来回答这个问题。",
+        return {"kind": "reject", "answer": "知识库中未找到足够相关的资料来回答这个问题。",
                 "rejected": True, "hits": []}
     is_direct = bool(top.get("_direct"))
     # 多路合并片段（关键词/mention/直取）是人工确认的相关上下文，不因 top-1 vec 低拒答
     has_curated = any(h.get("_keyword") or h.get("_mention") or h.get("_direct") or
                       h.get("_relationship_evidence") for h in hits[:top_k])
     if not is_direct and not has_curated and top.get("vector_sim", 0) < 0.30:
-        return {"answer": "知识库中未找到足够相关的资料来回答这个问题。",
+        return {"kind": "reject", "answer": "知识库中未找到足够相关的资料来回答这个问题。",
                 "rejected": True, "hits": hits[:top_k]}
     ctx = "\n\n".join(
         f"[来源{i+1}] (分类:{h['meta'].get('category')} 名称:{h['meta'].get('name')})\n"
         f"{focus_long_context(h['text'], query, max_chars=1800)}"
         for i, h in enumerate(hits[:top_k]))
     prompt = f"资料：\n{ctx}\n\n问题：{query}\n\n请回答："
+    return {"kind": "prompt", "system": GEN_SYSTEM, "prompt": prompt,
+            "sources": _source_list(hits, top_k)}
+
+
+def gen_answer(query, hits, top_k=5):
+    """用在线 LLM 基于检索片段生成带引用的回答（非流式，语义与历史实现一致）。
+
+    - 实体直取命中（_direct）：实体已确认在知识库，直接给完整条目，不拒答
+    - 普通检索：top-1 相似度 < 阈值 → 诚实拒答
+    """
+    prep = prepare_generation(query, hits, top_k=top_k)
+    kind = prep.get("kind")
+    if kind == "no_llm":
+        return None
+    if kind == "reject":
+        return {"answer": prep["answer"], "rejected": True, "hits": prep["hits"]}
     try:
-        answer = llm.chat(prompt, system=GEN_SYSTEM, temperature=0.3, max_tokens=800)
+        answer = llm.chat(prep["prompt"], system=prep["system"], temperature=0.3, max_tokens=800)
     except Exception:
         return None
-    return {"answer": answer, "rejected": False,
-            "sources": [{"name": h["meta"].get("name"), "category": h["meta"].get("category"),
-                         "score": h["score"]} for h in hits[:top_k]]}
+    return {"answer": answer, "rejected": False, "sources": prep["sources"]}
 
 
 def attach_generated_answer(result, query, hits, top_k, enabled, trace=None):
@@ -1012,6 +1034,126 @@ def ask(query, top_k=5, gen_answer_=False, trace=None):
         result["graph"] = graph_result
     answer_kwargs = {"trace": trace} if trace else {}
     return attach_generated_answer(result, q, hits, top_k, gen_answer_, **answer_kwargs)
+
+
+def warm_index():
+    """启动期预加载检索器 / 配方索引 / 名称集合（幂等）。
+
+    把 embedding 模型与 Chroma/BM25 的冷启动从“第一个问答请求”挪进服务启动阶段
+    （Docker/Compose 健康检查的 start_period 内），避免首个用户承担 3~10s 卡顿。
+    """
+    _get_retriever()
+    _get_recipes()
+    _get_kb_names()
+
+
+# ===================== 流式问答（/api/ask/stream）=====================
+
+
+def _enum_meta_and_prompt(query, result):
+    """构造枚举整理的 prompt 与来源列表（与 ask() 中非流式整理逐字一致）。"""
+    enum = result.get("enum") or {}
+    enum_names = (enum.get("names") or [])[:40]
+    total = result.get("count") or len(enum.get("names") or [])
+    names_list = "\n".join(f"[来源{i + 1}] {name}" for i, name in enumerate(enum_names))
+    truncated_note = (f"这里只提供前 {len(enum_names)} 项用于整理，完整结果共 {total} 项；"
+                      "不得把当前清单说成完整清单。" if total > len(enum_names)
+                      else f"当前清单包含完整的 {len(enum_names)} 项。")
+    prompt = (f"知识库中{enum.get('label') or ''}相关条目总数：{total}。\n{truncated_note}\n"
+              f"条目如下：\n{names_list}\n\n问题：{query}\n请基于这些条目整理成清晰的回答"
+              "（有章节/分类就分组，准确说明总数；清单被截断时必须明确说明只展示前若干项）。")
+    sources = [{"name": name, "category": enum.get("category") or "", "score": 1.0}
+               for name in enum_names]
+    return prompt, sources
+
+
+def ask_stream(query, top_k=5, gen_answer=True, trace=None, abort=None):
+    """流式问答编排：路由/检索阶段与 ask() 完全一致，仅把 LLM 生成改为增量产出。
+
+    产出事件 dict（由 API 层序列化为 SSE）:
+      phase {"stage": "route", "text": ...}      请求已受理，正在检索
+      meta  {"ok","intent","method","route_used","sources":[...]}  检索完成、答案开始生成
+      delta {"text": "..."}                      生成文本增量
+      done  完整最终结果（等价非流式 ask(gen_answer_=True) 的返回体，含 answer/sources）
+
+    `abort` 为可选 threading.Event：置位后停止拉取生成增量（客户端断开时由 API 层触发）。
+    """
+    q = (query or "").strip()
+    if not q:
+        yield {"event": "done", "data": {"ok": False, "error": "查询为空"}}
+        return
+    yield {"event": "phase", "data": {"stage": "route", "text": "正在理解问题并检索知识库…"}}
+    result = ask(q, top_k=top_k, gen_answer_=False, trace=trace)
+    if not result.get("ok"):
+        yield {"event": "done", "data": result}
+        return
+    route = result.get("route_used")
+    # 结构化直查 / 未配 LLM / 关闭生成：与 ask(gen_answer_=True) 一致，不生成答案
+    if route == "structured" or not gen_answer or not llm.available():
+        yield {"event": "done", "data": result}
+        return
+    if route == "enum":
+        prompt, sources = _enum_meta_and_prompt(q, result)
+        meta = {"ok": True, "intent": result.get("intent") or "枚举", "method": result.get("method"),
+                "route_used": "enum", "sources": sources}
+        if trace:
+            meta["trace_id"] = trace.trace_id
+        yield {"event": "meta", "data": meta}
+        try:
+            parts = []
+            with trace.span("llm_generation") if trace else nullcontext():
+                for text in llm.chat_stream(prompt, system=GEN_SYSTEM, temperature=0.3,
+                                            max_tokens=800, abort=abort):
+                    parts.append(text)
+                    yield {"event": "delta", "data": {"text": text}}
+        except Exception:
+            # 与 ask() 枚举整理一致：LLM 失败时静默保留检索结果
+            # 但已经向客户端发送过文字时必须上抛，让 API 发 error 事件并保留半成品；
+            # 若此处再发一个无 answer 的 done，前端会把已显示的内容覆盖掉。
+            if parts:
+                raise
+            yield {"event": "done", "data": result}
+            return
+        merged = dict(result)
+        merged.update({"answer": "".join(parts), "rejected": False, "sources": sources})
+        yield {"event": "done", "data": merged}
+        return
+
+    # rag / hybrid_relation / graph：先生成准备（含拒答判断），再流式生成
+    gen_top = max(top_k, 8) if route == "hybrid_relation" else top_k
+    hits = result.get("hits") or []
+    prep = prepare_generation(q, hits, top_k=gen_top)
+    kind = prep.get("kind")
+    if kind == "no_llm":
+        yield {"event": "done", "data": result}
+        return
+    if kind == "reject":
+        merged = dict(result)
+        merged.update({"answer": prep["answer"], "rejected": True, "hits": prep["hits"]})
+        yield {"event": "done", "data": merged}
+        return
+    meta = {"ok": True, "intent": result.get("intent") or "知识", "method": result.get("method"),
+            "route_used": route, "sources": prep["sources"]}
+    if trace:
+        meta["trace_id"] = trace.trace_id
+    yield {"event": "meta", "data": meta}
+    try:
+        parts = []
+        with trace.span("llm_generation") if trace else nullcontext():
+            for text in llm.chat_stream(prep["prompt"], system=prep["system"], temperature=0.3,
+                                        max_tokens=800, abort=abort):
+                parts.append(text)
+                yield {"event": "delta", "data": {"text": text}}
+    except Exception:
+        # 与 gen_answer 一致：生成失败保留检索结果（无 answer 字段，前端显示降级提示）
+        # 已经输出过增量时交给 API 发 error，避免随后 done 覆盖前端半成品。
+        if parts:
+            raise
+        yield {"event": "done", "data": result}
+        return
+    merged = dict(result)
+    merged.update({"answer": "".join(parts), "rejected": False, "sources": prep["sources"]})
+    yield {"event": "done", "data": merged}
 
 
 if __name__ == "__main__":

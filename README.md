@@ -11,6 +11,8 @@
 - 搜索框模糊联想，前缀匹配优先；
 - 名称 + BM25 + 向量的混合 RAG，并带实体直取、枚举、mention 和关键词补充检索；
 - 可追溯知识图谱，支持明确关系、正反向问法和最多三跳路径；
+- 流式问答输出：网页端答案边生成边显示（来源先亮 + 打字机效果），旧 `/api/ask` 保留给小程序与评测；
+- 启动预热：`start_server.py` 默认预加载 embedding 模型与索引，首个问题不承担冷启动；
 - 白色工业档案风格前端，包含纵向图片树、机械开场动画、响应式布局和问答答案 markdown 渲染；
 - 微信小程序端，覆盖搜索联想、配方树、知识问答与干员档案；
 - RAG/图谱增量更新、深度健康检查、运行指标和 CI 质量门禁。
@@ -25,7 +27,8 @@ WIKI 原始 JSON
 
 网页 / 微信小程序 → FastAPI
   ├─ /api/synthesis：配方、设备、知识库详情
-  ├─ /api/ask：图检索/RAG + 可选 LLM 回答
+  ├─ /api/ask：图检索/RAG + 可选 LLM 回答（小程序与评测使用）
+  ├─ /api/ask/stream：流式问答（SSE，网页端默认；同 /api/ask 路由，生成增量推送）
   └─ /api/names、/api/health、/api/metrics
 ```
 
@@ -72,6 +75,12 @@ python scripts/build_knowledge_graph.py
 # 前端（Vite + React + TS）构建产物由后端托管
 cd web && npm install && npm run build && cd ..
 python -m uvicorn scripts.api_server:app --host 0.0.0.0 --port 8000
+```
+
+推荐用 `start_server.py` 启动（单进程默认预热 embedding 模型与索引，首个问答不卡；内存极紧可设 `RAG_PREWARM=0` 关闭预热）：
+
+```powershell
+python scripts/start_server.py
 ```
 
 前端开发时用 `cd web && npm run dev`（http://localhost:5173，自动代理 `/api` 到 8000）。

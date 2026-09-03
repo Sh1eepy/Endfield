@@ -1,5 +1,8 @@
 import { afterEach, expect, test, vi } from 'vitest'
-import { fetchAsk, fetchHealth, submitFeedback } from '../src/api'
+import {
+  fetchAsk, fetchAskStream, fetchHealth, StreamUnavailableError, submitFeedback,
+  type AskStreamEvent,
+} from '../src/api'
 
 afterEach(() => vi.unstubAllGlobals())
 
@@ -28,4 +31,30 @@ test('feedback carries the trace and explicit reviewed content', async () => {
     trace_id: 'a'.repeat(32), query: 'query', vote: 'not_useful', comment: '',
     observed_answer: 'answer', client_type: 'web',
   })
+})
+
+test('stream parser preserves UTF-8 split across chunks and ignores heartbeats', async () => {
+  const wire = ': keep-alive\n\nevent: delta\ndata: {"text":"你好"}\n\n'
+    + 'event: done\ndata: {"ok":true,"answer":"你好"}\n\n'
+  const bytes = new TextEncoder().encode(wire)
+  const firstMultibyte = bytes.findIndex((x) => x >= 0x80)
+  const body = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(bytes.slice(0, firstMultibyte + 1))
+      controller.enqueue(bytes.slice(firstMultibyte + 1))
+      controller.close()
+    },
+  })
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, status: 200, body }))
+  const events: AskStreamEvent[] = []
+  await expect(fetchAskStream('问题', (event) => events.push(event))).resolves.toBe(true)
+  expect(events).toEqual([
+    { event: 'delta', data: { text: '你好' } },
+    { event: 'done', data: { ok: true, answer: '你好' } },
+  ])
+})
+
+test('old backend stream route triggers the typed fallback error', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 404 }))
+  await expect(fetchAskStream('问题', () => {})).rejects.toBeInstanceOf(StreamUnavailableError)
 })

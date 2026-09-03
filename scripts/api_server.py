@@ -23,7 +23,7 @@ import time
 from typing import Literal
 
 from fastapi import Depends, FastAPI, HTTPException
-from fastapi.responses import Response
+from fastapi.responses import Response, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
@@ -563,6 +563,137 @@ def ask_http(req: AskRequest, response: Response):
                 trace.finish(result, error)
             except Exception:
                 pass
+
+
+def _sse(event, data):
+    """把一条事件序列化为 SSE 帧（UTF-8 bytes）。"""
+    return ("event: %s\ndata: %s\n\n" % (event, json.dumps(data, ensure_ascii=False))).encode("utf-8")
+
+
+@app.post("/api/ask/stream", dependencies=[Depends(require_ask_access)])
+def ask_stream_http(req: AskRequest):
+    """知识问答流式版（Server-Sent Events）。
+
+    与 /api/ask 共用同一套路由逻辑（rag_ask.ask_stream），仅把答案生成阶段改为增量推送：
+    phase（受理/检索中）→ meta（意图与来源先亮起）→ delta（逐段文字）→ done（完整结果）。
+    旧 /api/ask 保持不变，供小程序与评测/门禁脚本使用。
+    """
+    import queue as _queue
+
+    from rag_ask import ask_stream
+    from rag_monitor import monitor
+    from llm_client import observe_llm
+    if not _ASK_SEMAPHORE.acquire(blocking=False):
+        raise HTTPException(
+            status_code=429,
+            detail="问答服务繁忙，请稍后重试",
+            headers={"Retry-After": "3"},
+        )
+    trace = None
+    try:
+        from scripts.rag_trace import RAGTrace
+        trace = RAGTrace(req.query, req.client_type,
+                         code_commit=_code_version(),
+                         index_version=_index_version())
+    except Exception:
+        trace = None  # 可观测性故障不能使知识问答不可用
+    sse_headers = {
+        "Cache-Control": "no-cache",
+        "X-Accel-Buffering": "no",  # 让 Nginx 等代理不缓冲 SSE
+        "Connection": "keep-alive",
+    }
+    if trace:
+        sse_headers["X-Trace-ID"] = trace.trace_id
+
+    def event_source():
+        # 单线程 worker 跑 ask_stream（含 LLM 调用），事件经队列转发给响应生成器：
+        # 保证 observe_llm 的 ContextVar 与 trace 记录都在稳定线程内，且能随时中止。
+        events = _queue.Queue(maxsize=64)
+        stop = threading.Event()
+        worker_done = threading.Event()
+        sentinel = object()
+        state = {"result": None, "error": None}
+        started = time.perf_counter()
+
+        def worker():
+            try:
+                with observe_llm(trace.record_llm_event if trace else None):
+                    it = ask_stream(req.query, top_k=req.top_k, gen_answer=req.gen_answer,
+                                    trace=trace, abort=stop)
+                    try:
+                        for ev in it:
+                            if stop.is_set():
+                                break
+                            if ev.get("event") == "done":
+                                data = ev["data"]
+                                state["result"] = data
+                                if trace:
+                                    data.setdefault("trace_id", trace.trace_id)
+                                    try:
+                                        from scripts.rag_trace import feedback_snapshot
+                                        data.setdefault("feedback_snapshot", feedback_snapshot(data))
+                                    except Exception:
+                                        pass
+                            try:
+                                events.put(ev, timeout=2)
+                            except _queue.Full:
+                                raise RuntimeError("SSE 客户端消费过慢")
+                    finally:
+                        it.close()  # 客户端断开时尽快关闭底层 LLM 流
+            except Exception as exc:
+                state["error"] = exc
+                try:
+                    events.put({"event": "error",
+                                "data": {"message": "问答生成中断：" + type(exc).__name__}},
+                               timeout=2)
+                except _queue.Full:
+                    pass
+            finally:
+                result = state["result"] or {"ok": False, "error": "stream_interrupted"}
+                error = state["error"]
+                if trace:
+                    try:
+                        trace.finish(result, error)
+                    except Exception:
+                        pass
+                try:
+                    monitor.observe(result, (time.perf_counter() - started) * 1000,
+                                    req.gen_answer, error=error)
+                except Exception:
+                    pass
+                worker_done.set()
+                try:
+                    events.put(sentinel, timeout=2)
+                except _queue.Full:
+                    pass
+                # 并发名额跟随真正的生成线程，而不是 HTTP 连接：若客户端断开时底层
+                # 请求尚未退出，不能提前放行另一个付费生成。
+                _ASK_SEMAPHORE.release()
+
+        t = threading.Thread(target=worker, daemon=True)
+        t.start()
+        try:
+            while True:
+                try:
+                    ev = events.get(timeout=15)
+                except _queue.Empty:
+                    # 队列曾经满时结束哨兵可能无法入队；确认 worker 已退出即可收尾。
+                    if worker_done.is_set():
+                        break
+                    # 静默心跳，防止长"规划/生成间隙"被中间代理掐断
+                    yield b": keep-alive\n\n"
+                    continue
+                if ev is sentinel:
+                    break
+                name, data = ev["event"], ev["data"]
+                yield _sse(name, data)
+        except GeneratorExit:
+            raise
+        finally:
+            stop.set()
+            t.join(timeout=2)
+
+    return StreamingResponse(event_source(), media_type="text/event-stream", headers=sse_headers)
 
 
 class FeedbackRequest(BaseModel):

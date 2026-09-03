@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { fetchAsk, fetchHealth, fetchNames, fetchSynthesis } from './api'
+import {
+  fetchAsk, fetchAskStream, fetchHealth, fetchNames, fetchSynthesis,
+  StreamUnavailableError, type AskStreamEvent,
+} from './api'
 import EntryCurtain from './components/EntryCurtain'
 import TopBar from './components/TopBar'
 import Hero from './components/Hero'
@@ -45,6 +48,8 @@ export default function App() {
   const askCacheRef = useRef(new Map<string, AskResult>())
   // 每次查询/清空都会使旧请求失效，避免迟到的响应覆盖当前模式与结果。
   const requestSeqRef = useRef(0)
+  // 流式问答：AbortController 用于切换/离开时中断旧请求。
+  const askStreamRef = useRef<{ controller: AbortController | null }>({ controller: null })
   // 结果区入场动画计时器
   const enterTimerRef = useRef<number | null>(null)
   // 结果区容器（用于重放入场动画）
@@ -52,6 +57,8 @@ export default function App() {
 
   useEffect(() => () => {
     requestSeqRef.current += 1
+    askStreamRef.current.controller?.abort()
+    askStreamRef.current.controller = null
     if (enterTimerRef.current) window.clearTimeout(enterTimerRef.current)
   }, [])
 
@@ -138,6 +145,131 @@ export default function App() {
     setTitle(m === 'ask' ? '知识问答' : '配方合成树')
   }, [])
 
+  const stopAskStream = useCallback(() => {
+    askStreamRef.current.controller?.abort()
+    askStreamRef.current.controller = null
+  }, [])
+
+  /** 知识问答走 /api/ask/stream：先亮阶段/来源，答案逐段追加；旧后端自动回退整包。 */
+  const runAskStream = useCallback((q: string, isCurrent: () => boolean) => {
+    stopAskStream()
+    const cached = askCacheRef.current.get(q)
+    if (cached) {
+      setReady({ kind: 'ask', data: cached, query: q }, `${q} · 知识问答`)
+      return
+    }
+    setLoading(`${q} · 知识问答`)
+    const controller = new AbortController()
+    askStreamRef.current.controller = controller
+    let partial: AskResult = { ok: true, streaming: true, intent: '…', phase_text: '正在连接问答服务…' }
+    let finished = false
+    let commitTimer: number | null = null
+    const cancelScheduled = () => {
+      if (commitTimer !== null) { window.clearTimeout(commitTimer); commitTimer = null }
+    }
+    // 增量节流：80ms 合并一次 React 重渲染，避免每个 token 全量渲染 markdown
+    const schedule = () => {
+      if (commitTimer !== null) return
+      commitTimer = window.setTimeout(() => {
+        commitTimer = null
+        if (!isCurrent()) return
+        setResult({ kind: 'ask', data: { ...partial }, query: q })
+        setResultState('ready')
+      }, 80)
+    }
+    const commitNow = (withEnter: boolean) => {
+      cancelScheduled()
+      if (!isCurrent()) return
+      setResult({ kind: 'ask', data: { ...partial }, query: q })
+      setResultState('ready')
+      setErrorMsg('')
+      if (withEnter) playEnter()
+    }
+    const onEvent = (ev: AskStreamEvent) => {
+      if (!isCurrent() || finished) return
+      if (ev.event === 'phase') {
+        const text = typeof ev.data.text === 'string' ? ev.data.text : ''
+        partial = { ...partial, phase_text: text || partial.phase_text }
+        schedule()
+      } else if (ev.event === 'meta') {
+        partial = { ...partial, ...(ev.data as unknown as AskResult), streaming: true }
+        schedule()
+      } else if (ev.event === 'delta') {
+        partial = { ...partial, answer: (partial.answer || '') + String(ev.data.text ?? '') }
+        schedule()
+      } else if (ev.event === 'error') {
+        const msg = typeof ev.data?.message === 'string' ? ev.data.message : '回答生成中断'
+        if (partial.answer) {
+          partial = { ...partial, streaming: false, stream_error: msg }
+          commitNow(false)
+        } else {
+          cancelScheduled()
+          finished = true
+          askStreamRef.current.controller = null
+          setError(msg, `${q} · 知识问答`)
+        }
+      } else if (ev.event === 'done') {
+        const done: AskResult = { ...(ev.data as unknown as AskResult), streaming: false }
+        finished = true
+        askStreamRef.current.controller = null
+        if (!done.ok) {
+          cancelScheduled()
+          setError(done.error || '问答失败', `${q} · 知识问答`)
+          return
+        }
+        askCacheRef.current.set(q, done)
+        recordHistory(q, 'ask')
+        setHistory(getHistory())
+        partial = done
+        commitNow(true)
+      }
+    }
+    fetchAskStream(q, onEvent, controller.signal)
+      .then(() => {
+        if (!isCurrent() || finished) return
+        askStreamRef.current.controller = null
+        // 服务端异常收尾（error 后无 done）：保留已生成内容或提示重试
+        finished = true
+        if (partial.answer) {
+          partial = { ...partial, streaming: false,
+            stream_error: partial.stream_error || '回答生成中断，已保留已生成的内容' }
+          commitNow(false)
+        }
+        else {
+          cancelScheduled()
+          setError('回答生成中断，请重试', `${q} · 知识问答`)
+        }
+      })
+      .catch((e: unknown) => {
+        if (!isCurrent()) return
+        askStreamRef.current.controller = null
+        if (e instanceof StreamUnavailableError) {
+          // 旧后端没有流式端点 → 回退整包 /api/ask
+          cancelScheduled()
+          fetchAsk(q)
+            .then((d) => {
+              if (!isCurrent()) return
+              if (!d.ok) { setError(d.error || '问答失败', `${q} · 知识问答`); return }
+              askCacheRef.current.set(q, d)
+              recordHistory(q, 'ask')
+              setHistory(getHistory())
+              setReady({ kind: 'ask', data: d, query: q }, `${q} · 知识问答`)
+            })
+            .catch((e2: Error) => { if (isCurrent()) setError(e2.message, `${q} · 知识问答`) })
+          return
+        }
+        if (partial.answer) {
+          partial = { ...partial, streaming: false, stream_error: '网络中断，已保留已生成的内容' }
+          commitNow(false)
+        } else if (e instanceof Error && e.name === 'AbortError') {
+          // 主动切换/离开导致的取消：页面已有新状态，不弹错误
+        } else {
+          cancelScheduled()
+          setError(e instanceof Error ? e.message : '请求失败', `${q} · 知识问答`)
+        }
+      })
+  }, [playEnter, setError, setHistory, setLoading, setReady, stopAskStream])
+
   const runQuery = useCallback((raw: string, m: Mode = mode) => {
     const q = String(raw || '').trim()
     const requestId = ++requestSeqRef.current
@@ -145,8 +277,9 @@ export default function App() {
     setModeQueries((prev) => ({ ...prev, [mode]: inputValue, [m]: q }))
     setInputValue(q)
     setMode(m)
-    if (!q) { showEmpty(m); return }
+    if (!q) { stopAskStream(); showEmpty(m); return }
     if (m === 'syn') {
+      stopAskStream()
       setLoading(`${q} · 配方树`)
       fetchSynthesis(q)
         .then((d) => {
@@ -158,25 +291,9 @@ export default function App() {
         })
         .catch((e: Error) => { if (isCurrent()) setError(e.message, `${q} · 配方树`) })
     } else {
-      const cached = askCacheRef.current.get(q)
-      if (cached) {
-        setReady({ kind: 'ask', data: cached, query: q }, `${q} · 知识问答`)
-        return
-      }
-      setLoading(`${q} · 知识问答`)
-      fetchAsk(q)
-        .then((d) => {
-          // 成功的旧回答可留作缓存，但不允许更新当前页面。
-          if (d.ok) askCacheRef.current.set(q, d)
-          if (!isCurrent()) return
-          if (!d.ok) { setError(d.error || '问答失败', `${q} · 知识问答`); return }
-          recordHistory(q, 'ask')
-          setHistory(getHistory())
-          setReady({ kind: 'ask', data: d, query: q }, `${q} · 知识问答`)
-        })
-        .catch((e: Error) => { if (isCurrent()) setError(e.message, `${q} · 知识问答`) })
+      runAskStream(q, isCurrent)
     }
-  }, [inputValue, mode, setError, setLoading, setReady, showEmpty])
+  }, [inputValue, mode, runAskStream, setError, setLoading, setReady, showEmpty, stopAskStream])
 
   const switchMode = useCallback((m: Mode) => {
     if (m === mode) return

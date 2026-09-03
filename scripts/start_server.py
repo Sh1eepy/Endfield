@@ -52,11 +52,31 @@ WORKERS = int(os.environ.get("WEB_CONCURRENCY") or "1")
 FORWARDED_ALLOW_IPS = os.environ.get("FORWARDED_ALLOW_IPS")
 
 
+def _prewarm():
+    """启动期预加载 embedding 模型与 RAG/配方索引。
+
+    把冷启动（模型加载 3~10s）从首个问答请求挪进健康检查的 start_period，
+    首个用户不必承担加载卡顿。`RAG_PREWARM=0` 可关闭（如内存极紧的环境）。
+    """
+    if os.environ.get("RAG_PREWARM", "1") == "0":
+        print("[start_server] 已关闭 RAG 预热（RAG_PREWARM=0）")
+        return
+    try:
+        from rag_ask import warm_index
+        print("[start_server] 预热 RAG 索引与 embedding 模型…")
+        warm_index()
+        print("[start_server] 预热完成")
+    except Exception as exc:  # noqa: BLE001
+        # 预热失败不阻断启动：首个问答仍会按惰性路径自行加载
+        print(f"[start_server] 预热失败（将退回惰性加载）: {type(exc).__name__}: {exc}")
+
+
 def main():
     import uvicorn
 
     # 单进程：直接跑（无 reload，生产模式）
     if WORKERS <= 1:
+        _prewarm()
         print(f"[start_server] 单进程模式 http://{HOST}:{PORT}（本机开发推荐）")
         uvicorn.run("api_server:app", host=HOST, port=PORT, log_level="info",
                     forwarded_allow_ips=FORWARDED_ALLOW_IPS)

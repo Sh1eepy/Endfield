@@ -226,6 +226,102 @@ class LLMClient:
             content = (data["choices"][0]["message"]["content"] or "").strip()
         return self._extract_json(content)
 
+    def chat_stream(self, prompt, system=None, temperature=0.3, max_tokens=1024, timeout=None,
+                    abort=None):
+        """流式对话（SSE 增量）→ 逐段产出回答文本的生成器。
+
+        与 chat() 使用同一套 prompt/参数/密钥纪律，只是把 stream=True 的增量解析后
+        一段段 yield 出来，供 /api/ask/stream 边生成边转发。
+
+        重试语义：
+          - 首字到达前的网络错误 / 5xx 按既有 1.5s/3s 退避重试；
+          - 已经开始吐字后的失败不再重试（已输出的内容无法撤销），由调用方收尾；
+          - 4xx 是业务错误，直接抛出。
+        `abort` 是可选 threading.Event：置位后在下一个 chunk 边界中止（配合客户端断开）。
+        """
+        if not self.available():
+            raise RuntimeError("LLM_API_KEY 未配置：请在 .env 中填写（参考 .env.example），或走降级路径")
+        messages = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+        url = self.base_url.rstrip("/") + "/chat/completions"
+        payload = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "stream": True,
+        }
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+        last_err = None
+        for attempt in range(self.max_retries + 1):
+            if abort is not None and abort.is_set():
+                raise RuntimeError("LLM 流式生成已中止")
+            started = time.perf_counter()
+            emitted = False
+            status_code = None
+            try:
+                with httpx.Client(timeout=timeout or self.timeout) as client:
+                    with client.stream("POST", url, json=payload, headers=headers) as resp:
+                        status_code = resp.status_code
+                        if resp.status_code != 200:
+                            raise RuntimeError(f"LLM 接口返回 {resp.status_code}: {self._safe_body(resp)}")
+                        for line in resp.iter_lines():
+                            if abort is not None and abort.is_set():
+                                raise RuntimeError("LLM 流式生成已中止")
+                            if not line or not line.startswith("data:"):
+                                continue
+                            data = line[len("data:"):].strip()
+                            if not data or data == "[DONE]":
+                                continue
+                            try:
+                                chunk = json.loads(data)
+                            except json.JSONDecodeError:
+                                continue
+                            choices = chunk.get("choices") or []
+                            if not choices:
+                                continue
+                            delta = (choices[0].get("delta") or {}).get("content") or ""
+                            if delta:
+                                emitted = True
+                                yield delta
+                _emit_event({"status": "ok", "model": self.model, "attempt": attempt + 1,
+                             "elapsed_ms": round((time.perf_counter() - started) * 1000, 2)})
+                return
+            except httpx.HTTPError as exc:
+                last_err = RuntimeError(f"LLM 网络错误: {exc.__class__.__name__} ({exc})")
+                _emit_event({"status": "retry" if (attempt < self.max_retries and not emitted) else "error",
+                             "model": self.model, "attempt": attempt + 1,
+                             "elapsed_ms": round((time.perf_counter() - started) * 1000, 2),
+                             "error_type": exc.__class__.__name__})
+                if emitted:
+                    raise last_err
+            except RuntimeError as exc:
+                # 主动取消不是可恢复的网络故障，尤其不能在首字前重新发起付费请求。
+                if abort is not None and abort.is_set():
+                    raise
+                # 非 200 的业务错误：4xx 直接抛；5xx 在未吐字时按退避重试。
+                if emitted:
+                    raise
+                if status_code is not None and 400 <= status_code < 500:
+                    _emit_event({"status": "error", "model": self.model, "attempt": attempt + 1,
+                                 "elapsed_ms": round((time.perf_counter() - started) * 1000, 2),
+                                 "error_type": f"HTTP_{status_code}"})
+                    raise exc
+                if status_code is not None and attempt >= self.max_retries:
+                    _emit_event({"status": "error", "model": self.model, "attempt": attempt + 1,
+                                 "elapsed_ms": round((time.perf_counter() - started) * 1000, 2),
+                                 "error_type": f"HTTP_{status_code}"})
+                    raise exc
+                last_err = exc
+            if attempt < self.max_retries:
+                time.sleep(1.5 * (attempt + 1))  # 1.5s / 3s 退避
+        raise last_err or RuntimeError("LLM 调用失败（未知错误）")
+
     @staticmethod
     def _extract_json(text):
         """从文本提取 JSON 对象：先整体解析，失败则找第一个 {...} 块。"""

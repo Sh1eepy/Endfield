@@ -28,6 +28,7 @@ endfield_wiki_full_*.json (147MB, 1958条, 块式富文本)
       GET  /api/synthesis?item=重息壤   合成树（物品树 / 设备配方卡 / 歧义→候选列表 / 无配方→知识库信息 + 封面图/相关引用）
       GET  /api/names                   全部名称（前端模糊搜索联想）
       GET  /api/health                  健康检查
+      POST /api/ask/stream              流式知识问答（SSE：phase→meta→delta→done，网页端默认走此接口）
   → web/ 前端（Vite+React+TS，`npm run build` 出 dist 由后端托管；白色工业制图；纵向图片配方树 + 知识问答双模式）
 ```
 
@@ -38,6 +39,7 @@ endfield_wiki_full_*.json (147MB, 1958条, 块式富文本)
 - ⚠️ 模型必须离线加载：`HF_HUB_OFFLINE=1` + `local_files_only=True`（联网检查 HF 会超时/失败）
 - ⚠️ Windows `localhost` 解析到 IPv6，uvicorn 绑 `0.0.0.0` 只听 IPv4 → 浏览器请用 **`http://127.0.0.1:8000`**
 - 根目录 `.env` 可选（LLM 相关配置备用）；`.env` 勿提交公开仓库
+- `start_server.py` 单进程默认预热 embedding 模型与索引（冷启动移进健康检查 start_period）；内存极紧可 `RAG_PREWARM=0` 关闭
 
 ## 4. 目录约定
 ```
@@ -66,7 +68,9 @@ python scripts/build_kb_all.py
 # RAG：首次全量 / 之后增量（只重 embedding 变更条目 + 变更分类 BM25 分片）
 python scripts/build_rag.py --inputs "endfield_kb/*.jsonl" --reset
 python scripts/build_rag.py --inputs "endfield_kb/*.jsonl" --incremental
-# 启动服务
+# 启动服务（推荐 start_server.py：单进程默认预热 embedding/索引；RAG_PREWARM=0 关闭预热）
+python scripts/start_server.py
+# 或直接 uvicorn（无预热，首个问答会现场加载模型）
 python -m uvicorn scripts.api_server:app --host 0.0.0.0 --port 8000
 # 浏览器 http://127.0.0.1:8000
 ```
@@ -76,3 +80,5 @@ python -m uvicorn scripts.api_server:app --host 0.0.0.0 --port 8000
 - 合成树数据源 = `output/recipes.json`（`recipe_extract.py` 提取的 345 个配方，**不做激进清洗**：设备制造/容器"盛装"/矿机/原木配方全保留，供"怎么造"完整展示），不是知识库
 - RAG 增量更新：条目 `content_hash`（md5）→ 对比 manifest → 只 upsert 变更 chunk → 只重建变更分类 BM25 分片
 - 前端搜索联想：`/api/names` 返回全部名称（配方物品+设备+知识库条目），前端本地过滤（前缀优先+包含匹配）
+- 流式问答：`/api/ask/stream`（SSE）与 `/api/ask` 共用路由/检索，仅生成阶段改增量（phase→meta→delta→done），`done` 与整包返回等价；流式改善“感知延迟”，不减少最后一个字的完成时间（首字前等待主要是语义规划那一次 LLM 调用）
+- 网页问答默认走流式接口；小程序与评测/门禁继续用旧 `/api/ask`（改动流式前先读 `RAG_DEVLOG.md` 对应条目）

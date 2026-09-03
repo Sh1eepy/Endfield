@@ -67,6 +67,7 @@ export default function AskResult({ data, query = '', onPickName }: Props) {
   if (!data.ok) return null
   const intent = data.intent || '未知'
   const structured = data.route_used === 'structured'
+  const isStreaming = !!data.streaming
 
   const jumpToSource = (n: number) => {
     const chips = rootRef.current?.querySelectorAll<HTMLElement>('.ask-sources .ask-src-chip')
@@ -102,10 +103,27 @@ export default function AskResult({ data, query = '', onPickName }: Props) {
         <StructuredResult d={data} onPickName={onPickName} />
       ) : (
         <>
-          {data.answer ? (
+          {data.stream_error ? (
+            <div className="ask-answer" style={{ color: 'var(--danger)', fontSize: 13, opacity: 0.85 }}>
+              ⚠ {data.stream_error}
+            </div>
+          ) : null}
+          {!data.answer && isStreaming ? (
+            <div className="ask-answer ask-stream-wait" style={{ color: 'var(--faint)' }}>
+              {data.phase_text || '正在生成回答…'}
+              <span style={{ display: 'inline-block', marginLeft: 6, opacity: 0.9 }}>▍</span>
+            </div>
+          ) : data.answer ? (
             data.rejected
               ? <div className="ask-answer ask-rejected">{data.answer}</div>
-              : <div className="ask-answer"><AnswerMarkdown answer={data.answer} onJump={jumpToSource} /></div>
+              : (
+                <div className="ask-answer">
+                  <AnswerMarkdown answer={data.answer} onJump={jumpToSource} />
+                  {isStreaming ? (
+                    <span className="ask-caret" aria-hidden="true">▍</span>
+                  ) : null}
+                </div>
+              )
           ) : (
             <div className="ask-answer ask-rejected">知识库检索完成，但回答生成暂不可用（未配置 LLM 或调用失败）。</div>
           )}
@@ -141,7 +159,7 @@ export default function AskResult({ data, query = '', onPickName }: Props) {
           ) : null}
         </>
       )}
-      {data.trace_id ? (
+      {data.trace_id && !isStreaming ? (
         <div className="ask-feedback" aria-live="polite">
           {feedback === 'sent' ? <span>感谢反馈，已进入人工审核队列。</span> : (
             <>

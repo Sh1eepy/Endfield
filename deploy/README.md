@@ -126,6 +126,10 @@ Nginx 对 `/api/ask` 的默认保护是：
 - 超出返回 HTTP 429；
 - 其他只读接口不使用这组严格限制。
 
+`/api/ask/stream`（SSE 流式问答）与 `/api/ask` 使用同一组 Nginx 限制与应用层并发名额；
+模板中该 location 已关闭 `proxy_buffering` 并把 `proxy_read_timeout` 放宽到 300s——改动线上 Nginx 时请同步保持，
+否则代理会攒批，网页问答会失去逐字输出。
+
 ## 5. 开启 HTTPS
 
 Certbot 官方说明要求普通 HTTP 站点先能从公网通过 80 端口访问。推荐按 Certbot 官方 Nginx 流程安装：
@@ -148,6 +152,10 @@ Certbot 会修改 Nginx 站点配置并加入 HTTP → HTTPS 跳转。以后修�
 curl https://实际子域名/api/health
 curl "https://实际子域名/api/synthesis?item=重息壤"
 curl -X POST https://实际子域名/api/ask \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"重息壤是什么","top_k":5,"gen_answer":true}'
+# 流式问答（SSE）验证：-N 关闭客户端缓冲，应看到逐字/逐块输出
+curl -N -X POST https://实际子域名/api/ask/stream \
   -H 'Content-Type: application/json' \
   -d '{"query":"重息壤是什么","top_k":5,"gen_answer":true}'
 docker compose ps

@@ -153,12 +153,14 @@ WEB_CONCURRENCY=1 python scripts/start_server.py
 ```
 多 worker 由 `start_server.py` 统一管理：worker 数取环境变量 `WEB_CONCURRENCY`（默认 1）。
 首次上线保持 1，确认内存余量后再提高；`ASK_MAX_CONCURRENCY`（默认 2）限制每个 worker 同时执行的付费问答数。
+`start_server.py` 启动默认预热 embedding 模型与 RAG/配方索引（冷启动移进健康检查 start_period；`RAG_PREWARM=0` 关闭）。
 | 端点 | 说明 |
 |---|---|
 | `GET /api/health` | 健康检查 |
 | `GET /api/synthesis?item=重息壤` | 合成树（物品树 / 设备配方卡 / 歧义→候选列表 / 无配方→知识库信息 + 封面图/相关引用） |
 | `GET /api/names` | 全部名称（前端模糊搜索联想） |
 | `POST /api/ask` | RAG 问答（意图识别→路由→检索→LLM 带引用回答），body: `{"query":"重息壤是什么","top_k":5,"gen_answer":true}` |
+| `POST /api/ask/stream` | 同上路由的流式版（SSE：phase→meta→delta→done，body 一致；网页端默认使用） |
 | `GET /api/media?url=...` | WIKI CDN 图片/音频白名单同源代理（类型与 25MB 上限校验） |
 
 自动托管前端：优先 `web/dist`（Vite+React 构建产物），无 dist 时回退 `web/`。

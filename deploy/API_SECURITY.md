@@ -9,6 +9,8 @@
   可用 `ASK_RATE_PER_MINUTE`、`ASK_IP_DAILY_LIMIT`、`ASK_DAILY_LIMIT` 调整，非正整数或无效值使用默认值，不能通过填 0 关闭保护。
 - 每个 worker 同时执行最多 `ASK_MAX_CONCURRENCY=2` 个问答。所有问答请求（包括 `gen_answer=false`、结构化查询）均执行准入检查。
   已准入的请求即使后续失败、参数校验失败或并发满，也不退还次数；未授权或超过次数限制的请求不扣次数。
+- `/api/ask/stream`（流式 SSE）：与 `/api/ask` 共用同一准入检查、次数限制与 `ASK_MAX_CONCURRENCY` 并发名额，
+  一次流式问答计一次准入；客户端断开会中止生成并释放并发名额，但已准入的次数不退还。
 - 次数超限返回 429 和 `Retry-After`；计数数据库不可用返回 503，不放行付费调用。
 - `/api/health/deep`、`/api/metrics`：应用层仅允许回环客户端或有效访问令牌；Nginx 继续禁止公网访问。
 - `/api/feedback`：使用相同 SQLite 文件但独立计数，不占用问答额度；默认每 IP 每分钟 20 次、每日 200 次、
@@ -21,8 +23,8 @@
 
 ## 可选私有模式
 
-在后端运行环境设置独立随机 `API_ACCESS_TOKEN`（不要复用 `LLM_API_KEY`）。之后调用 `/api/ask` 和
-`/api/feedback` 必须携带：
+在后端运行环境设置独立随机 `API_ACCESS_TOKEN`（不要复用 `LLM_API_KEY`）。之后调用 `/api/ask`、
+`/api/ask/stream` 和 `/api/feedback` 必须携带：
 
 ```http
 Authorization: Bearer <你的访问令牌>

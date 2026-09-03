@@ -24,6 +24,8 @@ class DeploymentFileTests(unittest.TestCase):
         self.assertIn('os.environ.get("PORT")', starter)
         self.assertIn('os.environ.get("WEB_CONCURRENCY")', starter)
         self.assertIn('os.environ.get("WEB_CONCURRENCY") or "1"', starter)
+        self.assertIn('os.environ.get("RAG_PREWARM", "1")', starter)
+        self.assertIn("warm_index()", starter)
         self.assertNotIn("LLM_API_KEY=", text)
 
     def test_railway_healthcheck_matches_api(self):
@@ -44,9 +46,12 @@ class DeploymentFileTests(unittest.TestCase):
     def test_nginx_limits_paid_ask_route(self):
         text = (ROOT / "deploy" / "nginx" / "endfield.conf").read_text(encoding="utf-8")
         self.assertIn("location = /api/ask", text)
+        self.assertIn("location = /api/ask/stream", text)
         self.assertIn("limit_req zone=endfield_ask_rate", text)
         self.assertIn("limit_conn endfield_ask_conn 1", text)
         self.assertIn("limit_req_status 429", text)
+        self.assertIn("proxy_buffering off", text)
+        self.assertIn("proxy_read_timeout 300s", text)
         self.assertIn('return 429 \'{"ok":false', text)
         self.assertIn("health/deep|metrics", text)
         self.assertIn("allow 127.0.0.1", text)
@@ -55,6 +60,7 @@ class DeploymentFileTests(unittest.TestCase):
     def test_public_env_template_uses_safe_concurrency_defaults(self):
         text = (ROOT / ".env.example").read_text(encoding="utf-8")
         self.assertIn("WEB_CONCURRENCY=1", text)
+        self.assertIn("RAG_PREWARM=1", text)
         self.assertIn("ASK_MAX_CONCURRENCY=2", text)
 
 

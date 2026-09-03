@@ -1,6 +1,6 @@
 # 项目状态
 
-> 2026-08 更新。项目 = **《明日方舟：终末地》配方合成树**。
+> 2026-09 更新（增补流式问答与启动预热）。项目 = **《明日方舟：终末地》配方合成树**。
 > 早期「生产流水线空间规划」已整体移除（算法/产物/文档全删），不要重建。
 > RAG 知识问答已在 2026-08 重新完成并接入前端，与配方合成树组成双模式应用。
 
@@ -24,6 +24,8 @@
 | 轻量 GraphRAG | `output/knowledge_graph/graph.db` | 2,129 实体 / 9,358 条可追溯关系；覆盖人物/任务/地点/物品/设备/配方与明确亲属关系，支持解释性关系混合取证、增量更新与问法对称门禁 |
 | 评测 | `eval_retrieval.py` | 71 条查询；当前 Recall@5=100%、MRR=97.3%（`final_reviewed.json`） |
 | 可观测性与坏例闭环 | `rag_trace.py` / `review_bad_cases.py` / `replay_bad_cases.py` | 脱敏 Trace、用户反馈隔离审核、批准样本回放与建议归因；Web/小程序均有反馈入口 |
+| 流式问答输出 | `api_server.py /api/ask/stream` + `web/` | 网页答案 SSE 增量（phase→meta→delta→done，来源先亮、逐字流式）；与 `/api/ask` 同路由同检索，`done` 与整包返回等价；旧接口保留给小程序与评测/门禁 |
+| 启动预热 | `start_server.py` | 单进程默认预热 embedding 模型与 RAG/配方索引，冷启动移进健康检查 start_period；`RAG_PREWARM=0` 关闭 |
 
 ## 2.1 前端体验优化（2026-08，web/ + miniprogram/）
 - **问答答案 markdown 渲染**：`**加粗**`/`*斜体*`/`` `代码` ``/列表/表格渲染（Web 由 `AskResult.tsx` 调用 `AnswerMarkdown.tsx` 生成 React 节点；小程序端 `utils/markdown.js` → rich-text）。Web 表格支持列对齐与横向滚动，`[来源N]` 在段落/列表/表格内部保持可点击；原始 HTML 不执行。
@@ -40,10 +42,11 @@
 - `scripts/extract_media.py` → 全量 JSON → `output/item_media.json`（封面图/正文图/外链/引用）
 - `scripts/build_rag.py` → RAG 构建/增量（--reset 全量 / --incremental 增量）
 - `scripts/rag_search.py` → 混合检索（向量+BM25 分片 → RRF）
-- `scripts/api_server.py` → FastAPI（/api/synthesis、/api/names、/api/ask、/api/health + 静态托管）
-- `scripts/llm_client.py` → 在线 LLM 统一客户端（OpenAI 兼容，密钥走 .env）
+- `scripts/api_server.py` → FastAPI（/api/synthesis、/api/names、/api/ask、/api/ask/stream（SSE 流式）、/api/health + 静态托管）
+- `scripts/llm_client.py` → 在线 LLM 统一客户端（OpenAI 兼容，密钥走 .env；chat / chat_json / chat_stream）
 - `scripts/intent_router.py` → 意图识别分层（L1 规则 + L3 LLM 兜底）
-- `scripts/rag_ask.py` → 问答路由（枚举/结构化直查/多路检索/实体直取 → LLM 生成）
+- `scripts/rag_ask.py` → 问答路由（枚举/结构化直查/多路检索/实体直取 → LLM 生成）；`ask_stream()` 输出 `/api/ask/stream` 的 SSE 事件，`prepare_generation()` 让流式/非流式共用拒答与上下文逻辑
+- `scripts/start_server.py` → 统一启动入口（单进程默认预热 embedding/索引；`WEB_CONCURRENCY`、`RAG_PREWARM` 可调）
 - `scripts/gen_eval_set.py` → 评测集自动生成；`scripts/eval_retrieval.py` → 检索评测
 - `scripts/build_eval_manifest.py` → 固化评测集/索引/参数/Prompt 版本；`scripts/rag_trace.py` → 脱敏 Trace 与反馈存储
 - `scripts/review_bad_cases.py` / `scripts/replay_bad_cases.py` → 反馈隔离审核、批准坏例回放和建议归因
