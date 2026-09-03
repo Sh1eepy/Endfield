@@ -152,10 +152,13 @@ class LLMClient:
                 if resp.status_code == 200:
                     data = resp.json()
                     usage = data.get("usage") if isinstance(data, dict) else None
+                    choices = data.get("choices") if isinstance(data, dict) else None
+                    finish_reason = choices[0].get("finish_reason") if choices else None
                     _emit_event({
                         "status": "ok", "model": data.get("model", self.model),
                         "attempt": attempt + 1,
                         "elapsed_ms": round((time.perf_counter() - started) * 1000, 2),
+                        "finish_reason": finish_reason,
                         "prompt_tokens": (usage or {}).get("prompt_tokens"),
                         "completion_tokens": (usage or {}).get("completion_tokens"),
                         "total_tokens": (usage or {}).get("total_tokens"),
@@ -193,14 +196,33 @@ class LLMClient:
 
     # ---------- 对外接口 ----------
     def chat(self, prompt, system=None, temperature=0.3, max_tokens=1024, timeout=None):
-        """普通对话 → 返回回答文本 str。"""
+        """普通对话 → 返回回答文本 str；命中长度上限时自动续写一次。"""
         messages = []
         if system:
             messages.append({"role": "system", "content": system})
         messages.append({"role": "user", "content": prompt})
-        data = self._chat_completions(messages, temperature=temperature,
-                                      max_tokens=max_tokens, timeout=timeout)
-        return (data["choices"][0]["message"]["content"] or "").strip()
+        parts = []
+        budget = max_tokens
+        for round_index in range(2):
+            data = self._chat_completions(messages, temperature=temperature,
+                                          max_tokens=budget, timeout=timeout)
+            choice = data["choices"][0]
+            content = choice["message"].get("content") or ""
+            if content:
+                parts.append(content)
+            if choice.get("finish_reason") != "length":
+                return "".join(parts).strip()
+            if round_index == 1:
+                raise RuntimeError("LLM 回答连续两次达到长度上限")
+            if content:
+                messages.extend([
+                    {"role": "assistant", "content": content},
+                    {"role": "user", "content": "请从刚才截断处继续，只输出尚未输出的正文，不要复述。"},
+                ])
+            else:
+                # 推理模型可能先耗尽思考预算而正文仍为空；原请求用更大预算重试。
+                budget = min(max(2 * budget, budget + 512), 4096)
+        raise RuntimeError("LLM 回答生成异常")
 
     def chat_json(self, prompt, system=None, temperature=0.1, max_tokens=1024, timeout=None):
         """强制 JSON 输出 → 返回 dict（意图识别/测试集生成/结构化抽取用）。
@@ -227,7 +249,7 @@ class LLMClient:
         return self._extract_json(content)
 
     def chat_stream(self, prompt, system=None, temperature=0.3, max_tokens=1024, timeout=None,
-                    abort=None):
+                    abort=None, _messages=None, _continuations_left=1):
         """流式对话（SSE 增量）→ 逐段产出回答文本的生成器。
 
         与 chat() 使用同一套 prompt/参数/密钥纪律，只是把 stream=True 的增量解析后
@@ -241,10 +263,11 @@ class LLMClient:
         """
         if not self.available():
             raise RuntimeError("LLM_API_KEY 未配置：请在 .env 中填写（参考 .env.example），或走降级路径")
-        messages = []
-        if system:
-            messages.append({"role": "system", "content": system})
-        messages.append({"role": "user", "content": prompt})
+        messages = list(_messages) if _messages is not None else []
+        if _messages is None:
+            if system:
+                messages.append({"role": "system", "content": system})
+            messages.append({"role": "user", "content": prompt})
         url = self.base_url.rstrip("/") + "/chat/completions"
         payload = {
             "model": self.model,
@@ -263,6 +286,8 @@ class LLMClient:
                 raise RuntimeError("LLM 流式生成已中止")
             started = time.perf_counter()
             emitted = False
+            emitted_parts = []
+            finish_reason = None
             status_code = None
             try:
                 with httpx.Client(timeout=timeout or self.timeout) as client:
@@ -285,10 +310,36 @@ class LLMClient:
                             choices = chunk.get("choices") or []
                             if not choices:
                                 continue
-                            delta = (choices[0].get("delta") or {}).get("content") or ""
+                            choice = choices[0]
+                            if choice.get("finish_reason") is not None:
+                                finish_reason = choice.get("finish_reason")
+                            delta = (choice.get("delta") or {}).get("content") or ""
                             if delta:
                                 emitted = True
+                                emitted_parts.append(delta)
                                 yield delta
+                if finish_reason == "length":
+                    if _continuations_left <= 0:
+                        raise RuntimeError("LLM 流式回答连续两次达到长度上限")
+                    _emit_event({"status": "continue", "model": self.model,
+                                 "attempt": attempt + 1,
+                                 "elapsed_ms": round((time.perf_counter() - started) * 1000, 2),
+                                 "error_type": "finish_reason_length"})
+                    if emitted_parts:
+                        next_messages = messages + [
+                            {"role": "assistant", "content": "".join(emitted_parts)},
+                            {"role": "user", "content": "请从刚才截断处继续，只输出尚未输出的正文，不要复述。"},
+                        ]
+                        next_budget = max_tokens
+                    else:
+                        # 正文尚未开始，通常是推理预算耗尽；扩大预算后重跑原请求。
+                        next_messages = messages
+                        next_budget = min(max(2 * max_tokens, max_tokens + 512), 4096)
+                    yield from self.chat_stream(
+                        "", temperature=temperature, max_tokens=next_budget, timeout=timeout,
+                        abort=abort, _messages=next_messages,
+                        _continuations_left=_continuations_left - 1)
+                    return
                 _emit_event({"status": "ok", "model": self.model, "attempt": attempt + 1,
                              "elapsed_ms": round((time.perf_counter() - started) * 1000, 2)})
                 return

@@ -467,10 +467,11 @@ def multi_search(query, top_k=5, plan=None, trace=None):
 
 # “喜欢/中意/信任”通常不是 Wiki 的结构化事实字段。此类问题先定位人物，再从原文
 # 提取包含关系对象和态度线索的局部证据，不把一次模型解读永久写入图谱。
-INTERPRETIVE_WORDS = ("喜欢", "中意", "在意", "讨厌", "信任", "敬重", "害怕", "态度", "怎么看", "感情",
+INTERPRETIVE_WORDS = ("喜欢", "中意", "在意", "讨厌", "信任", "信赖", "敬重", "害怕", "态度", "怎么看", "感情",
                       "可爱", "漂亮", "帅", "有趣")
 GENERIC_RELATION_TARGETS = ("管理员", "终末地工业", "罗德岛")
 RELATION_CUE_WORDS = ("妹妹", "哥哥", "姐姐", "弟弟", "父亲", "母亲", "师父", "徒弟", "朋友", "队友")
+GEN_ANSWER_MAX_TOKENS = 1600
 
 
 def is_interpretive_relation(query):
@@ -490,31 +491,50 @@ def relationship_evidence_hits(query, limit=8):
     """为人物态度/性格判断抽取可读证据窗口，而非生成事实边。"""
     q = query or ""
     kb = _get_kb_names()
-    entity_names = sorted([n for n in kb if n and n in q], key=len, reverse=True)
-    targets = entity_names[:2] + [x for x in GENERIC_RELATION_TARGETS if x in q]
-    targets = list(dict.fromkeys(targets))
-    if not targets:
+    # “管理员”等泛称只能作为关系对象，不能单独证明命中了“庄方宜对管理员”这类问题。
+    # 先锁定具体主体，再要求证据窗口同时包含关系对象/亲属线索；否则全库中任何提到
+    # “管理员”的语音都会以高分挤走真正的人物档案。
+    entity_names = sorted(
+        [n for n in kb if n and n in q and n not in GENERIC_RELATION_TARGETS],
+        key=lambda n: (q.find(n), -len(n)),
+    )
+    subject = entity_names[0] if entity_names else None
+    relation_targets = entity_names[1:2]
+    relation_targets += [x for x in GENERIC_RELATION_TARGETS if x in q]
+    relation_targets += [x for x in RELATION_CUE_WORDS if x in q]
+    relation_targets = list(dict.fromkeys(relation_targets))
+    if not subject:
         return []
     candidates = []
-    # 主人物条目优先，同时搜索任务/档案中两者共同出现的情节证据。
+    # 主人物条目优先，同时搜索任务/档案中主体和对象共同出现的情节证据。
     for entry in _load_all_kb_entries():
         text = entry.get("full_text") or ""
-        if not text or not any(t in text or t == entry.get("name") for t in targets):
+        subject_entry = entry.get("name") == subject
+        if not text or (not subject_entry and subject not in text):
             continue
         units = [u.strip() for u in __import__("re").split(r"\n+|(?<=[。！？!?])", text) if u.strip()]
         for i, unit in enumerate(units):
-            window = "\n".join(units[max(0, i - 1):min(len(units), i + 2)])
-            target_hits = sum(t in window for t in targets)
+            # 关系判断常依赖前一句行为、后一句评价；多保留一句前文，避免只留下
+            # “这种信赖”而丢失“签署长期合作协议”这一指代对象。
+            window = "\n".join(units[max(0, i - 2):min(len(units), i + 2)])
+            if relation_targets and not any(t in window for t in relation_targets):
+                continue
+            subject_hit = subject_entry or subject in window
+            if not subject_hit:
+                continue
+            target_hits = sum(t in window for t in relation_targets)
             attitude_hits = sum(w in window for w in INTERPRETIVE_WORDS)
             relation_hits = sum(w in window for w in RELATION_CUE_WORDS if w in q)
             dialogue_bonus = int("管理员" in window or "档案" in text or entry.get("category") == "任务")
-            score = target_hits * 3 + attitude_hits * 2 + relation_hits * 4 + dialogue_bonus
-            if target_hits and score >= 4:
+            subject_bonus = 3 if subject_entry else 1
+            score = subject_bonus + target_hits * 4 + attitude_hits * 2 + relation_hits * 4 + dialogue_bonus
+            if (target_hits or not relation_targets) and score >= 4:
                 candidates.append((score, len(window), entry, window))
     candidates.sort(key=lambda x: (-x[0], x[1]))
     out, seen = [], set()
     for score, _length, entry, window in candidates:
-        key = (entry["name"], window)
+        # 一个来源只保留其最高分窗口，避免同一长档案的相邻切片占满 top-k。
+        key = (entry["name"], entry["item_id"])
         if key in seen:
             continue
         seen.add(key)
@@ -677,7 +697,7 @@ def _load_all_kb_entries():
     return _load_all_kb_entries._cache
 
 
-def enum_lookup(query, limit=40):
+def enum_lookup(query, limit=None):
     """枚举查询：按主题关键词在知识库分类内过滤，返回匹配条目名列表。
 
     "终末地至今为止的主线任务有哪些" → 任务分类中含 第一章/序章/进程 的条目名
@@ -709,8 +729,11 @@ def enum_lookup(query, limit=40):
                 if any(k in n for k in keywords) and n not in matched:
                     matched.append(n)
         if matched:
+            names = sorted(matched)
+            if limit is not None:
+                names = names[:max(0, int(limit))]
             return {"label": label, "category": category,
-                    "names": sorted(matched)[:limit]}
+                    "names": names}
     return None
 
 
@@ -774,6 +797,14 @@ QUERY_STOP_WORDS = {
     "什么", "怎么", "怎样", "如何", "是不是", "是否", "来着", "叫啥", "叫什么", "哪个",
     "哪里", "为啥", "为什么", "一下", "介绍", "告诉", "这个", "那个", "可以", "觉得",
 }
+
+
+def format_enum_answer(enum):
+    """把完整枚举确定性渲染为 Markdown，不让 LLM/token 上限裁掉条目。"""
+    names = list((enum or {}).get("names") or [])
+    label = str((enum or {}).get("label") or "相关条目")
+    lines = "\n".join(f"{i}. {name}" for i, name in enumerate(names, 1))
+    return f"知识库中共找到 {len(names)} 个{label}：\n\n{lines}"
 
 
 def extract_focus_terms(query):
@@ -898,7 +929,8 @@ def gen_answer(query, hits, top_k=5):
     if kind == "reject":
         return {"answer": prep["answer"], "rejected": True, "hits": prep["hits"]}
     try:
-        answer = llm.chat(prep["prompt"], system=prep["system"], temperature=0.3, max_tokens=800)
+        answer = llm.chat(prep["prompt"], system=prep["system"], temperature=0.3,
+                          max_tokens=GEN_ANSWER_MAX_TOKENS)
     except Exception:
         return None
     return {"answer": answer, "rejected": False, "sources": prep["sources"]}
@@ -933,27 +965,8 @@ def ask(query, top_k=5, gen_answer_=False, trace=None):
         result = {"ok": True, "intent": intent or "枚举", "method": method,
                   "route_used": "enum", "enum": enum,
                   "names": enum["names"], "count": len(enum["names"])}
-        if gen_answer_ and llm.available():
-            enum_names = enum["names"][:40]
-            names_list = "\n".join(f"[来源{i + 1}] {name}" for i, name in enumerate(enum_names))
-            truncated_note = (f"这里只提供前 {len(enum_names)} 项用于整理，完整结果共 {len(enum['names'])} 项；"
-                              "不得把当前清单说成完整清单。" if len(enum["names"]) > len(enum_names)
-                              else f"当前清单包含完整的 {len(enum_names)} 项。")
-            try:
-                ans = llm.chat(
-                    f"知识库中{enum['label']}相关条目总数：{len(enum['names'])}。\n"
-                    f"{truncated_note}\n条目如下：\n{names_list}\n\n"
-                    f"问题：{query}\n请基于这些条目整理成清晰的回答（有章节/分类就分组，"
-                    "准确说明总数；清单被截断时必须明确说明只展示前若干项）。",
-                    system=GEN_SYSTEM, temperature=0.3, max_tokens=800)
-                result["answer"] = ans
-                result["rejected"] = False
-                result["sources"] = [
-                    {"name": name, "category": enum["category"], "score": 1.0}
-                    for name in enum_names
-                ]
-            except Exception:
-                pass
+        if gen_answer_:
+            result.update({"answer": format_enum_answer(enum), "rejected": False})
         return result
 
     # 结构化直查条件：
@@ -1050,23 +1063,6 @@ def warm_index():
 # ===================== 流式问答（/api/ask/stream）=====================
 
 
-def _enum_meta_and_prompt(query, result):
-    """构造枚举整理的 prompt 与来源列表（与 ask() 中非流式整理逐字一致）。"""
-    enum = result.get("enum") or {}
-    enum_names = (enum.get("names") or [])[:40]
-    total = result.get("count") or len(enum.get("names") or [])
-    names_list = "\n".join(f"[来源{i + 1}] {name}" for i, name in enumerate(enum_names))
-    truncated_note = (f"这里只提供前 {len(enum_names)} 项用于整理，完整结果共 {total} 项；"
-                      "不得把当前清单说成完整清单。" if total > len(enum_names)
-                      else f"当前清单包含完整的 {len(enum_names)} 项。")
-    prompt = (f"知识库中{enum.get('label') or ''}相关条目总数：{total}。\n{truncated_note}\n"
-              f"条目如下：\n{names_list}\n\n问题：{query}\n请基于这些条目整理成清晰的回答"
-              "（有章节/分类就分组，准确说明总数；清单被截断时必须明确说明只展示前若干项）。")
-    sources = [{"name": name, "category": enum.get("category") or "", "score": 1.0}
-               for name in enum_names]
-    return prompt, sources
-
-
 def ask_stream(query, top_k=5, gen_answer=True, trace=None, abort=None):
     """流式问答编排：路由/检索阶段与 ask() 完全一致，仅把 LLM 生成改为增量产出。
 
@@ -1088,35 +1084,17 @@ def ask_stream(query, top_k=5, gen_answer=True, trace=None, abort=None):
         yield {"event": "done", "data": result}
         return
     route = result.get("route_used")
-    # 结构化直查 / 未配 LLM / 关闭生成：与 ask(gen_answer_=True) 一致，不生成答案
-    if route == "structured" or not gen_answer or not llm.available():
+    # 结构化直查 / 关闭生成：与 ask(gen_answer_=True) 一致，不生成答案
+    if route == "structured" or not gen_answer:
         yield {"event": "done", "data": result}
         return
     if route == "enum":
-        prompt, sources = _enum_meta_and_prompt(q, result)
-        meta = {"ok": True, "intent": result.get("intent") or "枚举", "method": result.get("method"),
-                "route_used": "enum", "sources": sources}
-        if trace:
-            meta["trace_id"] = trace.trace_id
-        yield {"event": "meta", "data": meta}
-        try:
-            parts = []
-            with trace.span("llm_generation") if trace else nullcontext():
-                for text in llm.chat_stream(prompt, system=GEN_SYSTEM, temperature=0.3,
-                                            max_tokens=800, abort=abort):
-                    parts.append(text)
-                    yield {"event": "delta", "data": {"text": text}}
-        except Exception:
-            # 与 ask() 枚举整理一致：LLM 失败时静默保留检索结果
-            # 但已经向客户端发送过文字时必须上抛，让 API 发 error 事件并保留半成品；
-            # 若此处再发一个无 answer 的 done，前端会把已显示的内容覆盖掉。
-            if parts:
-                raise
-            yield {"event": "done", "data": result}
-            return
         merged = dict(result)
-        merged.update({"answer": "".join(parts), "rejected": False, "sources": sources})
+        merged.update({"answer": format_enum_answer(result.get("enum")), "rejected": False})
         yield {"event": "done", "data": merged}
+        return
+    if not llm.available():
+        yield {"event": "done", "data": result}
         return
 
     # rag / hybrid_relation / graph：先生成准备（含拒答判断），再流式生成
@@ -1141,7 +1119,7 @@ def ask_stream(query, top_k=5, gen_answer=True, trace=None, abort=None):
         parts = []
         with trace.span("llm_generation") if trace else nullcontext():
             for text in llm.chat_stream(prep["prompt"], system=prep["system"], temperature=0.3,
-                                        max_tokens=800, abort=abort):
+                                        max_tokens=GEN_ANSWER_MAX_TOKENS, abort=abort):
                 parts.append(text)
                 yield {"event": "delta", "data": {"text": text}}
     except Exception:

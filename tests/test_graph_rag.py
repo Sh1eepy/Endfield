@@ -62,6 +62,22 @@ class GraphRAGTests(unittest.TestCase):
         self.assertFalse(is_interpretive_relation("诀属于哪个组织"))
         self.assertFalse(is_interpretive_relation("莱万汀喜欢吃什么"))
 
+    def test_relationship_evidence_requires_subject_and_target(self):
+        kb = {"测试人物": {"category": "干员", "full_text": ""},
+              "管理员": {"category": "干员", "full_text": ""}}
+        entries = [
+            {"name": "测试人物", "category": "干员", "item_id": "1",
+             "full_text": "记录：她对管理员十分信任，并毫不犹豫地签下合作协议。"},
+            {"name": "无关人物语音", "category": "语音", "item_id": "2",
+             "full_text": "管理员，今天也辛苦了。"},
+        ]
+        with patch.object(rag_ask, "_get_kb_names", return_value=kb), \
+                patch.object(rag_ask, "_load_all_kb_entries", return_value=entries):
+            hits = relationship_evidence_hits("测试人物对管理员的态度")
+        self.assertTrue(hits)
+        self.assertTrue(all(h["meta"]["name"] == "测试人物" for h in hits))
+        self.assertTrue(all("管理员" in h["text"] for h in hits))
+
     def test_semantic_planner_distinguishes_preference_from_relation(self):
         planned = {"question_type": "preference", "topic": "饮食偏好",
                    "entities": ["莱万汀"], "keywords": ["食物", "饮食", "喜欢"],
@@ -99,19 +115,28 @@ class GraphRAGTests(unittest.TestCase):
         self.assertIn("远端答案", focused)
         self.assertLessEqual(len(focused), 520)
 
-    def test_large_enum_prompt_discloses_total_and_truncation(self):
+    def test_large_enum_returns_every_name_without_llm_truncation(self):
         names = [f"任务{i}" for i in range(55)]
         enum = {"names": names, "label": "主线任务", "category": "任务"}
         with patch.object(rag_ask, "classify_query", return_value=("知识", 1.0, "rule")), \
                 patch.object(rag_ask, "enum_lookup", return_value=enum), \
-                patch.object(rag_ask.llm, "available", return_value=True), \
-                patch.object(rag_ask.llm, "chat", return_value="整理结果") as chat:
+                patch.object(rag_ask.llm, "chat") as chat:
             result = rag_ask.ask("主线任务有哪些", gen_answer_=True)
-        prompt = chat.call_args.args[0]
         self.assertEqual(result["count"], 55)
-        self.assertIn("总数：55", prompt)
-        self.assertIn("前 40 项", prompt)
-        self.assertIn("不得把当前清单说成完整清单", prompt)
+        self.assertEqual(result["names"], names)
+        self.assertIn("共找到 55 个主线任务", result["answer"])
+        self.assertIn("55. 任务54", result["answer"])
+        chat.assert_not_called()
+
+    def test_enum_lookup_default_keeps_all_matches(self):
+        entries = [
+            {"name": f"第一章 - 进程 - 任务{i}", "category": "任务", "item_id": str(i),
+             "full_text": ""}
+            for i in range(55)
+        ]
+        with patch.object(rag_ask, "_load_all_kb_entries", return_value=entries):
+            result = rag_ask.enum_lookup("列出所有主线任务")
+        self.assertEqual(len(result["names"]), 55)
 
     def test_generation_helper_preserves_or_merges_route_result(self):
         base = {"ok": True, "route_used": "rag"}

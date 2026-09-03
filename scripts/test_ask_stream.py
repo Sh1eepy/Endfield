@@ -129,7 +129,7 @@ class PrepareGenerationTests(unittest.TestCase):
         self.assertEqual(out["answer"], "答案文本")
         self.assertFalse(out["rejected"])
         self.assertEqual(out["sources"][0]["name"], "重息壤")
-        self.assertEqual(stub.calls["chat"][0][1]["max_tokens"], 800)
+        self.assertEqual(stub.calls["chat"][0][1]["max_tokens"], rag_ask.GEN_ANSWER_MAX_TOKENS)
 
 
 class AskStreamTests(unittest.TestCase):
@@ -204,12 +204,12 @@ class AskStreamTests(unittest.TestCase):
             p.stop()
         self.assertEqual([e["event"] for e in events], ["phase", "done"])
 
-    def test_enum_route_streams_enum_answer(self):
+    def test_enum_route_returns_complete_deterministic_answer(self):
         enum_result = {"ok": True, "intent": "枚举", "method": "rule", "route_used": "enum",
                        "enum": {"label": "主线任务", "category": "任务",
                                 "names": ["序章", "第一章"]},
                        "names": ["序章", "第一章"], "count": 2}
-        stub, p = _use_llm(stream_parts=["第一段。", "第二段。"])
+        stub, p = _use_llm(available=False)
         ask_p = patch.object(rag_ask, "ask", return_value=enum_result)
         ask_p.start()
         try:
@@ -217,12 +217,11 @@ class AskStreamTests(unittest.TestCase):
         finally:
             ask_p.stop()
             p.stop()
-        self.assertEqual([e["event"] for e in events],
-                         ["phase", "meta", "delta", "delta", "done"])
-        meta = events[1]["data"]
-        self.assertEqual(len(meta["sources"]), 2)
-        self.assertEqual(events[-1]["data"]["answer"], "第一段。第二段。")
+        self.assertEqual([e["event"] for e in events], ["phase", "done"])
+        self.assertIn("共找到 2 个主线任务", events[-1]["data"]["answer"])
+        self.assertIn("2. 第一章", events[-1]["data"]["answer"])
         self.assertEqual(events[-1]["data"]["route_used"], "enum")
+        self.assertEqual(stub.calls["chat_stream"], [])
 
     def test_preset_abort_stops_without_delta(self):
         stub, p = _use_llm(stream_parts=["x"])
@@ -259,6 +258,63 @@ class AskStreamTests(unittest.TestCase):
 
 
 class LLMClientStreamTests(unittest.TestCase):
+    def test_non_stream_continues_when_provider_reports_length(self):
+        client = LLMClient()
+        first = {"choices": [{"message": {"content": "前半段"}, "finish_reason": "length"}]}
+        second = {"choices": [{"message": {"content": "后半段"}, "finish_reason": "stop"}]}
+        with patch.object(client, "_chat_completions", side_effect=[first, second]) as call:
+            answer = client.chat("问题", max_tokens=800)
+        self.assertEqual(answer, "前半段后半段")
+        self.assertEqual(call.call_count, 2)
+        continued_messages = call.call_args_list[1].args[0]
+        self.assertEqual(continued_messages[-2]["role"], "assistant")
+        self.assertIn("截断处继续", continued_messages[-1]["content"])
+
+    def test_non_stream_expands_budget_when_length_has_no_body(self):
+        client = LLMClient()
+        first = {"choices": [{"message": {"content": ""}, "finish_reason": "length"}]}
+        second = {"choices": [{"message": {"content": "完整正文"}, "finish_reason": "stop"}]}
+        with patch.object(client, "_chat_completions", side_effect=[first, second]) as call:
+            answer = client.chat("问题", max_tokens=800)
+        self.assertEqual(answer, "完整正文")
+        self.assertEqual(call.call_args_list[0].kwargs["max_tokens"], 800)
+        self.assertEqual(call.call_args_list[1].kwargs["max_tokens"], 1600)
+        self.assertEqual(call.call_args_list[1].args[0], call.call_args_list[0].args[0])
+
+    def test_stream_continues_when_provider_reports_length(self):
+        responses = [
+            [
+                'data: {"choices":[{"delta":{"content":"前半段"},"finish_reason":null}]}',
+                'data: {"choices":[{"delta":{},"finish_reason":"length"}]}',
+                "data: [DONE]",
+            ],
+            [
+                'data: {"choices":[{"delta":{"content":"后半段"},"finish_reason":null}]}',
+                'data: {"choices":[{"delta":{},"finish_reason":"stop"}]}',
+                "data: [DONE]",
+            ],
+        ]
+
+        class Response:
+            status_code = 200
+            def __init__(self, lines): self.lines = lines
+            def __enter__(self): return self
+            def __exit__(self, *_args): return False
+            def iter_lines(self): return iter(self.lines)
+
+        class Client:
+            def __init__(self, *_args, **_kwargs): pass
+            def __enter__(self): return self
+            def __exit__(self, *_args): return False
+            def stream(self, *_args, **_kwargs): return Response(responses.pop(0))
+
+        client = LLMClient()
+        client.api_key = "test-only"
+        with patch("scripts.llm_client.httpx.Client", Client):
+            answer = "".join(client.chat_stream("问题", max_tokens=800))
+        self.assertEqual(answer, "前半段后半段")
+        self.assertEqual(responses, [])
+
     def test_preset_abort_does_not_open_or_retry_request(self):
         client = LLMClient()
         client.api_key = "test-only"
