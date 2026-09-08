@@ -8,10 +8,12 @@ os.environ["LLM_API_KEY"] = ""
 os.environ["HF_HUB_OFFLINE"] = "1"
 from scripts import rag_ask
 from scripts import api_server
+from scripts import build_eval_manifest, eval_answers
 from scripts.build_knowledge_graph import (GraphBuilder, content_hash as graph_content_hash,
                                            create_schema)
 from scripts.build_rag import diff_chunks
 from scripts.llm_client import LLMClient
+from scripts.rag_search import RAGRetriever
 
 
 class EntityTests(unittest.TestCase):
@@ -38,6 +40,30 @@ class EntityTests(unittest.TestCase):
             result = rag_ask.rag_search("佩丽卡是谁")
         self.assertEqual(retriever.search.call_count, 1)
         self.assertEqual(result[0]["meta"]["name"], "佩丽卡")
+
+    def test_multi_search_merges_distinct_chunks_from_one_source(self):
+        meta = {"name": "条目", "category": "档案", "item_id": "7"}
+        hits = [[{"meta": dict(meta, chunk_index=0), "text": "第一段证据", "score": .2}],
+                [{"meta": dict(meta, chunk_index=1), "text": "第二段证据", "score": .3}]]
+        plan = {"routes": ["rag"], "search_queries": ["原问题", "补充查询"]}
+        with patch.object(rag_ask, "rag_search", side_effect=hits):
+            result = rag_ask.multi_search("原问题", plan=plan)
+        self.assertEqual(len(result), 1)
+        self.assertIn("第一段证据", result[0]["text"])
+        self.assertIn("第二段证据", result[0]["text"])
+        self.assertEqual(result[0]["score"], .3)
+
+    def test_spoken_suffix_and_duplicate_chunks_do_not_hide_item(self):
+        retriever = RAGRetriever.__new__(RAGRetriever)
+        retriever.metas = [
+            {"name": "更换装备", "category": "语音", "item_id": "1", "chunk_index": 0},
+            {"name": "紫晶装备原件", "category": "物品", "item_id": "2", "chunk_index": 0},
+            {"name": "紫晶装备原件", "category": "物品", "item_id": "2", "chunk_index": 1},
+        ]
+        names = [retriever.metas[i]["name"] for i, _ in
+                 retriever.name_search("紫晶装备怎么弄", 5)]
+        self.assertEqual(names[0], "紫晶装备原件")
+        self.assertEqual(names.count("紫晶装备原件"), 1)
 
 
 class IndexTests(unittest.TestCase):
@@ -76,6 +102,19 @@ class ApiBoundaryTests(unittest.TestCase):
     def test_synthesis_resource_limits_are_enforced(self):
         self.assertFalse(api_server.synthesis("x" * 301)["ok"])
         self.assertFalse(api_server.synthesis("重息壤", max_depth=11)["ok"])
+
+
+class EvaluationTests(unittest.TestCase):
+    def test_manifest_versions_retrieval_implementation(self):
+        manifest = build_eval_manifest.build_manifest()
+        self.assertEqual(manifest["schema_version"], 3)
+        self.assertIn("scripts/rag_ask.py", manifest["implementation"])
+
+    def test_judge_receives_retrieved_text_and_source_identity(self):
+        result = {"hits": [{"meta": {"name": "条目", "category": "档案", "item_id": "7"},
+                            "text": "可核查原文", "score": 1.0}]}
+        self.assertEqual(eval_answers.judge_evidence(result)[0], {
+            "name": "条目", "category": "档案", "item_id": "7", "text": "可核查原文"})
 
 
 class StreamTests(unittest.TestCase):

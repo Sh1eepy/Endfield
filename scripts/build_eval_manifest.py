@@ -17,6 +17,14 @@ DATASETS = {
     "answer": "output/eval/answer_eval_set.jsonl",
     "graph": "output/eval/graph_eval_set.jsonl",
 }
+IMPLEMENTATION_FILES = (
+    "scripts/rag_config.py", "scripts/rag_prompts.py", "scripts/intent_router.py",
+    "scripts/build_rag.py", "scripts/rag_search.py", "scripts/rag_ask.py", "scripts/graph_search.py",
+    "scripts/build_knowledge_graph.py", "scripts/llm_client.py",
+    "scripts/eval_case.py", "scripts/eval_retrieval.py", "scripts/eval_rag.py",
+    "scripts/eval_pipeline.py",
+    "scripts/eval_answers.py", "scripts/eval_graph.py", "scripts/quality_gate.py",
+)
 
 
 def text_sha256(path):
@@ -49,12 +57,13 @@ def build_manifest():
                           "rows": sum(bool(x.strip()) for x in path.read_text(encoding="utf-8").splitlines())}
     manifest_path = ROOT / "output" / "rag" / "chunks.json"
     comparable = {
-        "schema_version": 2,
+        "schema_version": 3,
         "index_manifest_sha256": text_sha256(manifest_path),
         "embedding_model": EMBEDDING_MODEL,
         "prompt_versions": PROMPT_VERSIONS,
         "retrieval": retrieval_config(),
         "datasets": datasets,
+        "implementation": {rel: text_sha256(ROOT / rel) for rel in IMPLEMENTATION_FILES},
         "sets": {"dev": ["retrieval", "routing"], "holdout": [], "challenge": [],
                  "production_sample": []},
         "privacy": {"ordinary_trace_query": "sha256+length",

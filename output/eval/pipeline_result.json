@@ -1,11 +1,31 @@
 {
+  "metadata": {
+    "manifest_id": "sha256:177a178f953fc53b70568a6caa1325cd294a205ea0e7c7e8ef2f8bcd8d382842",
+    "git_commit": "83947526ef85bab7a20efa47427b8f16623b3748",
+    "git_dirty": true,
+    "llm_model": "deepseek-v4-flash",
+    "index_manifest_sha256": "226af200cf8cea9f5d51ffc58814b2d494d3a8861d2bab69f410c045b2bea31c",
+    "prompt_versions": {
+      "intent": "sha256:c5856069f5ef4abc",
+      "semantic_plan": "sha256:086f8212123a4767",
+      "answer": "sha256:aac1e18c8eee287b",
+      "judge": "sha256:f4610cda14bcc64f"
+    },
+    "retrieval": {
+      "bm25_top_n": 20,
+      "vector_top_n": 20,
+      "name_top_n_min": 10,
+      "rrf_k": 60,
+      "final_top_k": 5
+    }
+  },
   "summary": {
     "n": 25,
-    "intent_accuracy": 0.92,
-    "classified_rate": 1.0,
-    "accuracy_on_classified": 0.92,
+    "intent_accuracy": 0.72,
+    "classified_rate": 0.8,
+    "accuracy_on_classified": 0.9,
     "route_accuracy": 0.92,
-    "llm_enabled": true
+    "llm_enabled": false
   },
   "details": [
     {
@@ -81,11 +101,11 @@
     {
       "query": "种植机可以加工哪些东西",
       "gold_intent": "设备",
-      "pred_intent": "设备",
-      "intent_method": "llm",
-      "confidence": 0.9,
+      "pred_intent": null,
+      "intent_method": "pending",
+      "confidence": 0.0,
       "route_used": "structured",
-      "intent_ok": true,
+      "intent_ok": false,
       "route_ok": true
     },
     {
@@ -131,11 +151,11 @@
     {
       "query": "武陵地区有什么特点",
       "gold_intent": "知识",
-      "pred_intent": "知识",
-      "intent_method": "llm",
-      "confidence": 0.9,
+      "pred_intent": null,
+      "intent_method": "pending",
+      "confidence": 0.0,
       "route_used": "rag",
-      "intent_ok": true,
+      "intent_ok": false,
       "route_ok": true
     },
     {
@@ -151,11 +171,11 @@
     {
       "query": "阿伯莉的密档讲了什么",
       "gold_intent": "知识",
-      "pred_intent": "知识",
-      "intent_method": "llm",
-      "confidence": 0.9,
+      "pred_intent": null,
+      "intent_method": "pending",
+      "confidence": 0.0,
       "route_used": "rag",
-      "intent_ok": true,
+      "intent_ok": false,
       "route_ok": true
     },
     {
@@ -191,11 +211,11 @@
     {
       "query": "碳块与重息壤用途有什么不同",
       "gold_intent": "比较",
-      "pred_intent": "比较",
-      "intent_method": "llm",
-      "confidence": 0.9,
+      "pred_intent": null,
+      "intent_method": "pending",
+      "confidence": 0.0,
       "route_used": "structured",
-      "intent_ok": true,
+      "intent_ok": false,
       "route_ok": false
     },
     {
@@ -241,11 +261,11 @@
     {
       "query": "诀精英化总共需要多少折金票",
       "gold_intent": "数值",
-      "pred_intent": "数值",
-      "intent_method": "llm",
-      "confidence": 0.9,
+      "pred_intent": null,
+      "intent_method": "pending",
+      "confidence": 0.0,
       "route_used": "rag",
-      "intent_ok": true,
+      "intent_ok": false,
       "route_ok": true
     },
     {

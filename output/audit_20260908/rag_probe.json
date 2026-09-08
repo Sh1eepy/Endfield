@@ -1,0 +1,142 @@
+{
+  "warm": {
+    "samples_ms": [
+      10097.761
+    ],
+    "median_ms": 10097.761,
+    "max_ms": 10097.761
+  },
+  "note": "Offline fallback planner; timings are not production LLM/TTFT measurements. Channel order fixed, n=3.",
+  "cases": [
+    {
+      "query": "重息壤是什么",
+      "channels": {
+        "bm25": {
+          "samples_ms": [
+            6.849,
+            6.747,
+            6.379
+          ],
+          "median_ms": 6.747,
+          "max_ms": 6.849
+        },
+        "vector": {
+          "samples_ms": [
+            128.33,
+            12.457,
+            10.596
+          ],
+          "median_ms": 12.457,
+          "max_ms": 128.33
+        },
+        "name": {
+          "samples_ms": [
+            5.714,
+            4.787,
+            5.077
+          ],
+          "median_ms": 5.077,
+          "max_ms": 5.714
+        }
+      },
+      "offline_pipeline": {
+        "samples_ms": [
+          24.118
+        ],
+        "median_ms": 24.118,
+        "max_ms": 24.118
+      },
+      "retrieval_calls": [
+        "重息壤是什么"
+      ],
+      "route": "rag",
+      "hit_count": 5
+    },
+    {
+      "query": "莱万汀喜欢吃什么",
+      "channels": {
+        "bm25": {
+          "samples_ms": [
+            7.993,
+            7.533,
+            7.355
+          ],
+          "median_ms": 7.533,
+          "max_ms": 7.993
+        },
+        "vector": {
+          "samples_ms": [
+            11.29,
+            11.021,
+            11.389
+          ],
+          "median_ms": 11.29,
+          "max_ms": 11.389
+        },
+        "name": {
+          "samples_ms": [
+            5.595,
+            5.182,
+            5.055
+          ],
+          "median_ms": 5.182,
+          "max_ms": 5.595
+        }
+      },
+      "offline_pipeline": {
+        "samples_ms": [
+          24.778
+        ],
+        "median_ms": 24.778,
+        "max_ms": 24.778
+      },
+      "retrieval_calls": [
+        "莱万汀喜欢吃什么"
+      ],
+      "route": "rag",
+      "hit_count": 2
+    },
+    {
+      "query": "陈千语和诀的关系",
+      "channels": {
+        "bm25": {
+          "samples_ms": [
+            9.705,
+            9.587,
+            9.386
+          ],
+          "median_ms": 9.587,
+          "max_ms": 9.705
+        },
+        "vector": {
+          "samples_ms": [
+            12.394,
+            12.177,
+            11.155
+          ],
+          "median_ms": 12.177,
+          "max_ms": 12.394
+        },
+        "name": {
+          "samples_ms": [
+            5.618,
+            5.953,
+            5.994
+          ],
+          "median_ms": 5.953,
+          "max_ms": 5.994
+        }
+      },
+      "offline_pipeline": {
+        "samples_ms": [
+          14.066
+        ],
+        "median_ms": 14.066,
+        "max_ms": 14.066
+      },
+      "retrieval_calls": [],
+      "route": "graph",
+      "hit_count": 5
+    }
+  ]
+}

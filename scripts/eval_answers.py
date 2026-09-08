@@ -24,6 +24,19 @@ JUDGE_KEYS = {
 }
 
 
+def judge_evidence(result, limit=5, max_chars=1800):
+    """Give the judge the same retrieved evidence used to generate the answer."""
+    evidence = []
+    for hit in (result.get("hits") or [])[:limit]:
+        meta = hit.get("meta") or {}
+        evidence.append({
+            "name": meta.get("name"), "category": meta.get("category"),
+            "item_id": meta.get("item_id"),
+            "text": str(hit.get("text") or "")[:max_chars],
+        })
+    return evidence
+
+
 def summarize(details):
     """汇总逐题结果，生成质量门禁读取的指标。"""
     keys = ["refusal_correct", "required_terms_coverage", "citation_present", "source_overlap"]
@@ -77,7 +90,8 @@ def main():
         item = {"query": case["query"], "result": result, "deterministic": scores}
         if args.judge and llm.available() and result.get("answer"):
             prompt = json.dumps({"question": case["query"], "required_terms": case.get("required_terms", []),
-                                 "answer": result.get("answer"), "sources": result.get("sources", [])}, ensure_ascii=False)
+                                 "answer": result.get("answer"), "sources": result.get("sources", []),
+                                 "retrieved_evidence": judge_evidence(result)}, ensure_ascii=False)
             try:
                 item["judge"] = llm.chat_json(
                     prompt + "\n" + judge_suffix, system=judge_system)

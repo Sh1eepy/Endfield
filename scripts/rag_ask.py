@@ -402,10 +402,19 @@ def multi_search(query, top_k=5, plan=None, trace=None):
         name = h["meta"].get("name") or ""
         key = (name, h["meta"].get("category") or "")
         if key in seen:
-            # 同一来源先被向量召回时，仍允许全文关键词结果补全正文和相关性标记。
             index = seen[key]
             if h.get("_keyword") and not all_hits[index].get("_direct"):
                 all_hits[index] = h
+            elif not (all_hits[index].get("_direct") or all_hits[index].get("_keyword")):
+                # 同一来源的不同 chunk 合并成一个证据块，避免来源去重时丢掉后续章节。
+                current = str(all_hits[index].get("text") or "")
+                extra = str(h.get("text") or "")
+                if extra and extra not in current:
+                    all_hits[index]["text"] = (current + "\n…\n" + extra)[:8000]
+                    all_hits[index]["_merged_chunks"] = int(
+                        all_hits[index].get("_merged_chunks") or 1) + 1
+                    all_hits[index]["score"] = max(
+                        float(all_hits[index].get("score") or 0), float(h.get("score") or 0))
             return
         seen[key] = len(all_hits)
         all_hits.append(h)

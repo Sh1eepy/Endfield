@@ -65,7 +65,8 @@ def load_userdict():
     dict_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                              "scripts", "dict_zh.txt")
     if os.path.exists(dict_path):
-        jieba.load_userdict(dict_path)
+        with open(dict_path, encoding="utf-8") as f:
+            jieba.load_userdict(f)
     _DICT_LOADED = True
 
 

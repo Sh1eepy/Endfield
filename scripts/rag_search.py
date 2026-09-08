@@ -161,26 +161,39 @@ class RAGRetriever:
         _load_userdict()
         self._ensure_lookup_indexes()
         q = re.sub(r"[\s·・:：,，。！？?!《》【】()（）\-]", "", query).lower()
+        q_core = q
+        for phrase in ("有什么区别", "哪个更好", "哪个更强", "哪个更值得练", "怎么合成",
+                       "怎么获得", "怎么获取", "怎么制作", "怎么弄", "哪里获取", "在哪里刷",
+                       "在哪里能找到", "是什么东西", "是啥东西", "是什么", "哪里多"):
+            q_core = q_core.replace(phrase, "")
         intent_tokens = {"攻略", "玩家攻略", "角色攻略", "怎么玩", "怎么用", "配队", "养成", "视频", "哪里看", "在哪看", "pv"}
         q_tokens = {t.strip().lower() for t in jieba.cut(query)
                     if len(t.strip()) >= 2 and t.strip().lower() not in intent_tokens}
         wants_guide = any(x in query for x in ("攻略", "怎么玩", "怎么用", "配队", "养成"))
         wants_video = any(x.lower() in query.lower() for x in ("pv", "视频", "哪里看", "在哪看"))
-        candidates = []
+        best_by_source = {}
         for i, (n, name_tokens, core, category) in enumerate(self._name_features):
             if not n:
                 continue
             overlap = q_tokens & name_tokens
             core_match = len(core) >= 2 and core in q
+            query_core_match = len(q_core) >= 2 and q_core in n
             contained = n in q or core_match or any(len(t) >= 2 and t in n for t in q_tokens)
             if not contained and not overlap:
                 continue
-            score = (8.0 if n in q else 0.0) + (20.0 if core_match else 0.0) + sum(len(t) for t in overlap)
+            score = ((8.0 if n in q else 0.0) +
+                     (20.0 if core_match or query_core_match else 0.0) +
+                     sum(len(t) for t in overlap))
             if wants_guide and "攻略" in category:
                 score += 12.0
             if wants_video and "视频" in category:
                 score += 6.0
-            candidates.append((i, score))
+            meta = self.metas[i]
+            source_key = (str(meta.get("category") or ""), str(meta.get("item_id") or ""),
+                          str(meta.get("name") or ""))
+            if source_key not in best_by_source or score > best_by_source[source_key][1]:
+                best_by_source[source_key] = (i, score)
+        candidates = list(best_by_source.values())
         candidates.sort(key=lambda x: (-x[1], len(str(self.metas[x[0]].get("name") or ""))))
         return candidates[:top_n]
 
@@ -212,7 +225,13 @@ class RAGRetriever:
         bm25_score = dict(bm25_hits)
         with trace.span("rrf_fusion") if trace else nullcontext():
             fused = self.rrf_fuse(bm25_hits, vec_hits, name_hits, k=fuse_k)
-        # 明确的攻略/视频请求中，名称+分类是强证据；只提升名称通道第一名，避免影响普通配方查询。
+        # 高置信名称命中必须留在最终上下文，避免同义内容在 BM25/向量两路把用户点名实体挤掉。
+        preferred = [i for i, score in name_hits if score >= 20.0][:3]
+        if preferred:
+            fused_scores = dict(fused)
+            fused = [(i, fused_scores.get(i, 0.0)) for i in preferred] + [
+                x for x in fused if x[0] not in preferred]
+        # 明确的攻略/视频请求中，名称+分类是强证据；只提升名称通道第一名。
         explicit_name_intent = any(x in query for x in ("攻略", "怎么玩", "怎么用", "配队", "养成", "视频", "哪里看", "在哪看")) or "pv" in query.lower()
         if explicit_name_intent and name_hits:
             preferred = name_hits[0][0]

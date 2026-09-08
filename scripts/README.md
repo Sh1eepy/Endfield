@@ -249,9 +249,15 @@ python scripts/eval_pipeline.py --allow-llm
 # 6 条答案/拒答小型黄金集；--judge 会产生在线调用
 python scripts/eval_answers.py --judge
 
-# 汇总索引、召回、路由和答案指标，任一低于阈值即返回非零退出码
+# 本地兼容门禁；旧评测缺少版本时给警告
 python scripts/quality_gate.py
+
+# 发布门禁；任何缺少 manifest 元数据的旧评测直接失败
+python scripts/quality_gate.py --require-versioned-results
 ```
+
+评测 manifest 同时哈希数据集、索引、检索参数、Prompt 和检索/路由/评测实现源码；答案 judge
+输入包含生成时实际使用的检索原文，避免只看来源名称就给出“忠实”评分。
 
 新增 API：`GET /api/health/deep` 做索引全链路一致性检查（LLM 仅检查配置，不产生费用）；
 `GET /api/metrics` 返回当前进程的请求数、错误率、路由分布、空检索率、LLM 降级率与
