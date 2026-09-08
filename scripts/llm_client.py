@@ -49,6 +49,14 @@ DEFAULT_MODEL = DEFAULT_LLM_MODEL
 _LLM_OBSERVER = ContextVar("llm_observer", default=None)
 
 
+def _positive_float_env(name, default):
+    try:
+        value = float(os.environ.get(name) or default)
+        return value if value > 0 else default
+    except (TypeError, ValueError):
+        return default
+
+
 @contextmanager
 def observe_llm(callback):
     """临时接收脱敏调用元数据；不改变 chat/chat_json 的返回类型。"""
@@ -103,7 +111,8 @@ class LLMClient:
         self.api_key = (os.environ.get("LLM_API_KEY") or "").strip()
         self.model = (os.environ.get("LLM_MODEL") or "").strip() or DEFAULT_MODEL
         self.base_url = (os.environ.get("LLM_BASE_URL") or "").strip() or self._guess_base_url()
-        self.timeout = float(os.environ.get("LLM_TIMEOUT") or "60")
+        self.timeout = _positive_float_env("LLM_TIMEOUT", 60.0)
+        self.total_timeout = _positive_float_env("LLM_TOTAL_TIMEOUT", 75.0)
         self.max_retries = 2  # 网络错误/5xx 重试次数（不含首次）
 
     # ---------- 配置 ----------
@@ -121,11 +130,18 @@ class LLMClient:
 
     def config_summary(self):
         """脱敏配置摘要（不含 key），供日志/调试。"""
-        return {"model": self.model, "base_url": self.base_url, "key_configured": bool(self.api_key)}
+        return {"model": self.model, "base_url": self.base_url, "key_configured": bool(self.api_key),
+                "timeout_seconds": self.timeout, "total_timeout_seconds": self.total_timeout}
+
+    def _remaining_timeout(self, deadline, per_request=None):
+        remaining = deadline - time.perf_counter()
+        if remaining <= 0:
+            raise RuntimeError("LLM 调用超过总时限")
+        return min(per_request or self.timeout, remaining)
 
     # ---------- 核心调用 ----------
     def _chat_completions(self, messages, temperature=0.3, max_tokens=1024,
-                          response_format=None, timeout=None):
+                          response_format=None, timeout=None, _deadline=None):
         """调用 /chat/completions，返回解析后的 JSON 响应体。"""
         if not self.available():
             raise RuntimeError("LLM_API_KEY 未配置：请在 .env 中填写（参考 .env.example），或走降级路径")
@@ -144,10 +160,11 @@ class LLMClient:
             "Content-Type": "application/json",
         }
         last_err = None
+        deadline = _deadline or (time.perf_counter() + (timeout or self.total_timeout))
         for attempt in range(self.max_retries + 1):
             started = time.perf_counter()
             try:
-                with httpx.Client(timeout=timeout or self.timeout) as client:
+                with httpx.Client(timeout=self._remaining_timeout(deadline, timeout)) as client:
                     resp = client.post(url, json=payload, headers=headers)
                 if resp.status_code == 200:
                     data = resp.json()
@@ -182,7 +199,12 @@ class LLMClient:
                              "error_type": e.__class__.__name__})
                 last_err = RuntimeError(f"LLM 网络错误: {e.__class__.__name__} ({e})")
             if attempt < self.max_retries:
-                time.sleep(1.5 * (attempt + 1))  # 1.5s / 3s 退避
+                delay = 1.5 * (attempt + 1)
+                if time.perf_counter() + delay >= deadline:
+                    break
+                time.sleep(delay)  # 1.5s / 3s 退避
+        if time.perf_counter() >= deadline:
+            raise RuntimeError("LLM 调用超过总时限") from last_err
         raise last_err or RuntimeError("LLM 调用失败（未知错误）")
 
     @staticmethod
@@ -203,9 +225,10 @@ class LLMClient:
         messages.append({"role": "user", "content": prompt})
         parts = []
         budget = max_tokens
+        deadline = time.perf_counter() + (timeout or self.total_timeout)
         for round_index in range(2):
             data = self._chat_completions(messages, temperature=temperature,
-                                          max_tokens=budget, timeout=timeout)
+                                          max_tokens=budget, timeout=timeout, _deadline=deadline)
             choice = data["choices"][0]
             content = choice["message"].get("content") or ""
             if content:
@@ -234,22 +257,23 @@ class LLMClient:
         if system:
             messages.append({"role": "system", "content": system})
         messages.append({"role": "user", "content": prompt})
+        deadline = time.perf_counter() + (timeout or self.total_timeout)
         try:
             data = self._chat_completions(
                 messages, temperature=temperature, max_tokens=max_tokens,
-                response_format={"type": "json_object"}, timeout=timeout)
+                response_format={"type": "json_object"}, timeout=timeout, _deadline=deadline)
             content = (data["choices"][0]["message"]["content"] or "").strip()
         except RuntimeError as e:
             # response_format 不被支持（个别服务商）→ 去掉后重试一次
             if "response_format" not in str(e) and "400" not in str(e):
                 raise
             data = self._chat_completions(messages, temperature=temperature,
-                                          max_tokens=max_tokens, timeout=timeout)
+                                          max_tokens=max_tokens, timeout=timeout, _deadline=deadline)
             content = (data["choices"][0]["message"]["content"] or "").strip()
         return self._extract_json(content)
 
     def chat_stream(self, prompt, system=None, temperature=0.3, max_tokens=1024, timeout=None,
-                    abort=None, _messages=None, _continuations_left=1):
+                    abort=None, _messages=None, _continuations_left=1, _deadline=None):
         """流式对话（SSE 增量）→ 逐段产出回答文本的生成器。
 
         与 chat() 使用同一套 prompt/参数/密钥纪律，只是把 stream=True 的增量解析后
@@ -281,6 +305,7 @@ class LLMClient:
             "Content-Type": "application/json",
         }
         last_err = None
+        deadline = _deadline or (time.perf_counter() + (timeout or self.total_timeout))
         for attempt in range(self.max_retries + 1):
             if abort is not None and abort.is_set():
                 raise RuntimeError("LLM 流式生成已中止")
@@ -290,12 +315,13 @@ class LLMClient:
             finish_reason = None
             status_code = None
             try:
-                with httpx.Client(timeout=timeout or self.timeout) as client:
+                with httpx.Client(timeout=self._remaining_timeout(deadline, timeout)) as client:
                     with client.stream("POST", url, json=payload, headers=headers) as resp:
                         status_code = resp.status_code
                         if resp.status_code != 200:
                             raise RuntimeError(f"LLM 接口返回 {resp.status_code}: {self._safe_body(resp)}")
                         for line in resp.iter_lines():
+                            self._remaining_timeout(deadline, timeout)
                             if abort is not None and abort.is_set():
                                 raise RuntimeError("LLM 流式生成已中止")
                             if not line or not line.startswith("data:"):
@@ -344,7 +370,7 @@ class LLMClient:
                     yield from self.chat_stream(
                         "", temperature=temperature, max_tokens=next_budget, timeout=timeout,
                         abort=abort, _messages=next_messages,
-                        _continuations_left=_continuations_left - 1)
+                        _continuations_left=_continuations_left - 1, _deadline=deadline)
                     return
                 _emit_event({"status": "ok", "model": self.model, "attempt": attempt + 1,
                              "elapsed_ms": round((time.perf_counter() - started) * 1000, 2)})
@@ -376,7 +402,12 @@ class LLMClient:
                     raise exc
                 last_err = exc
             if attempt < self.max_retries:
-                time.sleep(1.5 * (attempt + 1))  # 1.5s / 3s 退避
+                delay = 1.5 * (attempt + 1)
+                if time.perf_counter() + delay >= deadline:
+                    break
+                time.sleep(delay)  # 1.5s / 3s 退避
+        if time.perf_counter() >= deadline:
+            raise RuntimeError("LLM 调用超过总时限") from last_err
         raise last_err or RuntimeError("LLM 调用失败（未知错误）")
 
     @staticmethod

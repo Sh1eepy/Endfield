@@ -182,7 +182,8 @@ llm.chat_json("判断意图", ...)      # 强制 JSON → dict（意图识别/�
 llm.available()                    # 是否配置了 key
 ```
 配置走环境变量 / `.env`（`LLM_API_KEY` / `LLM_BASE_URL` / `LLM_MODEL`），**代码零明文 key**；
-未配置 key 时优雅降级不崩。密钥安全见 `.gitignore` + `.env.example`。
+`LLM_TIMEOUT` 控制单次网络等待，`LLM_TOTAL_TIMEOUT` 控制首次调用、退避、重试和续写共享的
+总预算（默认 75 秒）；未配置 key 或超时由调用方降级。密钥安全见 `.gitignore` + `.env.example`。
 
 ### 15. `intent_router.py` — 意图识别分层（L1 规则 → 可选 L3 LLM 兜底）
 ```python

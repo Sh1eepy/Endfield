@@ -219,7 +219,8 @@ class HttpAccessTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(prefix="endfield-http-security-")
         self.addCleanup(self.tmp.cleanup)
-        self.budget = api_security.AskBudget(Path(self.tmp.name) / "usage.sqlite3", per_minute=2)
+        self.budget = api_security.AskBudget(
+            Path(self.tmp.name) / "usage.sqlite3", per_minute=2, per_ip_day=2)
         for patcher in (
             patch.object(api_security, "ASK_BUDGET", self.budget),
             patch.object(api_security, "FEEDBACK_BUDGET", api_security.AskBudget(

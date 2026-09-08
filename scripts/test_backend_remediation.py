@@ -1,6 +1,7 @@
 """Offline regressions for entity, stream termination and incremental index fixes."""
 import os
 import sqlite3
+import time
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -135,6 +136,27 @@ class StreamTests(unittest.TestCase):
                     with self.assertRaisesRegex(RuntimeError, "结束原因"):
                         next(stream)
                 self.assertEqual(http.call_count, 1)
+
+    def test_expired_total_deadline_opens_no_request(self):
+        client = LLMClient()
+        client.api_key = "test-only"
+        client.max_retries = 0
+        with patch("scripts.llm_client.httpx.Client") as http:
+            with self.assertRaisesRegex(RuntimeError, "总时限"):
+                list(client.chat_stream("test", _deadline=time.perf_counter() - 1))
+        http.assert_not_called()
+
+    def test_nonstream_continuation_reuses_one_deadline(self):
+        client = LLMClient()
+        client.api_key = "test-only"
+        responses = [
+            {"choices": [{"message": {"content": "前"}, "finish_reason": "length"}]},
+            {"choices": [{"message": {"content": "后"}, "finish_reason": "stop"}]},
+        ]
+        with patch.object(client, "_chat_completions", side_effect=responses) as call:
+            self.assertEqual(client.chat("test"), "前后")
+        deadlines = [item.kwargs["_deadline"] for item in call.call_args_list]
+        self.assertEqual(deadlines[0], deadlines[1])
 
 
 if __name__ == "__main__":
