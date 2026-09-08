@@ -1,11 +1,11 @@
 {
-  "schema_version": "2",
-  "mode": "reset",
+  "schema_version": "3",
+  "mode": "incremental",
   "source_entries": 1958,
   "changed_entries": 1958,
   "deleted_entries": 0,
   "entities": 2129,
   "aliases": 1,
   "relations": 9358,
-  "built_at": "2026-08-20T06:19:32.165881+00:00"
+  "built_at": "2026-09-08T10:19:13.359554+00:00"
 }

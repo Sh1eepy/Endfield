@@ -78,6 +78,13 @@ class MediaSecurityTests(unittest.TestCase):
                     "location": "http://127.0.0.1:9/mock-only"}, stream=stream), 502)
                 self.assertEqual(stream.read, 0)
 
+    def test_active_and_unknown_media_types_rejected_before_read(self):
+        for mime in ("image/svg+xml", "text/html", "image/unknown", "audio/unknown"):
+            with self.subTest(mime=mime):
+                stream = CountingStream()
+                self.fetch(httpx.Response(200, headers={"content-type": mime}, stream=stream), 415)
+                self.assertEqual(stream.read, 0)
+
     def test_url_validation_before_network(self):
         for url in (
             "http://bbs.hycdn.cn/image/a", "https://example.com/image/a",
@@ -228,6 +235,27 @@ class HttpAccessTests(unittest.TestCase):
         self.assertEqual([r.status_code for r in responses], [200, 200, 429])
         self.assertEqual(ask.call_count, 2)
         self.assertIn("Retry-After", responses[-1].headers)
+
+    def test_busy_request_does_not_consume_quota(self):
+        sem = api_server._ASK_SEMAPHORE
+        held = []
+        while sem.acquire(blocking=False):
+            held.append(True)
+        try:
+            with TestClient(api_server.app) as client, patch("rag_ask.ask", return_value={"ok": True}):
+                self.assertEqual(client.post("/api/ask", json={"query": "busy"}).status_code, 429)
+        finally:
+            for _ in held:
+                sem.release()
+        with TestClient(api_server.app) as client, patch("rag_ask.ask", return_value={"ok": True}):
+            statuses = [client.post("/api/ask", json={"query": "test"}).status_code for _ in range(3)]
+        self.assertEqual(statuses, [200, 200, 429])
+
+    def test_cors_rejects_unlisted_web_origins(self):
+        headers = {"Origin": "https://evil.example", "Access-Control-Request-Method": "GET"}
+        with TestClient(api_server.app) as client:
+            response = client.options("/api/health", headers=headers)
+        self.assertNotIn("access-control-allow-origin", response.headers)
 
     def test_bearer_token_is_required_when_configured(self):
         with patch.object(api_security, "API_ACCESS_TOKEN", "test-secret"), TestClient(api_server.app) as client:

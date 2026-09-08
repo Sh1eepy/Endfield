@@ -77,6 +77,20 @@ def content_hash(text):
     return hashlib.md5((text or "").encode("utf-8")).hexdigest()
 
 
+def atomic_json_dump(path, value, *, indent=2):
+    """Publish JSON only after a complete same-directory write."""
+    tmp = f"{path}.tmp-{os.getpid()}"
+    try:
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(value, f, ensure_ascii=False, indent=indent)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, path)
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+
+
 def record_content_hash(record):
     """对所有会影响检索结果的条目内容和索引策略计算稳定指纹。"""
     payload = {
@@ -307,9 +321,17 @@ def write_bm25_shards(chunks, bm25_dir, categories=None):
             continue
         tokenized = [tokenize(c["text"]) for c in ccs]
         bm25 = BM25Okapi(tokenized)
-        with open(shard_path, "wb") as f:
-            pickle.dump({"bm25": bm25, "chunk_texts": [c["text"] for c in ccs],
-                         "metas": [c["meta"] for c in ccs]}, f)
+        tmp_path = f"{shard_path}.tmp-{os.getpid()}"
+        try:
+            with open(tmp_path, "wb") as f:
+                pickle.dump({"bm25": bm25, "chunk_texts": [c["text"] for c in ccs],
+                             "metas": [c["meta"] for c in ccs]}, f)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp_path, shard_path)
+        finally:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
     return by_cat
 
 
@@ -337,6 +359,14 @@ def inconsistent_bm25_categories(chunks, bm25_dir):
     return broken | (set(expected) - existing) | (existing - set(expected))
 
 
+def diff_chunks(old_chunks, new_chunks):
+    """Compare actual payloads as well as hashes; splitting settings can change IDs/text."""
+    old = {c["id"]: c for c in old_chunks}
+    new = {c["id"]: c for c in new_chunks}
+    return ([cid for cid, chunk in new.items() if old.get(cid) != chunk],
+            sorted(old.keys() - new.keys()))
+
+
 def main():
     """构建或增量更新向量索引、BM25 分片和 manifest。"""
     import argparse
@@ -359,6 +389,15 @@ def main():
     if args.reset and os.path.isdir(out_dir):
         shutil.rmtree(out_dir)
     os.makedirs(out_dir, exist_ok=True)
+    config_path = os.path.join(out_dir, "embedding_config.json")
+    if os.path.exists(os.path.join(out_dir, "chunks.json")):
+        if os.path.exists(config_path):
+            with open(config_path, encoding="utf-8") as f:
+                previous_model = json.load(f)["model"]
+        else:
+            previous_model = MODEL_NAME  # Legacy indexes used the project default.
+        if previous_model != args.model:
+            raise ValueError("Embedding model changed; build into a new --out-dir.")
 
     operator_details = None if args.no_operator_audio else args.operator_details
     records = load_records(args.inputs, operator_details_path=operator_details)
@@ -385,10 +424,13 @@ def main():
             k = (c["meta"]["category"], c["meta"]["item_id"])
             new_entries[k] = c["hash"]
             new_ids_by_key.setdefault(k, []).append(c["id"])
-        changed_keys = [k for k in new_entries if old_entries.get(k) != new_entries[k]]
-        changed_ids = [i for k in changed_keys for i in new_ids_by_key[k]]
+        changed_ids, deleted_ids = diff_chunks(old_manifest, all_chunks)
+        changed_id_set = set(changed_ids)
+        removed_id_set = set(deleted_ids)
+        changed_keys = [k for k in new_entries if
+                        any(i in changed_id_set for i in new_ids_by_key[k]) or
+                        any(i in removed_id_set for i in old_ids_by_key.get(k, []))]
         deleted_keys = [k for k in old_entries if k not in new_entries]
-        deleted_ids = [i for k in deleted_keys for i in old_ids_by_key[k]]
         print(f"增量: 新增/修改 {len(changed_keys)} 条目（{len(changed_ids)} chunk）| "
               f"删除 {len(deleted_keys)} 条目（{len(deleted_ids)} chunk）")
     else:
@@ -400,7 +442,8 @@ def main():
     from sentence_transformers import SentenceTransformer
 
     model = SentenceTransformer(args.model, local_files_only=True)
-    to_embed = [c for c in all_chunks if c["id"] in changed_ids]
+    changed_id_set = set(changed_ids)
+    to_embed = [c for c in all_chunks if c["id"] in changed_id_set]
     vecs = []
     if to_embed:
         vecs = [v.tolist() for v in model.encode(
@@ -429,10 +472,6 @@ def main():
             coll.delete(ids=deleted_ids[start:start + 1000])
     print(f"ChromaDB: {coll.count()} 条")
 
-    # ---- manifest（全量写最新基线，供下次增量对比）----
-    with open(manifest_path, "w", encoding="utf-8") as f:
-        json.dump(all_chunks, f, ensure_ascii=False, indent=1)
-
     # ---- BM25 分片（增量只重建变更分类）----
     bm25_dir = os.path.join(out_dir, "bm25")
     if incremental:
@@ -445,6 +484,9 @@ def main():
     else:
         write_bm25_shards(all_chunks, bm25_dir, categories=changed_cats)
         print(f"BM25 分片更新: {sorted(changed_cats or {c['meta']['category'] for c in all_chunks})}")
+
+    # Chroma 与 BM25 都成功后再原子发布 manifest，避免半写 JSON 被服务读取。
+    atomic_json_dump(manifest_path, all_chunks, indent=1)
 
     # ---- 报告 ----
     report = [
@@ -463,10 +505,10 @@ def main():
     # 统一落盘机器可读审计结果，供发布门禁与深度健康检查使用。
     from rag_audit import audit_index
     status = audit_index(out_dir)
-    with open(os.path.join(out_dir, "build_status.json"), "w", encoding="utf-8") as f:
-        json.dump(status, f, ensure_ascii=False, indent=2)
+    atomic_json_dump(os.path.join(out_dir, "build_status.json"), status)
     if not status["consistent"]:
-        print("索引审计警告: " + "; ".join(status["issues"]))
+        raise RuntimeError("索引审计失败: " + "; ".join(status["issues"]))
+    atomic_json_dump(config_path, {"model": args.model})
 
 
 if __name__ == "__main__":

@@ -8,7 +8,7 @@ import os
 import sqlite3
 from datetime import datetime, timezone
 
-from build_knowledge_graph import DEFAULT_DB, content_hash, load_rows
+from build_knowledge_graph import DEFAULT_DB, content_hash, load_operator_details, load_rows
 
 ALLOWED_PREDICATES = {
     "REFERENCES", "HAS_PARTICIPANT", "LOCATED_IN", "PREVIOUS_QUEST", "NEXT_QUEST",
@@ -53,7 +53,9 @@ def audit_graph(db_path=DEFAULT_DB):
     if dangling_sources:
         issues.append(f"relations_with_missing_source:{dangling_sources}")
     rows = load_rows()
-    expected = {str(r.get("item_id") or ""): content_hash(r) for r in rows}
+    operator_details = load_operator_details()
+    expected = {str(r.get("item_id") or ""): content_hash(
+        r, operator_details.get(str(r.get("item_id") or ""))) for r in rows}
     actual = {r["source_item_id"]: r["content_hash"] for r in con.execute("SELECT source_item_id,content_hash FROM manifest")}
     missing = set(expected) - set(actual)
     stale = [k for k, value in expected.items() if actual.get(k) != value]

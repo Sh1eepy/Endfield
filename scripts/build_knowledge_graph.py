@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_DB = os.path.join(ROOT, "output", "knowledge_graph", "graph.db")
-SCHEMA_VERSION = "2"
+SCHEMA_VERSION = "3"
 
 TYPE_BY_CATEGORY = {
     "干员": "person", "任务": "quest", "武器": "weapon", "装备": "equipment",
@@ -35,11 +35,26 @@ SECTION_PREDICATES = {
 }
 
 
-def content_hash(row):
+def content_hash(row, operator_detail=None):
     """计算来源内容指纹，用于判断是否需要增量重建。"""
-    raw = "\n".join((str(row.get("name") or ""), str(row.get("category") or ""),
-                     str(row.get("full_text") or "")))
+    payload = {
+        "schema": SCHEMA_VERSION,
+        "name": row.get("name") or "",
+        "category": row.get("category") or "",
+        "full_text": row.get("full_text") or "",
+        "sections_struct": row.get("sections_struct") or {},
+        "operator_detail": operator_detail or {},
+    }
+    raw = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def load_operator_details(path=None):
+    path = path or os.path.join(ROOT, "output", "operator_details.json")
+    if not os.path.exists(path):
+        return {}
+    with open(path, encoding="utf-8") as f:
+        return json.load(f).get("operators") or {}
 
 
 def relation_id(subject_id, predicate, object_id, source_item_id, evidence):
@@ -129,8 +144,11 @@ class GraphBuilder:
         for r in self.rows:
             item_id = str(r.get("item_id") or "")
             category = str(r.get("category") or "")
-            self.con.execute("""INSERT OR REPLACE INTO entities
-              (id,canonical_name,entity_type,category,source_item_id,synthetic) VALUES(?,?,?,?,?,0)""",
+            self.con.execute("""INSERT INTO entities
+              (id,canonical_name,entity_type,category,source_item_id,synthetic) VALUES(?,?,?,?,?,0)
+              ON CONFLICT(id) DO UPDATE SET canonical_name=excluded.canonical_name,
+              entity_type=excluded.entity_type,category=excluded.category,
+              source_item_id=excluded.source_item_id,synthetic=0""",
                              ("kb:" + item_id, str(r.get("name") or ""),
                               TYPE_BY_CATEGORY.get(category, "entry"), category, item_id))
 
@@ -316,7 +334,9 @@ def build(db_path=DEFAULT_DB, incremental=False, inputs="endfield_kb/*.jsonl"):
     builder = GraphBuilder(con, rows)
     builder.ensure_source_entities()
     old = {r["source_item_id"]: r["content_hash"] for r in con.execute("SELECT source_item_id,content_hash FROM manifest")}
-    new = {str(r.get("item_id") or ""): content_hash(r) for r in rows}
+    operator_details = load_operator_details()
+    new = {str(r.get("item_id") or ""): content_hash(
+        r, operator_details.get(str(r.get("item_id") or ""))) for r in rows}
     changed = set(new) if not incremental else {k for k, v in new.items() if old.get(k) != v}
     deleted = set(old) - set(new)
     for source in sorted(changed | deleted):
@@ -324,8 +344,6 @@ def build(db_path=DEFAULT_DB, incremental=False, inputs="endfield_kb/*.jsonl"):
         con.execute("DELETE FROM aliases WHERE source_item_id=? AND review_status!='human_verified'", (source,))
         con.execute("DELETE FROM manifest WHERE source_item_id=?", (source,))
 
-    op_path = os.path.join(ROOT, "output", "operator_details.json")
-    operator_details = (json.load(open(op_path, encoding="utf-8")).get("operators") or {}) if os.path.exists(op_path) else {}
     by_id = {str(r.get("item_id") or ""): r for r in rows}
     now = datetime.now(timezone.utc).isoformat()
     for source in sorted(changed):

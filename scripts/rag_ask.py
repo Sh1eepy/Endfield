@@ -57,7 +57,7 @@ def _get_recipes():
 
 def _get_kb_names():
     """知识库条目名集合（干员/武器/装备/任务/物品…），供实体抽取。
-    返回 dict: 条目名 → {"category": ..., "full_text": ...}
+    返回 dict: 条目名 → {"item_id": ..., "category": ..., "full_text": ...}
     """
     global _kb_names
     if _kb_names is None:
@@ -75,7 +75,8 @@ def _get_kb_names():
                         continue
                     n = (d.get("name") or "").strip()
                     if n and n not in _kb_names:
-                        _kb_names[n] = {"category": d.get("category", ""),
+                        _kb_names[n] = {"item_id": str(d.get("item_id") or ""),
+                                        "category": d.get("category", ""),
                                         "full_text": (d.get("full_text") or "")}
     return _kb_names
 
@@ -114,7 +115,7 @@ def extract_kb_entity(query):
     "诀从一级升到满级要多少材料" → "诀"（干员条目）
     "佩丽卡怎么培养" → "佩丽卡"
     返回 (name, kb_info) 或 (None, None)。kb_info: {"category", "full_text"}。
-    注意：优先精确名（排除"诀的信物/头像·诀"这类衍生条目），次选最长包含。
+    完整名称优先，避免把“重息壤”或“诀的信物”截成另一实体。
     """
     kb = _get_kb_names()
     q = query.strip()
@@ -125,11 +126,7 @@ def extract_kb_entity(query):
     if not exact:
         return None, None
     best = exact[0]
-    # 衍生条目（带 ·/·/：/（）等修饰）优先级低：如查询含"诀"也含"诀的信物"，
-    # 应取"诀"（干员主条目）而非"诀的信物"。取最短的精确命中作为主实体。
-    cands = [n for n in exact if n == best or len(n) == min(len(x) for x in exact)]
-    main = min(cands, key=len)
-    return main, kb.get(main)
+    return best, kb.get(best)
 
 
 def kb_direct_hits(query, top_n=3):
@@ -146,7 +143,8 @@ def kb_direct_hits(query, top_n=3):
     if not text:
         return []
     return [{
-        "meta": {"name": name, "category": info.get("category", ""), "item_id": "", "chunk_index": 0},
+        "meta": {"name": name, "category": info.get("category", ""),
+                 "item_id": info.get("item_id", ""), "chunk_index": 0},
         "text": text, "score": 1.0, "vector_sim": 1.0, "bm25_score": 0.0,
         "_direct": True,
     }]
@@ -388,7 +386,11 @@ def multi_search(query, top_k=5, plan=None, trace=None):
     多路并进再合并，把散落在不同条目的线索凑齐。
     """
     plan = plan or semantic_plan(query)
-    subs = query_expand(query, plan=plan)
+    subs = []
+    for sub in query_expand(query, plan=plan):
+        normalized = (sub or "").strip()
+        if normalized and normalized != query.strip() and normalized not in subs:
+            subs.append(normalized)
     # 图/结构化路线未命中后仍可回退文本；已有文本路线则严格执行计划。
     routes = set(plan.get("routes") or []) & {"entity_direct", "rag", "keyword", "mention"}
     if not routes:
@@ -758,9 +760,6 @@ def rag_search(query, top_k=5, entity_boost=True, direct_fallback=True, trace=No
             return hits
         name = name2
 
-    # 实体加权重搜：实体名 + 原查询，BM25 更容易把实体条目顶上来
-    boosted = _get_retriever().search(f"{name} {query}", **search_kwargs)
-
     # 主条目判定：只认精确同名（"诀"=="诀(干员)"）。
     # 注意"诀的信物/头像·诀"是独立条目不是衍生，不算主条目——
     # 用户问"诀升级材料"需要的是干员主条目的[精英化]数据。
@@ -777,7 +776,7 @@ def rag_search(query, top_k=5, entity_boost=True, direct_fallback=True, trace=No
     if direct:
         merged = list(direct)
         seen = {name}
-        for h in (hits + boosted):
+        for h in hits:
             hn = h["meta"].get("name") or ""
             if hn not in seen and len(merged) < top_k:
                 seen.add(hn)
@@ -786,6 +785,8 @@ def rag_search(query, top_k=5, entity_boost=True, direct_fallback=True, trace=No
 
     if _contains_entity(hits):
         return hits
+    # 首次召回缺少实体时才执行加权重搜，避免每个实体查询重复三路检索。
+    boosted = _get_retriever().search(f"{name} {query}", **search_kwargs) if entity_boost else []
     if _contains_entity(boosted):
         return boosted
     return hits or boosted

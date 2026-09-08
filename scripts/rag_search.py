@@ -75,6 +75,7 @@ class RAGRetriever:
             self.bm25_shards.append((data["bm25"], len(self.chunk_texts)))
             self.chunk_texts.extend(data["chunk_texts"])
             self.metas.extend(data["metas"])
+        self._prepare_lookup_indexes()
         # ---------- 加载向量库 ----------
         import chromadb
         from sentence_transformers import SentenceTransformer
@@ -82,6 +83,41 @@ class RAGRetriever:
         self.model = SentenceTransformer(model_name, local_files_only=True)
         self.client = chromadb.PersistentClient(path=os.path.join(index_dir, "chroma"))
         self.coll = self.client.get_collection("endfield_kb")
+
+    def _prepare_lookup_indexes(self):
+        """Precompute immutable metadata used by every query."""
+        import jieba
+
+        _load_userdict()
+        intent_tokens = {"攻略", "玩家攻略", "角色攻略", "怎么玩", "怎么用", "配队", "养成",
+                         "视频", "哪里看", "在哪看", "pv"}
+        self._vector_id_to_index = {
+            f"{m.get('category', '')}-{m.get('item_id', '')}-{m.get('chunk_index', 0)}": i
+            for i, m in enumerate(self.metas)
+        }
+        self._name_features = []
+        cache = {}
+        for meta in self.metas:
+            name = str(meta.get("name") or "")
+            category = str(meta.get("category") or "")
+            key = (name, category)
+            feature = cache.get(key)
+            if feature is None:
+                normalized = re.sub(r"[\s·・:：,，。！？?!《》【】()（）\-]", "", name).lower()
+                tokens = {t.strip().lower() for t in jieba.cut(name)
+                          if len(t.strip()) >= 2 and t.strip().lower() not in intent_tokens}
+                core = normalized
+                if "攻略" in category:
+                    core = core.replace("玩家攻略", "").replace("攻略", "")
+                if "视频" in category and core.startswith("游戏"):
+                    core = core[2:]
+                feature = (normalized, tokens, core, category)
+                cache[key] = feature
+            self._name_features.append(feature)
+
+    def _ensure_lookup_indexes(self):
+        if len(getattr(self, "_name_features", ())) != len(self.metas):
+            self._prepare_lookup_indexes()
 
     # ---------- BM25 检索（跨分片）----------
     def bm25_search(self, query, top_n):
@@ -109,10 +145,11 @@ class RAGRetriever:
         ).tolist()
         res = self.coll.query(query_embeddings=qv, n_results=min(top_n, self.coll.count()))
         ids, dists = res["ids"][0], res["distances"][0]
-        idx_map = {f"{m['category']}-{m['item_id']}-{m['chunk_index']}": i for i, m in enumerate(self.metas)}
         out = []
         for cid, d in zip(ids, dists):
-            i = idx_map[cid]
+            i = self._vector_id_to_index.get(cid)
+            if i is None:
+                continue
             out.append((i, float(1.0 - d)))  # cosine 距离转相似度
         return out
 
@@ -122,6 +159,7 @@ class RAGRetriever:
         import jieba
 
         _load_userdict()
+        self._ensure_lookup_indexes()
         q = re.sub(r"[\s·・:：,，。！？?!《》【】()（）\-]", "", query).lower()
         intent_tokens = {"攻略", "玩家攻略", "角色攻略", "怎么玩", "怎么用", "配队", "养成", "视频", "哪里看", "在哪看", "pv"}
         q_tokens = {t.strip().lower() for t in jieba.cut(query)
@@ -129,20 +167,10 @@ class RAGRetriever:
         wants_guide = any(x in query for x in ("攻略", "怎么玩", "怎么用", "配队", "养成"))
         wants_video = any(x.lower() in query.lower() for x in ("pv", "视频", "哪里看", "在哪看"))
         candidates = []
-        for i, meta in enumerate(self.metas):
-            name = str(meta.get("name") or "")
-            category = str(meta.get("category") or "")
-            n = re.sub(r"[\s·・:：,，。！？?!《》【】()（）\-]", "", name).lower()
+        for i, (n, name_tokens, core, category) in enumerate(self._name_features):
             if not n:
                 continue
-            name_tokens = {t.strip().lower() for t in jieba.cut(name)
-                           if len(t.strip()) >= 2 and t.strip().lower() not in intent_tokens}
             overlap = q_tokens & name_tokens
-            core = n
-            if "攻略" in category:
-                core = core.replace("玩家攻略", "").replace("攻略", "")
-            if "视频" in category and core.startswith("游戏"):
-                core = core[2:]
             core_match = len(core) >= 2 and core in q
             contained = n in q or core_match or any(len(t) >= 2 and t in n for t in q_tokens)
             if not contained and not overlap:

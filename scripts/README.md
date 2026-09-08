@@ -90,7 +90,8 @@ python scripts/audit_relation_queries.py --fail-on-error # 自动正问/反问/�
 python scripts/eval_graph.py                            # 单跳/多跳专项评测
 ```
 
-图谱位于 `output/knowledge_graph/graph.db`。正式图接收任务人物/地点/前后置、干员身份认证、
+图谱位于 `output/knowledge_graph/graph.db`。增量指纹覆盖结构化章节、干员详情和规则 schema；
+任一关系输入或提取规则变化都会刷新对应来源。正式图接收任务人物/地点/前后置、干员身份认证、
 章节语义引用、配方原料/产物、明确职务句式和人工审定别名；语义推断关系不直接入图。明确关系问题由 `rag_ask.py` 路由到图检索，
 图谱缺少证据时回退原混合 RAG。完整 schema、增量、审查与门禁见
 [`../output/GRAPHRAG_ARCHITECTURE.md`](../output/GRAPHRAG_ARCHITECTURE.md)。
@@ -109,8 +110,9 @@ python scripts/build_rag.py --inputs "endfield_kb/*.jsonl" --incremental
 `chunks.json`（manifest，含条目级 content_hash 供增量对比）、`report.txt`。
 默认同时读取 `output/operator_details.json`，将“语音记录”中的中文台词作为 `干员语音` 独立记录；
 可用 `--no-operator-audio` 关闭。增量原理：内容、sections 与索引策略版本 hash 对比 → ChromaDB
-分批 upsert/delete → 仅重建变更分类 BM25 分片。
-增量运行还会核对 manifest 与每个 BM25 分片的 chunk 键；分片缺失、陈旧或损坏时自动自愈。
+分批 upsert/delete（含同一条目分块缩短后遗留 ID 的删除）→ 仅重建变更分类 BM25 分片。
+BM25 分片和 manifest 使用同目录临时文件原子发布；增量运行还会核对 manifest 与每个 BM25
+分片的 chunk 键，分片缺失、陈旧或损坏时自动自愈，最终审计失败会让构建命令失败。
 长条目若没有 `sections`，会回退切分 `full_text`；已有 sections 时也会补入未覆盖的描述/其他内容，
 避免档案后半段、玩家攻略或语音线索静默漏索引。全量写 Chroma 按 1000 条分批，避免批量上限失败。
 
@@ -154,6 +156,8 @@ WEB_CONCURRENCY=1 python scripts/start_server.py
 多 worker 由 `start_server.py` 统一管理：worker 数取环境变量 `WEB_CONCURRENCY`（默认 1）。
 首次上线保持 1，确认内存余量后再提高；`ASK_MAX_CONCURRENCY`（默认 2）限制每个 worker 同时执行的付费问答数。
 `start_server.py` 启动默认预热 embedding 模型与 RAG/配方索引（冷启动移进健康检查 start_period；`RAG_PREWARM=0` 关闭）。
+跨域默认只允许本机 Vite 的 `127.0.0.1:5173` 与 `localhost:5173`；可用逗号分隔的
+`CORS_ALLOWED_ORIGINS` 覆盖，生产同源部署可设为空值。
 | 端点 | 说明 |
 |---|---|
 | `GET /api/health` | 健康检查 |
@@ -161,10 +165,11 @@ WEB_CONCURRENCY=1 python scripts/start_server.py
 | `GET /api/names` | 全部名称（前端模糊搜索联想） |
 | `POST /api/ask` | RAG 问答（意图识别→路由→检索→LLM 带引用回答），body: `{"query":"重息壤是什么","top_k":5,"gen_answer":true}` |
 | `POST /api/ask/stream` | 同上路由的流式版（SSE：phase→meta→delta→done，body 一致；网页端默认使用） |
-| `GET /api/media?url=...` | WIKI CDN 图片/音频白名单同源代理（类型与 25MB 上限校验） |
+| `GET /api/media?url=...` | WIKI CDN 图片/音频白名单同源代理（安全 MIME 白名单、CSP 与 25MB 上限校验） |
 
 自动托管前端：优先 `web/dist`（Vite+React 构建产物），无 dist 时回退 `web/`。
-`/api/ask` 的 `query` 限制为 1～300 字符、`top_k` 限制为 1～10；并发满时返回 429。
+`/api/ask` 的 `query` 限制为 1～300 字符、`top_k` 限制为 1～10；`/api/synthesis` 名称最多
+300 字符且 `max_depth` 为 0～10；并发满时返回 429。
 前端视觉设计与交互规则见 [`../web/README.md`](../web/README.md)。
 
 ## RAG 问答工具

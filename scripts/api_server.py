@@ -51,7 +51,7 @@ _load_env()
 
 from recipe_index import load_recipes, build_item_index, find_item_ids_by_name  # noqa: E402
 from scripts.api_security import (positive_int_env, require_admin_access, require_ask_access,
-                                  require_feedback_access)  # noqa: E402
+                                  require_feedback_access, consume_ask_budget)  # noqa: E402
 
 app = FastAPI(title="终末地配方合成树", version="1.0.0")
 
@@ -79,11 +79,14 @@ class _MediaResponse(Response):
             self._slot.release()
 
 # 展示阶段：放开跨域，便于本地静态页直连
+_cors_raw = os.environ.get(
+    "CORS_ALLOWED_ORIGINS", "http://127.0.0.1:5173,http://localhost:5173")
+_cors_origins = [origin.strip() for origin in _cors_raw.split(",") if origin.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=_cors_origins,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 
@@ -148,8 +151,13 @@ def media_proxy(url: str):
                 raise HTTPException(502, "媒体上游重定向已拒绝")
             upstream.raise_for_status()
             content_type = upstream.headers.get("content-type", "").split(";")[0].strip().lower()
-            if not (content_type.startswith("image/") or content_type.startswith("audio/")):
-                raise HTTPException(415, "上游不是图片或音频")
+            if content_type not in {
+                "image/png", "image/jpeg", "image/gif", "image/webp", "image/avif",
+                "image/bmp", "image/x-icon", "image/vnd.microsoft.icon",
+                "audio/mpeg", "audio/mp4", "audio/aac", "audio/ogg", "audio/webm",
+                "audio/wav", "audio/x-wav", "audio/flac", "audio/x-flac",
+            }:
+                raise HTTPException(415, "不支持的媒体类型")
             # Avoid transparent decompression allocating an unbounded decoded chunk.
             if upstream.headers.get("content-encoding", "identity").strip().lower() != "identity":
                 raise HTTPException(502, "媒体上游返回了不支持的压缩编码")
@@ -174,6 +182,7 @@ def media_proxy(url: str):
             response = _MediaResponse(bytes(body), slot=_MEDIA_SEMAPHORE, media_type=content_type, headers={
                 "Cache-Control": "public, max-age=86400",
                 "X-Content-Type-Options": "nosniff",
+                "Content-Security-Policy": "sandbox; default-src 'none'",
             })
         owns_slot = False  # Response releases it after send/disconnect, not before.
         return response
@@ -360,8 +369,12 @@ def synthesis(item: str, max_depth: int = 10):
     """查询物品合成树、设备配方或知识库详情。"""
     if not item or not item.strip():
         return {"ok": False, "error": "请输入物品或设备名称"}
+    if len(item) > 300:
+        return {"ok": False, "error": "物品或设备名称不能超过 300 个字符"}
     if max_depth < 0:
         return {"ok": False, "error": "max_depth 不能小于 0"}
+    if max_depth > 10:
+        return {"ok": False, "error": "max_depth 不能大于 10"}
     recipes = load_recipes(os.path.join(ROOT, "output", "recipes.json"))
     item_index = build_item_index(recipes)
     media = _load_item_media()
@@ -481,7 +494,7 @@ class AskRequest(BaseModel):
         return value
 
 
-def ask_endpoint(req: AskRequest, trace=None):
+def ask_endpoint(req: AskRequest, trace=None, admission_client=None):
     """RAG 问答入口：意图识别 → 路由（配方直查/RAG检索）→ LLM 生成带引用回答。
 
     请求体: {"query": "重息壤是什么", "top_k": 5, "gen_answer": true}
@@ -497,6 +510,8 @@ def ask_endpoint(req: AskRequest, trace=None):
         )
     started = time.perf_counter()
     try:
+        if admission_client is not None:
+            consume_ask_budget(admission_client)
         with observe_llm(trace.record_llm_event if trace else None):
             kwargs = {"top_k": req.top_k, "gen_answer_": req.gen_answer}
             if trace:
@@ -533,8 +548,9 @@ def _code_version():
         return "unknown"
 
 
-@app.post("/api/ask", dependencies=[Depends(require_ask_access)])
-def ask_http(req: AskRequest, response: Response):
+@app.post("/api/ask")
+def ask_http(req: AskRequest, response: Response,
+             admission_client: str = Depends(require_ask_access)):
     """HTTP 包装层：创建脱敏 Trace；核心 ask_endpoint 保持可离线直接测试。"""
     trace = None
     result = None
@@ -548,7 +564,7 @@ def ask_http(req: AskRequest, response: Response):
     except Exception:
         trace = None  # 可观测性故障不能使知识问答不可用
     try:
-        result = ask_endpoint(req, trace=trace)
+        result = ask_endpoint(req, trace=trace, admission_client=admission_client)
         if trace and isinstance(result, dict):
             from scripts.rag_trace import feedback_snapshot
             result["feedback_snapshot"] = feedback_snapshot(result)
@@ -570,8 +586,9 @@ def _sse(event, data):
     return ("event: %s\ndata: %s\n\n" % (event, json.dumps(data, ensure_ascii=False))).encode("utf-8")
 
 
-@app.post("/api/ask/stream", dependencies=[Depends(require_ask_access)])
-def ask_stream_http(req: AskRequest):
+@app.post("/api/ask/stream")
+def ask_stream_http(req: AskRequest,
+                    admission_client: str = Depends(require_ask_access)):
     """知识问答流式版（Server-Sent Events）。
 
     与 /api/ask 共用同一套路由逻辑（rag_ask.ask_stream），仅把答案生成阶段改为增量推送：
@@ -589,6 +606,11 @@ def ask_stream_http(req: AskRequest):
             detail="问答服务繁忙，请稍后重试",
             headers={"Retry-After": "3"},
         )
+    try:
+        consume_ask_budget(admission_client)
+    except Exception:
+        _ASK_SEMAPHORE.release()
+        raise
     trace = None
     try:
         from scripts.rag_trace import RAGTrace

@@ -301,7 +301,9 @@ class LLMClient:
                             if not line or not line.startswith("data:"):
                                 continue
                             data = line[len("data:"):].strip()
-                            if not data or data == "[DONE]":
+                            if data == "[DONE]":
+                                break
+                            if not data:
                                 continue
                             try:
                                 chunk = json.loads(data)
@@ -318,6 +320,10 @@ class LLMClient:
                                 emitted = True
                                 emitted_parts.append(delta)
                                 yield delta
+                if finish_reason is None:
+                    raise RuntimeError("LLM 流式响应缺少结束原因，回答可能已中断")
+                if finish_reason not in ("stop", "length"):
+                    raise RuntimeError(f"LLM 流式响应未正常完成: {finish_reason}")
                 if finish_reason == "length":
                     if _continuations_left <= 0:
                         raise RuntimeError("LLM 流式回答连续两次达到长度上限")

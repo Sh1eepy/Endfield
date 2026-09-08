@@ -106,7 +106,11 @@ def require_ask_access(request: Request):
         raise HTTPException(401, "需要有效的访问令牌",
                             headers={"WWW-Authenticate": "Bearer"})
     # Only use ASGI client identity; do not parse arbitrary forwarding headers.
-    client = request.client.host if request.client else "unknown"
+    return request.client.host if request.client else "unknown"
+
+
+def consume_ask_budget(client):
+    """Consume quota only after the endpoint has secured a concurrency slot."""
     ASK_BUDGET.consume(client)
 
 

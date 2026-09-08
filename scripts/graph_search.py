@@ -7,6 +7,7 @@ import os
 import re
 import sqlite3
 from collections import deque
+from pathlib import Path
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_DB = os.path.join(ROOT, "output", "knowledge_graph", "graph.db")
@@ -63,7 +64,8 @@ class GraphRetriever:
         self.entities = []
         self.aliases = []
         if os.path.exists(db_path):
-            self.con = sqlite3.connect(db_path)
+            uri = Path(db_path).resolve().as_uri() + "?mode=ro"
+            self.con = sqlite3.connect(uri, uri=True)
             self.con.row_factory = sqlite3.Row
             self.entities = [dict(x) for x in self.con.execute(
                 "SELECT id,canonical_name,entity_type,category FROM entities "
@@ -179,7 +181,14 @@ class GraphRetriever:
         paths = []
         if len(entities) >= 2:
             start, target = entities[0], entities[1]
-            for path in self.shortest_paths(start["id"], target["id"], max_hops=max_hops, limit=top_k):
+            selected_paths = []
+            if predicate:
+                selected_paths = [[edge] for edge in self._edges(start["id"], predicate)
+                                  if target["id"] in (edge["subject_id"], edge["object_id"])]
+            if not selected_paths:
+                selected_paths = self.shortest_paths(
+                    start["id"], target["id"], max_hops=max_hops, limit=top_k)
+            for path in selected_paths[:top_k]:
                 paths.append(self.render_path(path, start["id"]))
         elif len(entities) == 1 and not facts:
             start = entities[0]
@@ -192,8 +201,10 @@ class GraphRetriever:
                              "confidence": fact["confidence"], "source_item_ids": []})
         hits = []
         for i, path in enumerate(paths[:top_k]):
+            source_ids = path.get("source_item_ids") or []
             hits.append({
-                "meta": {"name": f"关系路径{i + 1}", "category": "知识图谱", "item_id": "", "chunk_index": 0},
+                "meta": {"name": f"关系路径{i + 1}", "category": "知识图谱",
+                         "item_id": source_ids[0] if len(source_ids) == 1 else "", "chunk_index": 0},
                 "text": f"关系路径：{path['path']}\n证据：{path['evidence']}",
                 "score": path["confidence"], "vector_sim": 1.0, "bm25_score": 0.0,
                 "_graph": True,
