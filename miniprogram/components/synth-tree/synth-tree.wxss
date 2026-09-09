@@ -68,3 +68,11 @@
   background: var(--yellow);
   color: var(--ink);
 }
+
+/* Web official theme adaptation */
+.synth-wrap { background: #f4f4f4; }
+.synth-frame { border: 1px solid #cfcfcf; border-top: 8rpx solid #282828; border-radius: 0; background: #fff; box-shadow: none; }
+.synth-hint { background: #fffa00; color: #282828; border-radius: 0; }
+.synth-tools { background: #282828; border-radius: 0; }
+.synth-title { color: #fff; }
+.synth-btn { border-radius: 0; border-color: #fffa00; background: #fffa00; color: #282828; }

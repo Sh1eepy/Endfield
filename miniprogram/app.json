@@ -5,10 +5,10 @@
     "pages/operator/operator"
   ],
   "window": {
-    "navigationBarBackgroundColor": "#f5f4ee",
+    "navigationBarBackgroundColor": "#ffffff",
     "navigationBarTitleText": "终末地 · 合成终端",
     "navigationBarTextStyle": "black",
-    "backgroundColor": "#f5f4ee",
+    "backgroundColor": "#f4f4f4",
     "backgroundTextStyle": "dark"
   },
   "style": "v2",

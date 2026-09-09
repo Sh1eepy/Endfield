@@ -1,14 +1,6 @@
 <!-- pages/operator/operator.wxml — 干员详情页（阶段 4：章节/Tab/宽表/音频） -->
 
 <view class="op-page">
-  <!-- 背景半透明 q 版小人（5 个漂移） -->
-  <image class="bg-mascot bg-op-1" src="/assets/images/mascot-03.png" mode="aspectFit" />
-  <image class="bg-mascot bg-op-2" src="/assets/images/mascot-05.png" mode="aspectFit" />
-  <image class="bg-mascot bg-op-3" src="/assets/images/mascot-08.png" mode="aspectFit" />
-  <image class="bg-mascot bg-op-4" src="/assets/images/mascot-02.png" mode="aspectFit" />
-  <image class="bg-mascot bg-op-5" src="/assets/images/mascot-06.png" mode="aspectFit" />
-  <!-- 页面角落：不透明小 q 版装饰 -->
-  <image class="deco-mascot deco-op" src="/assets/images/mascot-07.png" mode="aspectFit" />
   <!-- 加载中 -->
   <block wx:if="{{loading}}">
     <view class="poly-panel op-body">

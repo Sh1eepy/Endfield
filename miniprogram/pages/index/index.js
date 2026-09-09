@@ -16,14 +16,14 @@ Page({
     backendText: '后端未连接',
     mode: 'syn',
     query: '',
-    // 开场动画
-    curtainShow: true,
-    // 滚动视差（scrollY 驱动几何体位移/缩放/旋转）
-    parallax: 0,
-    geoA: 'rotate(45deg)',
-    geoB: 'skewX(-12deg)',
-    geoC: 'rotate(-18deg)',
-    geoD: '',
+    heroIndex: 0,
+    hero: {
+      code: '01',
+      name: '佩丽卡',
+      nameEn: 'PERLICA',
+      desc: '以工业档案的方式浏览物品、设备、干员与配方关联。',
+      image: '/assets/images/official/perlica.png',
+    },
     // 联想
     suggest: [],          // 当前联想列表
     suggestShow: false,
@@ -44,24 +44,21 @@ Page({
     this.renderHistory();
   },
 
-  // 滚动视差：几何体随滚动位移、缩放和旋转
-  onPageScroll(e) {
-    const y = e.scrollTop || 0;
-    if (Math.abs(y - this._lastScroll) < 2) return;
-    this._lastScroll = y;
-    // 每个几何体：位移系数 + 缩放 + 旋转（滚动越多变化越大）
-    this.setData({
-      parallax: y,
-      geoA: `translateY(${y * -0.12}px) rotate(${45 + y * 0.03}deg) scale(${1 + y * 0.0004})`,
-      geoB: `translateY(${y * -0.18}px) skewX(${-12 + y * 0.02}deg) scale(${1 + y * 0.0003})`,
-      geoC: `translateY(${y * 0.09}px) rotate(${-18 - y * 0.02}deg) scale(${1 - y * 0.0003})`,
-      geoD: `translateY(${y * 0.13}px) rotate(${y * 0.04}deg) scale(${1 + y * 0.0005})`,
-    });
-  },
-
-  // 开场动画结束 → 隐藏
-  onCurtainComplete() {
-    this.setData({ curtainShow: false });
+  switchHero(e) {
+    const index = Number(e.currentTarget.dataset.index) === 1 ? 1 : 0;
+    const heroes = [
+      {
+        code: '01', name: '佩丽卡', nameEn: 'PERLICA',
+        desc: '以工业档案的方式浏览物品、设备、干员与配方关联。',
+        image: '/assets/images/official/perlica.png',
+      },
+      {
+        code: '02', name: '管理员', nameEn: 'ENDFIELD INDUSTRIES',
+        desc: '连接合成树与知识检索，快速定位生产链和档案证据。',
+        image: '/assets/images/official/endministrator.png',
+      },
+    ];
+    this.setData({ heroIndex: index, hero: heroes[index] });
   },
 
   onShow() {

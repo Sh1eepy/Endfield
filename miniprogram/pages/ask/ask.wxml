@@ -1,15 +1,6 @@
 <!-- pages/ask/ask.wxml — 问答结果页（合成树 / 结构化直查 / 知识检索） -->
 
 <view class="ask-page">
-  <!-- 背景半透明 q 版小人（5 个，不遮挡文字） -->
-  <image class="bg-mascot bg-ask-1" src="/assets/images/mascot-02.png" mode="aspectFit" />
-  <image class="bg-mascot bg-ask-2" src="/assets/images/mascot-06.png" mode="aspectFit" />
-  <image class="bg-mascot bg-ask-3" src="/assets/images/mascot-08.png" mode="aspectFit" />
-  <image class="bg-mascot bg-ask-4" src="/assets/images/mascot-01.png" mode="aspectFit" />
-  <image class="bg-mascot bg-ask-5" src="/assets/images/mascot-04.png" mode="aspectFit" />
-  <!-- 页面角落：不透明小 q 版装饰 -->
-  <image class="deco-mascot deco-ask" src="/assets/images/mascot-07.png" mode="aspectFit" />
-
   <view class="ask-head">
     <view class="tech-label">{{mode === 'syn' ? 'SYNTHESIS QUERY' : 'KNOWLEDGE QUERY'}}</view>
     <view class="ask-query">{{query}}</view>

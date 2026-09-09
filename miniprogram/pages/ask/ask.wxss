@@ -471,3 +471,31 @@
   font-size: 10px;
   color: #867600;
 }
+
+/* ===== Web official theme adaptation ===== */
+.ask-page { min-height: 100vh; padding: 0 24rpx 64rpx; background: #f4f4f4; color: #282828; }
+.bg-mascot,.deco-mascot { display: none; }
+.ask-head { margin: 0 -24rpx 30rpx; padding: 48rpx 30rpx 42rpx; background: #fffa00; border: 0; }
+.ask-head .tech-label { color: #626262; font-size: 17rpx; }
+.ask-query { margin-top: 14rpx; color: #282828; font-size: 48rpx; line-height: 1.15; font-weight: 900; letter-spacing: -.04em; }
+.ask-body { margin: 0 0 24rpx; padding: 30rpx 26rpx; border-radius: 0; }
+.ask-card-title { padding-bottom: 20rpx; border-bottom: 1px solid #ddd; color: #282828; font-size: 34rpx; font-weight: 900; }
+.kb-cat,.ask-src-title,.hits-title { color: #777; }
+.kb-sec-title { border-left: 10rpx solid #fffa00; padding-left: 16rpx; color: #282828; }
+.kb-para,.kb-text,.ask-answer,.hit-text { color: #4f4f4f; }
+.kb-table-wrap { border-color: #cfcfcf; border-radius: 0; }
+.kb-td { border-color: #ddd; background: #fff; }
+.kb-td.th { background: #282828; color: #fff; }
+.kb-hr { background: linear-gradient(90deg,#fffa00,#282828,transparent); }
+.ask-recipe-card,.hit-item { border: 1px solid #ddd; border-left: 8rpx solid #fffa00; border-radius: 0; background: #f8f8f8; box-shadow: none; }
+.rc-machine { color: #282828; }
+.rc-label { color: #777; }
+.prod-chip,.ambig-btn,.src-chip { border: 1px solid #cfcfcf; border-radius: 0; background: #fff; color: #282828; box-shadow: none; }
+.ambig-btn:active,.src-chip:active { background: #fffa00; border-color: #fffa00; }
+.intent-tag { border: 0; border-radius: 0; background: #fffa00; color: #282828; }
+.intent-tag.tag-blue { background: #282828; color: #fff; }
+.src-ref,.src-chip-hi,.src-ref-hi { background: #fffa00; color: #282828; border-color: #fffa00; }
+.loading-line { background: #fffa00; }
+.ask-error,.ask-rejected { color: #a33129; }
+.feedback-panel { border: 1px solid #ddd; border-top: 8rpx solid #fffa00; border-radius: 0; background: #fff; }
+.feedback-panel button { border-radius: 0; }

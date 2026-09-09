@@ -1,6 +1,4 @@
 {
-  "usingComponents": {
-    "entry-curtain": "/components/entry-curtain/entry-curtain"
-  },
+  "usingComponents": {},
   "navigationBarTitleText": "终末地 · 合成终端"
 }
