@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import type { ReactNode, RefObject } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import type { LoadResult, Mode, ResultState } from '../App'
 import type { RefItem, SynthesisData } from '../types'
 import { mediaSrc } from '../utils'
@@ -128,6 +128,7 @@ export default function ResultPanel({
   mode, title, state, errorMsg, result, onPickName, onRunQuery, showTip, hideTip, synTreeRef,
 }: Props) {
   const treeHandleRef = useRef<SynTreeHandle>(null)
+  const reducedMotion = useReducedMotion()
 
   const isTree = state === 'ready'
     && result?.kind === 'syn'
@@ -156,10 +157,10 @@ export default function ResultPanel({
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={`${mode}-${state}-${result?.query ?? 'none'}`}
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }}
+            initial={reducedMotion ? false : { opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: reducedMotion ? 0 : -16 }}
+            transition={{ duration: reducedMotion ? 0 : 0.3, ease: [0.2, 0, 0.1, 1] }}
           >
             {state === 'empty' ? (
               <EmptyState mode={mode} onDemo={onRunQuery} />

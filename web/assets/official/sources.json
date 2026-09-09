@@ -1,0 +1,48 @@
+{
+  "reference": "https://endfield.hypergryph.com/",
+  "note": "Official game artwork; original rights remain with the rights holders.",
+  "assets": [
+    {
+      "file": "perlica-portrait.png",
+      "source": "https://web.hycdn.cn/endfield/official-v4/_next/static/media/perlica.6710bc97.png",
+      "bytes": 732113,
+      "sha256": "ff1b42ff3dda9cd679f1f2133ee7bca2e1b90fd94a07e5ad0b9649496af9a5b0"
+    },
+    {
+      "file": "endministrator-portrait.png",
+      "source": "https://web.hycdn.cn/endfield/official-v4/_next/static/media/endministrator2.1ec20a16.png",
+      "bytes": 770802,
+      "sha256": "23432dc54b2f7e6533499ca8ad8a60fc1b9c77462320717397963167fbb9fe09"
+    },
+    {
+      "file": "home-background.jpg",
+      "source": "https://web.hycdn.cn/endfield/official-v4/_next/static/media/bg.9e174372.jpg",
+      "bytes": 331663,
+      "sha256": "28c36eca5da88a1c7d223f2801c3aa999f2251b7b36b438070204aca2594e6f5"
+    },
+    {
+      "file": "divider.png",
+      "source": "https://web.hycdn.cn/endfield/official-v4/_next/static/media/section_divider_icon_lore.6968c414.png",
+      "bytes": 93226,
+      "sha256": "2776fb13a4067979fd8d8838748f7adf9d38f97f5c9a58482b852dc356124799"
+    },
+    {
+      "file": "texture.png",
+      "source": "https://web.hycdn.cn/endfield/official-v4/_next/static/media/points-bg.f3b559e8.png",
+      "bytes": 3007,
+      "sha256": "c1107bfb132444678e641fa283726a5553d6f997ece231bcb8c953f61da66f91"
+    },
+    {
+      "file": "wave.png",
+      "source": "https://web.hycdn.cn/endfield/official-v4/_next/static/media/wave-bg.8955885a.png",
+      "bytes": 17084,
+      "sha256": "5a9efdd3ede79f2e4a7cf033e25b1716847d210f636e950db0fc5c870f6dcdac"
+    },
+    {
+      "file": "landscape.jpg",
+      "source": "https://web.hycdn.cn/endfield/official-v4/_next/static/media/bg.269aa2f3.jpg",
+      "bytes": 43653,
+      "sha256": "0f1194b1973fa7b4617641be16d834359b05395afe2095baec2bc0e7ea757fa8"
+    }
+  ]
+}

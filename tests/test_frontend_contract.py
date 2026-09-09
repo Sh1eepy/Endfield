@@ -33,7 +33,7 @@ class FrontendContractTests(unittest.TestCase):
             self.assertIn(token, HTML)
 
     def test_visual_system_and_motion_are_present(self):
-        self.assertIn("--yellow: #f8f500", HTML)
+        self.assertRegex(HTML, r"--yellow:\s*#fffa00\b")
         self.assertIn("@keyframes heroRise", HTML)
         self.assertIn("@keyframes contentIn", HTML)
         self.assertIn("prefers-reduced-motion", HTML)

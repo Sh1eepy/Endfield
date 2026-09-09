@@ -1,40 +1,41 @@
+import { useState } from 'react'
 import type { Mode } from '../App'
 
-interface Props {
-  onDemo: (query: string, mode: Mode) => void
-}
-
+interface Props { onDemo: (query: string, mode: Mode) => void }
+const OPERATORS = [
+  { name: '佩丽卡', en: 'PERLICA', image: 'perlica-portrait.png', role: '终末地工业 · 监督' },
+  { name: '管理员', en: 'ENDMINISTRATOR', image: 'endministrator-portrait.png', role: '终末地工业 · 管理员' },
+]
 export default function Hero({ onDemo }: Props) {
+  const [selected, setSelected] = useState(0)
+  const operator = OPERATORS[selected]
   return (
-    <section className="hero">
+    <section className="hero" aria-label="终末地档案首页">
+      <div className="hero-registration" aria-hidden="true"><span>ENDFIELD INDUSTRIES</span><span>ARCHIVE / TALOS-II</span><i /></div>
+      <div className="hero-wordmark" aria-hidden="true">ENDFIELD</div>
+      <div className="hero-yellow-field" aria-hidden="true" />
+      <div className="hero-art" key={operator.en}>
+        <img src={'/assets/official/' + operator.image} alt={operator.name + '官方立绘'} loading="eager" />
+      </div>
       <div className="hero-copy-block">
-        <div className="eyebrow"><span>01</span> INDUSTRIAL RECIPE DATABASE</div>
-        <h1>
-          <span className="hero-line"><i>从上到下</i></span>
-          <span className="hero-line accent"><i>看清制造</i></span>
-        </h1>
-        <p className="hero-copy">
-          <b>每个物品和设备都以真实封面呈现。</b> 345 条配方被展开为纵向生产流程，
-          保持清晰尺寸，也允许随时折叠、缩放与跳转。
-        </p>
-        <div className="hero-actions">
-          <button className="action-btn" onClick={() => onDemo('重息壤', 'syn')}>查看示例配方</button>
-          <button className="action-btn secondary" onClick={() => onDemo('佩丽卡怎么玩', 'ask')}>试试知识问答</button>
+        <div className="eyebrow"><span>ARKNIGHTS: ENDFIELD</span><i className="color-register" aria-hidden="true" /></div>
+        <h1><span className="hero-line"><i>开拓边界</i></span><span className="hero-line"><i>连接万象<span className="title-stop" aria-hidden="true" /></i></span></h1>
+        <div className="hero-subtitle">终末地 · 合成与知识档案</div>
+        <p className="hero-copy">从一件原料，到完整生产链。<br />让每一次探索，都有迹可循。</p>
+        <a className="hero-enter" href="#search-command"><span>进入档案</span><span aria-hidden="true">↗</span></a>
+        <div className="hero-character-label" aria-live="polite"><b>{operator.en}</b><span>{operator.role}</span></div>
+      </div>
+      <div className="hero-bottom">
+        <div className="hero-switcher" aria-label="切换首页角色">
+          {OPERATORS.map((item, index) => <button key={item.en} aria-pressed={selected === index} onClick={() => setSelected(index)}><span>0{index + 1}</span>{item.name}<i aria-hidden="true" /></button>)}
+        </div>
+        <div className="hero-dock">
+          <div className="dock-index"><span>LOCAL ARCHIVE</span><strong>345<span> 配方</span></strong><small>1,958 条知识条目</small></div>
+          <button className="dock-action" onClick={() => onDemo('重息壤', 'syn')}><span className="dock-symbol" aria-hidden="true">⌘</span><span><small>SYNTHESIS</small><b>查看示例配方</b></span><i aria-hidden="true">↗</i></button>
+          <button className="dock-action" onClick={() => onDemo('佩丽卡怎么玩', 'ask')}><span className="dock-symbol" aria-hidden="true">✳</span><span><small>KNOWLEDGE</small><b>试试知识问答</b></span><i aria-hidden="true">↗</i></button>
         </div>
       </div>
-      <div className="hero-data" aria-label="索引状态">
-        <div className="hero-data-head">
-          <img className="hero-logo" src="/assets/mascots/endfield-logo.png" alt="明日方舟：终末地" />
-          <span>LOCAL INDEX<br />STATUS / ONLINE</span>
-        </div>
-        <div className="hero-stats">
-        <div className="stat"><b>345</b><span>VERIFIED<br />RECIPES</span></div>
-        <div className="stat"><b>1,958</b><span>WIKI<br />ENTRIES</span></div>
-        <div className="stat"><b>100%</b><span>RECALL<br />AT 5</span></div>
-        </div>
-        <div className="hero-signal" aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /><i /></div>
-      </div>
-      <div className="hero-tape" aria-hidden="true">OVER THE FRONTIER / INTO THE FRONT · SYNTHESIS SYSTEM ·</div>
+      <a className="hero-scroll" href="#search-command" aria-label="向下浏览查询区"><span>SCROLL TO EXPLORE</span><i aria-hidden="true">↓</i></a>
     </section>
   )
 }

@@ -278,6 +278,9 @@ export default function App() {
     setInputValue(q)
     setMode(m)
     if (!q) { stopAskStream(); showEmpty(m); return }
+    document.getElementById('search-command')?.scrollIntoView?.({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start',
+    })
     if (m === 'syn') {
       stopAskStream()
       setLoading(`${q} · 配方树`)
@@ -320,16 +323,17 @@ export default function App() {
   return (
     <>
       <EntryCurtain />
-      <div className="ambient" aria-hidden="true">
-        <i className="geo geo-a" /><i className="geo geo-b" /><i className="geo geo-c" />
-        <i className="geo geo-d" /><i className="geo geo-e" /><i className="geo geo-f" />
-        <i className="geo geo-g" /><i className="geo geo-h" />
-      </div>
 
       <TopBar connected={apiConnected} />
 
       <main className="site-main" id="page-top">
         <Hero onDemo={runQuery} />
+        <div className="archive-section">
+        <div className="section-banner reveal-on-scroll">
+          <div><span>ARKNIGHTS: ENDFIELD / ARCHIVE</span><h2>探索档案<span>:</span></h2></div>
+          <img src="/assets/official/divider.png" alt="" loading="lazy" />
+        </div>
+        <div className="archive-content">
         <SearchBox
           mode={mode}
           inputValue={inputValue}
@@ -356,10 +360,12 @@ export default function App() {
             synTreeRef={synTreeRef}
           />
         </section>
+        </div>
+        </div>
         <div className="footer-line reveal-on-scroll">
-          <span>© ENDFIELD SYNTHESIS ARCHIVE / COMMUNITY TOOL</span>
-          <span>图片素材来自：呵纹Hevon · 画师：仓鼠饭团c</span>
-          <span>DATA INTEGRITY: VERIFIED · LOCAL INDEX: ONLINE</span>
+          <span>ENDFIELD ARCHIVE / 非官方社区工具</span>
+          <span>游戏美术素材 © 鹰角网络 · 来自终末地官网与官方 WIKI</span>
+          <a href="#page-top">返回顶部 ↑</a>
         </div>
       </main>
 

@@ -95,6 +95,7 @@ export default function SearchBox({
             className={`mode-btn${mode === 'syn' ? ' active' : ''}`}
             data-mode="syn"
             data-index="01"
+            aria-pressed={mode === 'syn'}
             onClick={() => onModeChange('syn')}
           >
             配方合成树
@@ -104,12 +105,13 @@ export default function SearchBox({
             className={`mode-btn${mode === 'ask' ? ' active' : ''}`}
             data-mode="ask"
             data-index="02"
+            aria-pressed={mode === 'ask'}
             onClick={() => onModeChange('ask')}
           >
             知识问答
           </button>
         </div>
-        <div className="mode-note"><strong>●</strong> SELECT OPERATION MODE</div>
+        <div className="mode-note">SELECT YOUR OPERATION <strong>↙</strong></div>
       </div>
       <div className="query-row">
         <span className="query-prefix">QUERY://</span>
@@ -122,7 +124,7 @@ export default function SearchBox({
           onChange={(ev) => handleInput(ev.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <span className="enter-key">ENTER ↵</span>
+        <button type="button" className="enter-key" aria-label="执行查询" onClick={() => { hideSuggest(); onRunQuery(inputValue) }}>查询 <span aria-hidden="true">↗</span></button>
       </div>
       <div id="suggest" className={suggestVisible ? 'visible' : ''}>
         {suggestVisible && (

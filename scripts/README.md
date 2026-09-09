@@ -349,3 +349,9 @@ Web 答案由 `AnswerMarkdown.tsx` 生成 React 节点，支持表格、列表�
 API 安全（`api_security.py`：可选 Bearer Token、管理接口访问控制、SQLite 事务式频率/每日次数限制、
 媒体代理重定向禁用 + 25 MiB 上限 + 并发限制）的配置与边界见 [`../deploy/API_SECURITY.md`](../deploy/API_SECURITY.md)。
 `test_api_security.py` 模拟上游和 LLM，覆盖重定向、流大小限制、名额释放、鉴权、伪造 IP 头、共享额度和故障关闭。
+
+## 官网设计素材
+
+`python scripts/fetch_official_design_assets.py` 下载选定的公开素材到 `web/assets/official/`，
+保留来源、大小和 SHA256；每次请求限时、限大小，已有文件复用。仅下载图片，不执行官网脚本。
+运行时需要允许访问官网 CDN。前端使用方式见 `web/assets/official/README.md`。
