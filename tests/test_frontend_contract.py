@@ -33,15 +33,15 @@ class FrontendContractTests(unittest.TestCase):
             self.assertIn(token, HTML)
 
     def test_visual_system_and_motion_are_present(self):
-        self.assertIn("--yellow: #f0cf16", HTML)
+        self.assertIn("--yellow: #f8f500", HTML)
         self.assertIn("@keyframes heroRise", HTML)
         self.assertIn("@keyframes contentIn", HTML)
         self.assertIn("prefers-reduced-motion", HTML)
 
-    def test_entry_sequence_is_centered_staged_and_progressive(self):
+    def test_entry_sequence_is_short_session_scoped_and_progressive(self):
         for token in ('id="entry-curtain"', 'entry-mechanism', 'mechanicalDock',
                       'entry-beam-a', 'id="entry-percent"', '--boot-progress',
-                      'const duration = 3400', "' is-complete'"):
+                      'const duration = 1250', 'endfield-entry-seen', "' is-complete'"):
             self.assertIn(token, HTML)
 
     def test_vertical_image_tree_and_empty_default_are_present(self):

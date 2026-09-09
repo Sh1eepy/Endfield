@@ -18,7 +18,6 @@ export default function SideRail() {
         <b>DATA SOURCE</b>
         <span>终末地官方 WIKI<br />本地离线索引</span>
       </div>
-      <img className="frame-mascot mascot-rail" src="/assets/mascots/mascot-08.png" alt="" />
     </aside>
   )
 }

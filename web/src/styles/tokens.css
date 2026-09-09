@@ -17,20 +17,20 @@
 }
 
 :root {
-  /* 色板：纸张底 + 工程黄 + 克莱因蓝 */
-  --bg: #f5f4ee;
+  /* 色板：官网式冷白纸面 + 高亮工程黄 + 炭黑结构线 */
+  --bg: #f2f3f0;
   --card: #fff;
   --panel: #fff;
   --panel2: #f0efe8;
   --panel3: #e7e6df;
   --border: #d5d4cc;
   --border2: #aaa99f;
-  --accent: #f0cf16;      /* 工程黄 */
+  --accent: #f8f500;      /* 工程黄 */
   --accent2: #232722;     /* 墨色 */
-  --accent3: #796a00;
-  --yellow: #f0cf16;      /* 工程黄别名（历史兼容） */
-  --klein: #1737d1;       /* 克莱因蓝 */
-  --klein-soft: rgba(23, 55, 209, 0.18);
+  --accent3: #686700;
+  --yellow: #f8f500;      /* 工程黄别名（历史兼容） */
+  --klein: #171a1b;       /* 历史变量名，现统一为炭黑结构色 */
+  --klein-soft: rgba(23, 26, 27, 0.15);
   --text: #171916;
   --sub: #61665d;
   --faint: #969a91;
@@ -60,12 +60,10 @@ body {
   line-height: 1.55;
   overflow-x: hidden;
   background:
-    linear-gradient(90deg, rgba(20, 24, 19, 0.055) 1px, transparent 1px) 0 0 / 72px 72px,
-    linear-gradient(rgba(20, 24, 19, 0.045) 1px, transparent 1px) 0 0 / 72px 72px,
-    radial-gradient(ellipse at 78% 2%, rgba(240, 207, 22, 0.18), transparent 32%),
-    radial-gradient(ellipse at 8% 58%, rgba(23, 55, 209, 0.07), transparent 26%),
-    linear-gradient(145deg, #faf9f4 0%, #efeee7 54%, #f8f7f1 100%);
-  perspective: 1200px;
+    linear-gradient(90deg, rgba(20, 24, 19, 0.045) 1px, transparent 1px) 0 0 / 48px 48px,
+    linear-gradient(rgba(20, 24, 19, 0.035) 1px, transparent 1px) 0 0 / 48px 48px,
+    radial-gradient(ellipse at 82% 0%, rgba(248, 245, 0, 0.22), transparent 30%),
+    linear-gradient(145deg, #fbfcf9 0%, #eef0ec 62%, #f8f9f5 100%);
 }
 
 body::before {
@@ -74,10 +72,10 @@ body::before {
   inset: 0;
   pointer-events: none;
   z-index: -1;
-  opacity: 0.55;
+  opacity: 0.42;
   background:
-    linear-gradient(125deg, transparent 0 38%, rgba(255, 255, 255, 0.72) 38.1% 51%, transparent 51.1%),
-    linear-gradient(28deg, transparent 0 67%, rgba(23, 55, 209, 0.025) 67.1% 78%, transparent 78.1%);
+    linear-gradient(118deg, transparent 0 47%, rgba(255, 255, 255, 0.92) 47.1% 54%, transparent 54.1%),
+    repeating-linear-gradient(135deg, transparent 0 22px, rgba(17, 19, 16, 0.025) 22px 23px);
 }
 
 /* ===== 环境装饰（几何体 + 角色剪影，纯装饰不参与交互） ===== */
@@ -92,13 +90,13 @@ body::before {
 .ambient::before {
   content: "";
   position: absolute;
-  width: 38vw;
-  height: 115vh;
-  right: 5vw;
-  background: linear-gradient(100deg, transparent, rgba(240, 207, 22, 0.08), rgba(240, 207, 22, 0.26), rgba(23, 55, 209, 0.08), transparent);
-  filter: blur(2px);
-  transform: translateY(calc(var(--scroll-y, 0) * -0.08px)) rotateX(58deg) rotateZ(24deg);
-  box-shadow: 70px 35px 70px rgba(23, 55, 209, 0.07);
+  width: 18vw;
+  height: 160vh;
+  right: 11vw;
+  top: -24vh;
+  background: linear-gradient(90deg, transparent, rgba(248, 245, 0, 0.07), rgba(248, 245, 0, 0.36), transparent);
+  transform: translateY(calc(var(--scroll-y, 0) * -0.055px)) rotate(17deg);
+  animation: ambientSweep 40s linear infinite alternate;
 }
 .ambient::after {
   content: "ENDFIELD INDUSTRIES // SYNTHESIS ARCHIVE";
@@ -108,7 +106,12 @@ body::before {
   transform: translateY(calc(var(--scroll-y, 0) * 0.06px)) rotate(90deg);
   font: 700 10px/1 var(--font-tech);
   letter-spacing: 0.32em;
-  color: rgba(18, 20, 17, 0.13);
+  color: rgba(18, 20, 17, 0.16);
+}
+
+@keyframes ambientSweep {
+  from { translate: -8vw 0; }
+  to { translate: 8vw 0; }
 }
 
 .geo {
@@ -116,7 +119,8 @@ body::before {
   border: 1px solid rgba(25, 28, 23, 0.12);
   transition: transform 0.12s linear;
   transform-style: preserve-3d;
-  filter: drop-shadow(14px 18px 12px rgba(20, 24, 18, 0.08));
+  filter: none;
+  opacity: 0.42;
 }
 .geo-a {
   width: 280px; height: 280px; right: 7vw; top: 18vh;
@@ -182,48 +186,26 @@ body::before {
   100% { transform: translate3d(-12px, 12px, 10px) rotateX(42deg) rotateZ(-8deg); }
 }
 
-.bg-mascot {
-  position: absolute;
-  pointer-events: none;
-  object-fit: contain;
-  opacity: 0.075;
-  filter: grayscale(0.15) drop-shadow(14px 18px 0 rgba(23, 55, 209, 0.14));
-  will-change: transform;
-}
-.bg-char-1 { width: 190px; left: 3vw; top: 14vh; animation: charDriftA 17s ease-in-out infinite alternate; }
-.bg-char-2 { width: 160px; right: 5vw; top: 63vh; animation: charDriftB 21s ease-in-out infinite alternate; }
-.bg-char-3 { width: 210px; left: 8vw; top: 124vh; animation: charDriftB 19s ease-in-out infinite alternate-reverse; }
-.bg-char-4 { width: 170px; right: 10vw; top: 176vh; animation: charDriftA 23s ease-in-out infinite alternate-reverse; }
-.bg-char-5 { width: 150px; left: 42vw; top: 225vh; animation: charDriftB 20s ease-in-out infinite alternate; }
-@keyframes charDriftA {
-  from { transform: translate3d(-10px, -8px, 0) rotate(-4deg); }
-  to   { transform: translate3d(24px, 18px, 0) rotate(5deg); }
-}
-@keyframes charDriftB {
-  from { transform: translate3d(12px, -14px, 0) rotate(5deg); }
-  to   { transform: translate3d(-22px, 20px, 0) rotate(-4deg); }
-}
-
 /* ===== 滚动视差变量 ===== */
-body.is-scrolled .topbar { height: 60px; background: rgba(250, 249, 244, 0.96); }
+body.is-scrolled .topbar { background: rgba(250, 251, 248, 0.985); }
 
 /* ===== 滚动进场（reveal） ===== */
 .reveal-on-scroll {
   opacity: 0;
-  transform: translateY(34px) rotate(0.7deg);
-  filter: blur(7px);
-  transition: opacity 0.72s ease, transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.72s ease;
+  transform: translateY(24px);
+  clip-path: inset(0 0 24% 0);
+  transition: opacity 0.5s linear, transform 0.65s cubic-bezier(0.2, 0, 0.1, 1), clip-path 0.65s cubic-bezier(0.2, 0, 0.1, 1);
 }
-.reveal-on-scroll.is-visible { opacity: 1; transform: none; filter: none; }
-.workspace.reveal-on-scroll { transform: translateY(48px) rotate(-0.45deg); }
+.reveal-on-scroll.is-visible { opacity: 1; transform: none; clip-path: inset(0); }
+.workspace.reveal-on-scroll { transform: translateY(36px); }
 .workspace.reveal-on-scroll.is-visible { transform: none; }
 
 /* ===== 通用动效 keyframes（保留命名供测试/动画引用） ===== */
 @keyframes heroRise {
-  from { opacity: 0; transform: translateY(18px); filter: blur(5px); }
-  to   { opacity: 1; transform: none; filter: none; }
+  from { opacity: 0; transform: translateY(18px); clip-path: inset(0 100% 0 0); }
+  to   { opacity: 1; transform: none; clip-path: inset(0); }
 }
 @keyframes contentIn {
-  from { opacity: 0; transform: translateY(12px); filter: blur(3px); }
-  to   { opacity: 1; transform: none; filter: none; }
+  from { opacity: 0; transform: translateY(12px); clip-path: inset(0 0 18% 0); }
+  to   { opacity: 1; transform: none; clip-path: inset(0); }
 }

@@ -324,16 +324,11 @@ export default function App() {
         <i className="geo geo-a" /><i className="geo geo-b" /><i className="geo geo-c" />
         <i className="geo geo-d" /><i className="geo geo-e" /><i className="geo geo-f" />
         <i className="geo geo-g" /><i className="geo geo-h" />
-        <img className="bg-mascot bg-char-1" src="/assets/mascots/mascot-02.png" alt="" />
-        <img className="bg-mascot bg-char-2" src="/assets/mascots/mascot-04.png" alt="" />
-        <img className="bg-mascot bg-char-3" src="/assets/mascots/mascot-05.png" alt="" />
-        <img className="bg-mascot bg-char-4" src="/assets/mascots/mascot-06.png" alt="" />
-        <img className="bg-mascot bg-char-5" src="/assets/mascots/mascot-07.png" alt="" />
       </div>
 
       <TopBar connected={apiConnected} />
 
-      <main className="site-main">
+      <main className="site-main" id="page-top">
         <Hero onDemo={runQuery} />
         <SearchBox
           mode={mode}
@@ -346,7 +341,7 @@ export default function App() {
           onHistoryPick={handleHistoryPick}
           onClearHistory={handleClearHistory}
         />
-        <section className="workspace reveal-on-scroll">
+        <section className="workspace reveal-on-scroll" id="workspace">
           <SideRail />
           <ResultPanel
             mode={mode}

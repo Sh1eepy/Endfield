@@ -8,13 +8,30 @@
 }
 
 @media (max-width: 850px) {
-  .top-code, .hero-stats, .side-rail { display: none; }
-  .topbar { height: 64px; padding: 0 18px; }
-  .site-main { padding: 0 14px 38px; }
+  .top-code, .hero-data, .side-rail, .top-nav { display: none; }
+  .topbar {
+    position: sticky;
+    inset: 0 0 auto;
+    width: auto;
+    height: 64px;
+    padding: 0 18px;
+    flex-direction: row;
+    justify-content: space-between;
+    border-right: 0;
+    border-bottom: 1px solid rgba(18, 20, 17, 0.15);
+  }
+  body.is-scrolled .topbar { height: 60px; }
+  .brand { display: flex; align-items: center; gap: 12px; width: auto; }
+  .brand-mark { width: 62px; height: 38px; padding: 3px 8px; border-bottom: 0; box-shadow: 4px 4px 0 var(--yellow); }
+  .brand-cn, .brand-en { display: block; }
+  .top-meta { margin: 0; padding: 0; display: flex; flex-direction: row; }
+  .status { width: auto; height: auto; padding: 8px 10px; }
+  .status #api-text { position: static; width: auto; height: auto; overflow: visible; clip-path: none; }
+  .site-main { margin-left: 0; padding: 0 14px 38px; }
   .hero { display: block; min-height: 280px; padding: 62px 4px 36px; }
   .hero h1 { font-size: clamp(40px, 13vw, 68px); }
-  .hero::before { width: 86px; height: 86px; right: 4%; top: 48px; }
-  .hero-logo { width: 92px; top: 38px; right: 0; opacity: 0.3; }
+  .hero::before { width: 34%; height: 100%; right: 0; top: 0; opacity: .55; }
+  .hero-tape { bottom: 8px; }
   .workspace { display: block; }
   .query-row { grid-template-columns: auto 1fr; padding: 20px 16px; }
   .query-row { padding-right: 82px; }
@@ -29,17 +46,11 @@
   .empty-console { margin: 45px 0; padding: 28px 22px; }
   .geo-d { width: 260px; height: 260px; }
   .geo-e { right: -120px; }
-  .entry-curtain::before { width: 86px; height: 86px; }
   .brand-mark { width: 56px; }
-  .mascot-search { width: 70px; right: 8px; top: 58px; opacity: 0.52; }
-  .mascot-panel, .mascot-rail { display: none; }
-  .bg-mascot { opacity: 0.045; }
-  .bg-char-3, .bg-char-4, .bg-char-5 { display: none; }
   .command-shell, .panel {
     clip-path: polygon(16px 0, 78% 0, calc(78% + 8px) 5px, 100% 5px, calc(100% - 14px) 100%, 20% 100%, calc(20% - 8px) calc(100% - 5px), 0 calc(100% - 5px));
   }
   .entry-logo-plate { width: 180px; height: 104px; }
-  .entry-curtain::before { width: 240px; height: 150px; }
 }
 
 @media (max-width: 700px) {

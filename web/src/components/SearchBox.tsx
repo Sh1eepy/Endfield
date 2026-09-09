@@ -87,8 +87,7 @@ export default function SearchBox({
   }, [inputValue])
 
   return (
-    <div className="search-wrap command-shell" ref={wrapRef}>
-      <img className="frame-mascot mascot-search" src="/assets/mascots/mascot-01.png" alt="" />
+    <div className="search-wrap command-shell" id="search-command" ref={wrapRef}>
       <div className="command-head">
         <div className="mode-tabs" id="mode-tabs">
           <button

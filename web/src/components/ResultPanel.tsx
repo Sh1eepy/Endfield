@@ -138,7 +138,6 @@ export default function ResultPanel({
 
   return (
     <div className="panel">
-      <img className="frame-mascot mascot-panel" src="/assets/mascots/mascot-03.png" alt="" />
       <div className="panel-head">
         <span>
           <i className="panel-kicker">OUTPUT</i>
