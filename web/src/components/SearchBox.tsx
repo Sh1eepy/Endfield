@@ -50,6 +50,7 @@ export default function SearchBox({
   }, [hideSuggest, onInputChange, onRunQuery])
 
   const handleKeyDown = useCallback((ev: React.KeyboardEvent<HTMLInputElement>) => {
+    if (ev.nativeEvent.isComposing || ev.keyCode === 229) return
     if (ev.key === 'ArrowDown') {
       ev.preventDefault()
       setSuggestIndex((i) => Math.min(i + 1, suggestList.length - 1))
@@ -87,7 +88,7 @@ export default function SearchBox({
   }, [inputValue])
 
   return (
-    <div className="search-wrap command-shell" id="search-command" ref={wrapRef}>
+    <div className="search-wrap command-shell" data-operation={mode} id="search-command" ref={wrapRef}>
       <div className="command-head">
         <div className="mode-tabs" id="mode-tabs">
           <button
@@ -96,7 +97,7 @@ export default function SearchBox({
             data-mode="syn"
             data-index="01"
             aria-pressed={mode === 'syn'}
-            onClick={() => onModeChange('syn')}
+            onClick={() => { hideSuggest(); onModeChange('syn') }}
           >
             配方合成树
           </button>
@@ -106,7 +107,7 @@ export default function SearchBox({
             data-mode="ask"
             data-index="02"
             aria-pressed={mode === 'ask'}
-            onClick={() => onModeChange('ask')}
+            onClick={() => { hideSuggest(); onModeChange('ask') }}
           >
             知识问答
           </button>
@@ -114,11 +115,11 @@ export default function SearchBox({
         <div className="mode-note">SELECT YOUR OPERATION <strong>↙</strong></div>
       </div>
       <div className="query-row">
-        <span className="query-prefix">QUERY://</span>
+        <span className="query-prefix">{mode === 'syn' ? 'SYN://' : 'ASK://'}</span>
         <input
           id="in-search"
           aria-label="搜索物品、设备或知识问题"
-          placeholder="输入物品、设备名或直接提问…"
+          placeholder={mode === 'syn' ? '输入物品名称，展开合成路径…' : '关于终末地，你想了解什么？'}
           autoComplete="off"
           value={inputValue}
           onChange={(ev) => handleInput(ev.target.value)}

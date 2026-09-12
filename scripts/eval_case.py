@@ -58,7 +58,10 @@ def deterministic_score(case, result):
     if not isinstance(case, EvaluationCase):
         case = EvaluationCase.from_mapping(case)
     answer = str(result.get("answer") or "")
-    refused = bool(result.get("rejected")) or "未找到" in answer or "不足" in answer
+    # Current production results expose the canonical decision explicitly. Only
+    # old artifacts without that field need the exact historical-answer fallback.
+    refused = (bool(result["rejected"]) if "rejected" in result else
+               answer.strip() == "知识库中未找到足够相关的资料来回答这个问题。")
     names = result_source_names(result)
     return {
         "refusal_correct": refused == case.should_refuse,

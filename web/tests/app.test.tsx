@@ -144,3 +144,22 @@ test('mode drafts are independent even when not submitted', async () => {
   await click('[data-mode="ask"]')
   expect(value()).toBe('问题草稿')
 })
+
+test('rapid visual switches never submit a query and leave the final mode visible', async () => {
+  await click('[data-mode="ask"]')
+  await click('[data-mode="syn"]')
+  await click('[data-mode="ask"]')
+  expect(host.querySelector('.archive-experience')?.getAttribute('data-view')).toBe('ask')
+  expect(host.querySelector('input')?.placeholder).toContain('你想了解什么')
+  expect(api.fetchAskStream).not.toHaveBeenCalled()
+  expect(api.fetchSynthesis).not.toHaveBeenCalled()
+})
+
+test('composition Enter does not submit and static preference leaves drafts intact', async () => {
+  await type('合成草稿')
+  await act(async () => host.querySelector('input')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', isComposing: true, bubbles: true })))
+  expect(api.fetchSynthesis).not.toHaveBeenCalled()
+  await click('.experience-quality')
+  expect(value()).toBe('合成草稿')
+  expect(host.querySelector('.experience-quality')?.getAttribute('aria-pressed')).toBe('true')
+})

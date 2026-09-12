@@ -9,6 +9,7 @@ import TopBar from './components/TopBar'
 import Hero from './components/Hero'
 import SearchBox from './components/SearchBox'
 import SideRail from './components/SideRail'
+import ArchiveExperience from './components/ArchiveExperience'
 import ResultPanel from './components/ResultPanel'
 import Tip, { type TipState } from './components/Tip'
 import { clearHistory, getHistory, recordHistory, type HistoryEntry } from './utils'
@@ -149,6 +150,16 @@ export default function App() {
     askStreamRef.current.controller?.abort()
     askStreamRef.current.controller = null
   }, [])
+
+  const handleStopAsk = useCallback(() => {
+    requestSeqRef.current += 1
+    stopAskStream()
+    setResult((current) => {
+      if (current?.kind !== 'ask' || !current.data.streaming) return current
+      return { ...current, data: { ...current.data, streaming: false,
+        stream_error: current.data.answer ? '已停止生成，已保留当前内容。' : '已停止生成。' } }
+    })
+  }, [stopAskStream])
 
   /** 知识问答走 /api/ask/stream：先亮阶段/来源，答案逐段追加；旧后端自动回退整包。 */
   const runAskStream = useCallback((q: string, isCurrent: () => boolean) => {
@@ -300,8 +311,16 @@ export default function App() {
 
   const switchMode = useCallback((m: Mode) => {
     if (m === mode) return
-    runQuery(modeQueries[m] ?? '', m)
-  }, [mode, modeQueries, runQuery])
+    const nextQuery = modeQueries[m] ?? ''
+    requestSeqRef.current += 1
+    stopAskStream()
+    setModeQueries((prev) => ({ ...prev, [mode]: inputValue }))
+    setInputValue(nextQuery)
+    setMode(m)
+    const cached = m === 'ask' && nextQuery ? askCacheRef.current.get(nextQuery) : undefined
+    if (cached) setReady({ kind: 'ask', data: cached, query: nextQuery }, `${nextQuery} · 知识问答`)
+    else showEmpty(m)
+  }, [inputValue, mode, modeQueries, setReady, showEmpty, stopAskStream])
 
   const handleHistoryPick = useCallback((entry: HistoryEntry) => {
     runQuery(entry.q, entry.mode)
@@ -327,13 +346,12 @@ export default function App() {
       <TopBar connected={apiConnected} />
 
       <main className="site-main" id="page-top">
-        <Hero onDemo={runQuery} />
-        <div className="archive-section">
-        <div className="section-banner reveal-on-scroll">
-          <div><span>ARKNIGHTS: ENDFIELD / ARCHIVE</span><h2>探索档案<span>:</span></h2></div>
-          <img src="/assets/official/divider.png" alt="" loading="lazy" />
-        </div>
-        <div className="archive-content">
+        <ArchiveExperience mode={mode} resultState={resultState} resultIdentity={result?.query || title}
+          home={<Hero onDemo={runQuery} />}
+          phase={resultState==='ready' && result?.kind==='ask' ? result.data.phase_text : undefined}
+          onStop={handleStopAsk} streaming={mode==='ask' && (resultState==='loading' || (result?.kind==='ask' && Boolean(result.data.streaming)))}
+          hasContent={resultState === 'ready' && Boolean(result && (result.kind === 'syn' || result.data.answer || !result.data.streaming))}
+          query={
         <SearchBox
           mode={mode}
           inputValue={inputValue}
@@ -345,8 +363,9 @@ export default function App() {
           onHistoryPick={handleHistoryPick}
           onClearHistory={handleClearHistory}
         />
-        <section className="workspace reveal-on-scroll" id="workspace">
-          <SideRail />
+          }>
+        <section className="workspace" id="workspace">
+          <SideRail mode={mode} />
           <ResultPanel
             mode={mode}
             title={title}
@@ -358,10 +377,10 @@ export default function App() {
             showTip={showTip}
             hideTip={hideTip}
             synTreeRef={synTreeRef}
+            onStopAsk={handleStopAsk}
           />
         </section>
-        </div>
-        </div>
+        </ArchiveExperience>
         <div className="footer-line reveal-on-scroll">
           <span>ENDFIELD ARCHIVE / 非官方社区工具</span>
           <span>游戏美术素材 © 鹰角网络 · 来自终末地官网与官方 WIKI</span>

@@ -117,6 +117,20 @@ class EvaluationTests(unittest.TestCase):
         self.assertEqual(eval_answers.judge_evidence(result)[0], {
             "name": "条目", "category": "档案", "item_id": "7", "text": "可核查原文"})
 
+    def test_explicit_rejection_field_wins_over_answer_wording(self):
+        from scripts.eval_case import deterministic_score
+        case = {"query": "test", "should_refuse": False}
+        result = {"rejected": False, "answer": "现有资料不足以判断后续版本。"}
+        self.assertTrue(deterministic_score(case, result)["refusal_correct"])
+
+    def test_legacy_refusal_requires_exact_canonical_answer(self):
+        from scripts.eval_case import deterministic_score
+        case = {"query": "test", "should_refuse": True}
+        canonical = {"answer": "知识库中未找到足够相关的资料来回答这个问题。"}
+        incidental = {"answer": "没有找到该道具，但资料足以回答其他部分。"}
+        self.assertTrue(deterministic_score(case, canonical)["refusal_correct"])
+        self.assertFalse(deterministic_score(case, incidental)["refusal_correct"])
+
 
 class StreamTests(unittest.TestCase):
     def test_partial_eof_or_done_without_finish_is_not_success_or_retried(self):

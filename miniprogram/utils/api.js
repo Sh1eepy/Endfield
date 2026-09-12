@@ -3,13 +3,13 @@
 
 const app = getApp();
 
-function request(path, data = {}, method = 'GET') {
+function request(path, data = {}, method = 'GET', timeout = 30000) {
   return new Promise((resolve, reject) => {
     wx.request({
       url: app.globalData.apiBase + path,
       method,
       data,
-      timeout: 30000,
+      timeout,
       header: { 'Content-Type': 'application/json' },
       success: (res) => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
@@ -37,7 +37,7 @@ module.exports = {
 
   /** RAG 问答（意图识别→路由→检索→可选 LLM 生成） */
   ask: (query, topK = 5, genAnswer = true) =>
-    request('/api/ask', { query, top_k: topK, gen_answer: genAnswer, client_type: 'miniprogram' }, 'POST'),
+    request('/api/ask', { query, top_k: topK, gen_answer: genAnswer, client_type: 'miniprogram' }, 'POST', 180000),
 
   /** 用户主动反馈；只进入待人工审核隔离区 */
   feedback: (traceId, query, vote, comment = '', observedAnswer = '') =>

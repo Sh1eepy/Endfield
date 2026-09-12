@@ -72,6 +72,8 @@ LLM_MODEL=实际模型名
 LLM_TIMEOUT=60
 WEB_CONCURRENCY=1
 ASK_MAX_CONCURRENCY=2
+# 可选：默认 1（启动预热 embedding 与索引）；内存极紧时设 0
+RAG_PREWARM=1
 ```
 
 `.env` 只保存在服务器，不能提交到 Git。默认每 IP 每分钟 6 次、每日 60 次、全站每日 200 次（UTC 日窗口），可在 `.env` 调整。
@@ -124,11 +126,13 @@ Nginx 对 `/api/ask` 的默认保护是：
 - 允许短时间突发 2 次；
 - 单 IP 同时最多 1 个问答；
 - 超出返回 HTTP 429；
-- 其他只读接口不使用这组严格限制。
+- `/api/synthesis` 另用每 IP 平均 60 次/分钟、突发 20 次的读取限制；
+- `/api/media` 另用每 IP 平均 120 次/分钟、突发 60 次及最多 4 个并发连接。
 
 `/api/ask/stream`（SSE 流式问答）与 `/api/ask` 使用同一组 Nginx 限制与应用层并发名额；
 模板中该 location 已关闭 `proxy_buffering` 并把 `proxy_read_timeout` 放宽到 300s——改动线上 Nginx 时请同步保持，
 否则代理会攒批，网页问答会失去逐字输出。
+整包 `/api/ask` 的读写超时为 180s，用于覆盖小程序整包生成窗口。
 
 ## 5. 开启 HTTPS
 

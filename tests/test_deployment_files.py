@@ -57,6 +57,16 @@ class DeploymentFileTests(unittest.TestCase):
         self.assertIn("allow 127.0.0.1", text)
         self.assertIn("proxy_pass http://127.0.0.1:8000", text)
 
+    def test_nginx_limits_public_synthesis_and_media_routes(self):
+        text = (ROOT / "deploy" / "nginx" / "endfield.conf").read_text(encoding="utf-8")
+        self.assertIn("location = /api/synthesis", text)
+        self.assertIn("limit_req zone=endfield_read_rate", text)
+        self.assertIn("location = /api/media", text)
+        self.assertIn("limit_req zone=endfield_media_rate", text)
+        self.assertIn("limit_conn endfield_media_conn 4", text)
+        ask_block = text.split("location = /api/ask {", 1)[1].split("location = /api/synthesis", 1)[0]
+        self.assertIn("proxy_read_timeout 180s", ask_block)
+
     def test_public_env_template_uses_safe_concurrency_defaults(self):
         text = (ROOT / ".env.example").read_text(encoding="utf-8")
         self.assertIn("WEB_CONCURRENCY=1", text)

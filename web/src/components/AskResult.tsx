@@ -118,13 +118,14 @@ export default function AskResult({ data, query = '', onPickName }: Props) {
               ? <div className="ask-answer ask-rejected">{data.answer}</div>
               : (
                 <div className="ask-answer">
-                  <AnswerMarkdown answer={data.answer} onJump={jumpToSource} />
                   {isStreaming ? (
-                    <span className="ask-caret" aria-hidden="true">▍</span>
-                  ) : null}
+                    <span style={{ whiteSpace: 'pre-wrap' }}>{data.answer}
+                      <span className="ask-caret" aria-hidden="true">▍</span>
+                    </span>
+                  ) : <AnswerMarkdown answer={data.answer} onJump={jumpToSource} />}
                 </div>
               )
-          ) : (
+          ) : data.stream_error ? null : (
             <div className="ask-answer ask-rejected">知识库检索完成，但回答生成暂不可用（未配置 LLM 或调用失败）。</div>
           )}
 

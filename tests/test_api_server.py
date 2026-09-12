@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 """核心 API 与合成树离线回归测试。"""
 import os
+import json
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from pydantic import ValidationError
@@ -75,6 +78,33 @@ class ApiSmokeTests(unittest.TestCase):
 
     def test_health(self):
         self.assertEqual(api_server.health()["status"], "ok")
+
+    def test_code_version_is_resolved_once_per_process(self):
+        api_server._code_version.cache_clear()
+        try:
+            with patch.dict(os.environ, {"APP_VERSION": ""}), \
+                    patch.object(api_server.subprocess, "check_output", return_value="abc123\n") as call:
+                self.assertEqual(api_server._code_version(), "abc123")
+                self.assertEqual(api_server._code_version(), "abc123")
+            self.assertEqual(call.call_count, 1)
+        finally:
+            api_server._code_version.cache_clear()
+
+    def test_kb_name_index_skips_bad_lines_and_reads_one_record(self):
+        try:
+            with tempfile.TemporaryDirectory(prefix="endfield-kb-index-") as tmp:
+                root = Path(tmp)
+                kb_dir = root / "endfield_kb"
+                kb_dir.mkdir()
+                record = {"name": "测试条目", "category": "测试", "full_text": "正文"}
+                (kb_dir / "test.jsonl").write_text(
+                    "{broken json\n" + json.dumps(record, ensure_ascii=False) + "\n", encoding="utf-8")
+                with patch.object(api_server, "ROOT", str(root)):
+                    api_server._KB_RECORD_INDEX = None
+                    self.assertEqual(api_server._lookup_item_kb("测试条目"), record)
+                    self.assertIsNone(api_server._lookup_item_kb("不存在"))
+        finally:
+            api_server._KB_RECORD_INDEX = None
 
     def test_media_proxy_rejects_non_wiki_hosts_without_network(self):
         with self.assertRaises(api_server.HTTPException):

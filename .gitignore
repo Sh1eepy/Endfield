@@ -17,8 +17,13 @@ env/
 # ===== 运行时产物（大文件/可重建） =====
 output/rag/chroma/
 output/eval/replay/
+output/frontend-spatial/
+output/audit_*/
 logs/
 *.log
+tmp/
+.tmp/
+_resume_extract.txt
 
 # 前端构建产物与依赖（可重建）
 web/node_modules/
@@ -43,11 +48,22 @@ wiki_collector.js
 # 独立的旧采集工作副本；其内部有自己的交接资料和大文件，不并入主仓库
 wiki数据采集skill/
 
+# 官网页面「另存为」的抓取副本（含 _files/ 静态资源）：本地核对用，不入库
+*Arknights_ Endfield.html
+*Arknights_ Endfield_files/
+
 # ===== 系统/编辑器 =====
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
+.dsh/
+.obsidian/
+
+# 根目录的第三方技能/设计参考包（本地参考用，不入库）
+taste-skill-main/
+taste-skill-main.zip
+Claude-Code-Frontend-Design-Toolkit-main/
 
 # 微信开发者工具的个人设置（公共项目配置保留）
 miniprogram/project.private.config.json

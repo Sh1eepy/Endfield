@@ -1,0 +1,64 @@
+/* Endfield adaptation: diagnostic lettering → orbital scan → editorial welcome. */
+.entry-curtain { background:#e4e6dc; color:#17201b; transition:opacity .36s,visibility .36s step-end; }
+.entry-curtain::before { background:url('/assets/official/texture.png'); opacity:.025; animation:none; }
+.entry-curtain::after { color:#414a3b; content:'ENDFIELD INDUSTRIES / TALOS-II'; }
+.entry-mechanism { width:100%; height:100%; }
+.entry-beam,.entry-rail,.entry-lock { display:none; }
+.entry-access { position:absolute; top:42%; left:11%; display:grid; gap:15px; animation:accessSequence 1.3s both; }
+.entry-access > span { font:500 11px var(--font-tech); letter-spacing:.18em; }
+.entry-access b { font-size:clamp(24px,4vw,52px); font-weight:500; clip-path:inset(0 100% 0 0); animation:accessTyping .75s .15s steps(12,end) forwards; }
+.entry-access b span { color:#8e9d00; }
+.entry-access small { font:500 9px var(--font-tech); letter-spacing:.22em; }
+.entry-orbits { position:absolute; height:min(80vh,700px); width:min(80vh,700px); left:50%; top:50%; transform:translate(-50%,-50%); overflow:visible; animation:orbitSequence 2.2s .35s both; }
+.entry-orbit { transform-origin:300px 300px; animation:orbitRotation 1.7s cubic-bezier(.4,0,.12,1) both; }
+.entry-orbit circle:not(.orbit-point) { fill:none; stroke:#485241; stroke-width:1; stroke-dasharray:63 37; stroke-dashoffset:100; animation:orbitDraw 1.4s .45s cubic-bezier(.2,0,.15,1) forwards; }
+.entry-orbit.orbit-1 { animation-direction:reverse; }
+.entry-orbit.orbit-2 { animation-delay:.13s; }
+.entry-orbit.orbit-3 { animation-direction:reverse; animation-delay:.18s; }
+.entry-orbit.orbit-2 circle:not(.orbit-point) { stroke:#adb900; stroke-width:3; }
+.orbit-point { fill:#3d4838; stroke:#e4e6dc; stroke-width:2; }
+.entry-crosshair { stroke:#64705b; stroke-width:1; fill:none; }
+.entry-logo-plate { position:absolute; width:175px;height:125px;top:50%;left:50%;transform:translate(-50%,-50%);border:0;background:transparent;clip-path:none;opacity:0;animation:orbitalLogo 1.8s .55s both; }
+.entry-logo-plate::before,.entry-logo-plate::after { display:none; }
+.entry-logo-plate img { width:100%;height:100%;mix-blend-mode:multiply;filter:grayscale(1); }
+.entry-welcome { position:absolute;left:11%;right:9%;top:35%;animation:welcomeSequence 1.2s 1.95s both; }
+.entry-welcome > span { font:600 11px var(--font-tech);letter-spacing:.32em; }
+.entry-welcome h2 { margin-top:12px; font:500 clamp(58px,11vw,154px)/1 var(--font-tech);letter-spacing:-.07em;overflow:hidden;animation:welcomeInk .9s 1.95s both; }
+.entry-welcome h2 span { display:block;margin-top:14px;font:500 clamp(22px,3vw,42px)/1.3 var(--font-cn);letter-spacing:.15em; }
+.entry-welcome p { margin-top:22px;font-size:12px;letter-spacing:.12em; }
+.entry-welcome i { position:absolute;left:-2%;top:42%;height:32%;width:106%;background:#eef128;z-index:-1;transform-origin:left;animation:welcomeStripe .8s 2s both; }
+.entry-boot { top:auto;bottom:9%;width:min(76vw,720px);color:#273120;opacity:1;animation:none; }
+.entry-boot-head { color:#58634d; }
+#entry-percent { color:#465233; }
+.entry-progress { height:4px;padding:0;border:0;background:#c6cebc; }
+.entry-progress-fill { background:#677a43; }
+.entry-ticks { background:repeating-linear-gradient(90deg,#65735e77 0 1px,transparent 1px 5%); }
+.entry-skip { position:absolute;right:5%;top:5%;padding:10px 14px;border:1px solid #a9b29c;background:#f1f3e366;color:#313d26;border-radius:3px;font-size:11px; }
+.entry-skip span { margin-left:15px;font:500 9px var(--font-tech); }
+.entry-curtain.is-complete .entry-mechanism { animation:none; }
+.experience-replay { background:transparent;border:0;color:var(--space-muted);font-size:10px;margin-left:auto;pointer-events:auto; }
+/* Fast gestures, deliberate holds: access → scan → welcome → release. */
+.entry-access { animation-duration:1.65s; }
+.entry-access b { animation-duration:.55s; }
+.entry-orbits { animation-duration:2.7s; animation-delay:1.1s; }
+.entry-orbit { animation-duration:2s; animation-delay:1.1s; }
+.entry-orbit.orbit-2 { animation-delay:1.23s; }
+.entry-orbit.orbit-3 { animation-delay:1.28s; }
+.entry-orbit circle:not(.orbit-point) { animation-duration:1s; animation-delay:1.35s; }
+.entry-logo-plate { animation-duration:2.15s; animation-delay:1.5s; }
+.entry-welcome { animation-duration:2.2s; animation-delay:3.4s; }
+.entry-welcome h2 { animation-duration:.55s; animation-delay:3.4s; }
+.entry-welcome i { animation-duration:.5s; animation-delay:3.5s; }
+.entry-curtain { background:#e7e7e0; color:#222526; }
+.entry-progress-fill { background:#969b12; }
+@keyframes accessTyping { to{clip-path:inset(0)} }
+@keyframes accessSequence { 0%,75%{opacity:1}100%{opacity:0;transform:translateX(25px)} }
+@keyframes orbitRotation { from{transform:rotate(-150deg)}to{transform:rotate(80deg)} }
+@keyframes orbitDraw { to{stroke-dashoffset:0;stroke-dasharray:92 8} }
+@keyframes orbitSequence { 0%{opacity:0;transform:translate(-50%,-50%) scale(1.4)}25%,68%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.08)} }
+@keyframes orbitalLogo { 0%{opacity:0;clip-path:inset(0 100% 0 0)}25%,75%{opacity:1;clip-path:inset(0)}100%{opacity:0;transform:translate(-50%,-50%) scale(.65)} }
+@keyframes welcomeSequence { from{opacity:0;transform:translateY(18px)}20%,90%{opacity:1;transform:none}100%{opacity:1} }
+@keyframes welcomeInk { from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0)} }
+@keyframes welcomeStripe { from{transform:scaleX(0)}to{transform:scaleX(1)} }
+@media(max-width:600px){.entry-welcome{left:7%;right:7%;top:36%}.entry-welcome h2{font-size:54px}.entry-welcome h2 span{font-size:20px;letter-spacing:.07em}.entry-orbits{width:94vw;height:94vw}.entry-access{left:8%}.entry-boot{bottom:14%}.entry-skip{top:5%;right:6%}}
+@media(prefers-reduced-motion:reduce){.entry-curtain{display:none}.entry-mechanism *{animation:none!important}}

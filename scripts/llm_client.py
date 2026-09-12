@@ -265,7 +265,8 @@ class LLMClient:
             content = (data["choices"][0]["message"]["content"] or "").strip()
         except RuntimeError as e:
             # response_format 不被支持（个别服务商）→ 去掉后重试一次
-            if "response_format" not in str(e) and "400" not in str(e):
+            detail = str(e).lower()
+            if "response_format" not in detail and "json_object" not in detail:
                 raise
             data = self._chat_completions(messages, temperature=temperature,
                                           max_tokens=max_tokens, timeout=timeout, _deadline=deadline)

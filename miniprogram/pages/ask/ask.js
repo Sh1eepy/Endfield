@@ -147,9 +147,10 @@ Page({
     keys.slice(0, 20).forEach((k) => {
       const blocks = ss[k];
       if (Array.isArray(blocks) && blocks.length) {
-        sections.push({ title: k, blocks: blocks.map(this._mapBlock).filter(Boolean) });
+        sections.push({ title: k, blocks: blocks.map((b) => this._mapBlock(b)).filter(Boolean) });
       } else if (secTexts[k] && String(secTexts[k]).trim()) {
-        sections.push({ title: k, blocks: [{ t: 'para', text: String(secTexts[k]) }] });
+        sections.push({ title: k, blocks: [{ t: 'para',
+          inline: [{ t: 'text', text: String(secTexts[k]) }] }] });
       }
     });
     // full_text 兜底：解析 [图片](url) 标记为真图，文本完整显示
@@ -187,29 +188,31 @@ Page({
   },
 
   // kb 结构化块映射（文本/表格/图片）
+  _mapInline(e) {
+    if (!e) return null;
+    if (e.t === 'text') return { t: 'text', text: String(e.x || '') };
+    if (e.t === 'entry') {
+      return { t: 'entry', text: String(e.x || ''), count: e.c || '',
+        img: e.img ? this._mediaUrl(e.img) : '' };
+    }
+    if (e.t === 'link') {
+      return { t: 'link', text: String(e.x || e.u || ''), u: String(e.u || '') };
+    }
+    if (e.t === 'img') return { t: 'img', u: this._mediaUrl(e.u) };
+    return null;
+  },
+
   _mapBlock(b) {
     if (!b) return null;
     if (b.t === 'para') {
-      const texts = (b.c || []).map(e => {
-        if (!e) return '';
-        if (e.t === 'text') return String(e.x || '');
-        if (e.t === 'entry') return String(e.x || '');
-        return '';
-      }).join('');
-      return { t: 'para', text: texts };
+      return { t: 'para', inline: (b.c || []).map(e => this._mapInline(e)).filter(Boolean) };
     }
     if (b.t === 'table') {
       return { t: 'table', rows: (b.r || []).map(row => (row || []).map(cell => {
-        // 单元格内可能有多段 inline
-        return (cell || []).map(e => {
-          if (!e) return '';
-          if (e.t === 'text') return String(e.x || '');
-          if (e.t === 'entry') return String(e.x || '');
-          return '';
-        }).join('');
+        return { inline: (cell || []).map(e => this._mapInline(e)).filter(Boolean) };
       })) };
     }
-    if (b.t === 'img') return { t: 'img', u: b.u };
+    if (b.t === 'img') return { t: 'img', u: this._mediaUrl(b.u) };
     if (b.t === 'hr') return { t: 'hr' };
     return null;
   },
@@ -277,15 +280,39 @@ Page({
   // plain 段内容经 markdown 解析器转成 rich-text nodes，避免 **、* 等符号原样暴露
   _parseRefs(answer) {
     const segs = [];
-    const re = /\[来源(\d+)\]/g;
-    let last = 0;
-    let m;
-    while ((m = re.exec(answer)) !== null) {
-      if (m.index > last) segs.push({ t: 'md', nodes: mdToNodes(answer.slice(last, m.index)) });
-      segs.push({ t: 'ref', v: `[${m[1]}]`, n: parseInt(m[1], 10) });
-      last = m.index + m[0].length;
-    }
-    if (last < answer.length) segs.push({ t: 'md', nodes: mdToNodes(answer.slice(last)) });
+    const pushTextWithRefs = (text) => {
+      const re = /\[来源(\d+)\]/g;
+      let last = 0;
+      let m;
+      while ((m = re.exec(text)) !== null) {
+        if (m.index > last) segs.push({ t: 'md', nodes: mdToNodes(text.slice(last, m.index)) });
+        segs.push({ t: 'ref', v: `[${m[1]}]`, n: parseInt(m[1], 10) });
+        last = m.index + m[0].length;
+      }
+      if (last < text.length) segs.push({ t: 'md', nodes: mdToNodes(text.slice(last)) });
+    };
+    const lines = String(answer || '').replace(/\r\n?/g, '\n').split('\n');
+    let normal = [];
+    let table = [];
+    const flushNormal = () => {
+      if (normal.length) pushTextWithRefs(normal.join('\n'));
+      normal = [];
+    };
+    const flushTable = () => {
+      if (table.length) segs.push({ t: 'md', nodes: mdToNodes(table.join('\n')) });
+      table = [];
+    };
+    lines.forEach((line) => {
+      if (/^\s*\|.*\|\s*$/.test(line)) {
+        flushNormal();
+        table.push(line);
+      } else {
+        flushTable();
+        normal.push(line);
+      }
+    });
+    flushTable();
+    flushNormal();
     if (!segs.length) segs.push({ t: 'md', nodes: mdToNodes(answer) });
     return segs;
   },
@@ -332,11 +359,18 @@ Page({
     wx.previewImage({ current: url, urls: [url] });
   },
 
+  onKbLinkTap(e) {
+    const url = e.currentTarget.dataset.url;
+    if (!url) return;
+    wx.setClipboardData({ data: url });
+  },
+
   // 来源 chip 点击：干员 → 干员详情页；否则 → 合成树结果页
   onSourceTap(e) {
-    const name = e.currentTarget.dataset.name;
+    let name = e.currentTarget.dataset.name;
     const cat = e.currentTarget.dataset.cat || '';
-    if (cat === '干员' || cat === '干员攻略') {
+    if (cat === '干员语音') name = String(name || '').split('｜语音：')[0];
+    if (cat === '干员' || cat === '干员攻略' || cat === '干员语音') {
       wx.navigateTo({ url: '/pages/operator/operator?name=' + encodeURIComponent(name) });
     } else {
       wx.navigateTo({ url: '/pages/ask/ask?q=' + encodeURIComponent(name) + '&mode=syn' });

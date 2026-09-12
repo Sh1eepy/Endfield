@@ -10,7 +10,8 @@ let base: string
 beforeAll(async () => {
   server = await createServer({
     configFile: fileURLToPath(new URL('../vite.config.ts', import.meta.url)),
-    server: { host: '127.0.0.1', port: 0, strictPort: true, open: false },
+    // Vite treats port 0 as its default port; allow fallback while the preview is running.
+    server: { host: '127.0.0.1', port: 0, strictPort: false, open: false },
     logLevel: 'error',
   })
   await server.listen()

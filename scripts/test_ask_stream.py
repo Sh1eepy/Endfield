@@ -416,6 +416,17 @@ class AskStreamHttpTests(unittest.TestCase):
         self.assertIn("trace_id", done)
         self.assertIn("feedback_snapshot", done)
 
+    def test_uninvoked_response_does_not_acquire_or_charge(self):
+        guard = threading.BoundedSemaphore(1)
+        with patch.object(api_server, "_ASK_SEMAPHORE", guard), \
+                patch.object(api_server, "consume_ask_budget") as consume:
+            response = api_server.ask_stream_http(
+                api_server.AskRequest(query="尚未开始"), admission_client="test-client")
+            self.assertIsInstance(response, api_server._AskStreamingResponse)
+            self.assertTrue(guard.acquire(blocking=False))
+            guard.release()
+            consume.assert_not_called()
+
     def test_busy_returns_429_before_stream(self):
         with patch("rag_ask.ask_stream", side_effect=self._canned_stream), \
                 TestClient(api_server.app) as client:
@@ -453,6 +464,27 @@ class AskStreamHttpTests(unittest.TestCase):
         self.assertNotIn("event: done", resp.text)
         self.assertTrue(api_server._ASK_SEMAPHORE.acquire(blocking=False))
         api_server._ASK_SEMAPHORE.release()
+
+
+class ChatJsonFallbackTests(unittest.TestCase):
+    def test_generic_400_is_not_resent(self):
+        client = LLMClient()
+        client.api_key = "test-only"
+        with patch.object(client, "_chat_completions",
+                          side_effect=RuntimeError("LLM 接口返回 400: invalid api key")) as call:
+            with self.assertRaisesRegex(RuntimeError, "invalid api key"):
+                client.chat_json("test")
+        self.assertEqual(call.call_count, 1)
+
+    def test_explicit_response_format_error_retries_without_format(self):
+        client = LLMClient()
+        client.api_key = "test-only"
+        successful = {"choices": [{"message": {"content": '{"ok": true}'}}]}
+        with patch.object(client, "_chat_completions", side_effect=[
+                RuntimeError("LLM 接口返回 400: response_format is unsupported"), successful]) as call:
+            self.assertEqual(client.chat_json("test"), {"ok": True})
+        self.assertEqual(call.call_count, 2)
+        self.assertNotIn("response_format", call.call_args_list[1].kwargs)
 
 
 if __name__ == "__main__":

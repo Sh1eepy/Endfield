@@ -29,11 +29,31 @@
       <view class="kb-sec">
         <view class="kb-sec-title">{{sec.title}}</view>
         <block wx:for="{{sec.blocks}}" wx:key="index" wx:for-item="b">
-          <view class="kb-para" wx:if="{{b.t === 'para'}}">{{b.text}}</view>
+          <view class="kb-para" wx:if="{{b.t === 'para'}}">
+            <block wx:for="{{b.inline}}" wx:key="index" wx:for-item="part">
+              <text wx:if="{{part.t === 'text'}}">{{part.text}}</text>
+              <block wx:elif="{{part.t === 'entry'}}">
+                <image wx:if="{{part.img}}" class="kb-entry-img" src="{{part.img}}" mode="aspectFit" />
+                <text>{{part.text}}{{part.count ? '×' + part.count : ''}}</text>
+              </block>
+              <text wx:elif="{{part.t === 'link'}}" class="kb-link" data-url="{{part.u}}" bindtap="onKbLinkTap">{{part.text}}</text>
+              <image wx:elif="{{part.t === 'img'}}" class="kb-inline-img" src="{{part.u}}" mode="widthFix" data-url="{{part.u}}" bindtap="onKbImgPreview" />
+            </block>
+          </view>
           <view class="kb-table-wrap" wx:elif="{{b.t === 'table'}}">
             <view class="kb-table">
               <view class="kb-tr" wx:for="{{b.rows}}" wx:key="index" wx:for-item="row" wx:for-index="ri">
-                <view class="kb-td {{ri === 0 ? 'th' : ''}}" wx:for="{{row}}" wx:key="index" wx:for-item="cell">{{cell}}</view>
+                <view class="kb-td {{ri === 0 ? 'th' : ''}}" wx:for="{{row}}" wx:key="index" wx:for-item="cell">
+                  <block wx:for="{{cell.inline}}" wx:key="index" wx:for-item="part">
+                    <text wx:if="{{part.t === 'text'}}">{{part.text}}</text>
+                    <block wx:elif="{{part.t === 'entry'}}">
+                      <image wx:if="{{part.img}}" class="kb-entry-img" src="{{part.img}}" mode="aspectFit" />
+                      <text>{{part.text}}{{part.count ? '×' + part.count : ''}}</text>
+                    </block>
+                    <text wx:elif="{{part.t === 'link'}}" class="kb-link" data-url="{{part.u}}" bindtap="onKbLinkTap">{{part.text}}</text>
+                    <image wx:elif="{{part.t === 'img'}}" class="kb-inline-img" src="{{part.u}}" mode="widthFix" data-url="{{part.u}}" bindtap="onKbImgPreview" />
+                  </block>
+                </view>
               </view>
             </view>
           </view>

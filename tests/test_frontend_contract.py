@@ -41,7 +41,8 @@ class FrontendContractTests(unittest.TestCase):
     def test_entry_sequence_is_short_session_scoped_and_progressive(self):
         for token in ('id="entry-curtain"', 'entry-mechanism', 'mechanicalDock',
                       'entry-beam-a', 'id="entry-percent"', '--boot-progress',
-                      'const duration = 1250', 'endfield-entry-seen', "' is-complete'"):
+                      'const duration = 6000', 'endfield-entry-seen', "' is-complete'",
+                      'entry-orbits', 'entry-skip', 'endfield-replay-entry'):
             self.assertIn(token, HTML)
 
     def test_vertical_image_tree_and_empty_default_are_present(self):
@@ -64,6 +65,17 @@ class FrontendContractTests(unittest.TestCase):
         self.assertIn("new Map<", HTML)
         self.assertIn(".get(q)", HTML)
         self.assertIn(".set(q, d)", HTML)
+
+    def test_mode_switch_never_executes_a_query_and_stream_can_be_stopped(self):
+        self.assertIn("const switchMode", HTML)
+        switch_body = HTML.split("const switchMode", 1)[1].split("const handleHistoryPick", 1)[0]
+        self.assertNotIn("runQuery(", switch_body)
+        self.assertIn("handleStopAsk", HTML)
+        self.assertIn("停止生成", HTML)
+
+    def test_streaming_answer_defers_markdown_rendering_until_done(self):
+        self.assertIn("isStreaming ? (", HTML)
+        self.assertIn("whiteSpace: 'pre-wrap'", HTML)
 
     def test_media_tables_render_as_full_size_galleries(self):
         for token in ("operator-media-grid", "data-media-gallery", "kb-media-img", "mediaTable"):

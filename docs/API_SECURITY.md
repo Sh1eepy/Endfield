@@ -8,15 +8,17 @@
   日窗口按 **UTC 00:00（北京时间 08:00）**重置，不是滚动 24 小时；分钟边界也不是滑动窗口。
   可用 `ASK_RATE_PER_MINUTE`、`ASK_IP_DAILY_LIMIT`、`ASK_DAILY_LIMIT` 调整，非正整数或无效值使用默认值，不能通过填 0 关闭保护。
 - 每个 worker 同时执行最多 `ASK_MAX_CONCURRENCY=2` 个问答。所有问答请求（包括 `gen_answer=false`、结构化查询）均执行准入检查。
-  已准入的请求即使后续失败、参数校验失败或并发满，也不退还次数；未授权或超过次数限制的请求不扣次数。
+  令牌和参数先校验，随后尝试取得并发名额，最后才写入次数额度。未授权、参数无效、并发已满或额度超限的请求不扣次数；已准入的请求即使后续失败也不退还次数。
 - `/api/ask/stream`（流式 SSE）：与 `/api/ask` 共用同一准入检查、次数限制与 `ASK_MAX_CONCURRENCY` 并发名额，
-  一次流式问答计一次准入；客户端断开会中止生成并释放并发名额，但已准入的次数不退还。
+  一次流式问答计一次准入。并发名额和次数在 ASGI 开始执行响应时才取得；仅构造但未执行的响应不占名额、不扣次数。
+  响应层在生成线程启动后移交名额，客户端断开或生成结束后只释放一次；已准入的次数不退还。
 - 次数超限返回 429 和 `Retry-After`；计数数据库不可用返回 503，不放行付费调用。
 - `/api/health/deep`、`/api/metrics`：应用层仅允许回环客户端或有效访问令牌；Nginx 继续禁止公网访问。
 - `/api/feedback`：使用相同 SQLite 文件但独立计数，不占用问答额度；默认每 IP 每分钟 20 次、每日 200 次、
   全站每日 1000 次，可用 `FEEDBACK_RATE_PER_MINUTE`、`FEEDBACK_IP_DAILY_LIMIT`、`FEEDBACK_DAILY_LIMIT` 调整。
   它与问答使用同一可选 Bearer 令牌，并校验 `trace_id`、客户端、问题指纹和后端生成的回答快照，不能凭空写入反馈库。
 - `/api/health`、`/api/names`、`/api/synthesis`、媒体和静态网页仍可公开访问，未添加用户注册/登录系统。
+  Nginx 模板分别限制合成查询为每 IP 平均 60 次/分钟、媒体为 120 次/分钟且同时最多 4 个连接；应用内媒体下载仍受全局并发上限保护。
 
 这些是**请求次数上限，不是人民币或 token 预算**。一次问答可能产生多次 LLM 调用、重试，仍需设置模型服务商的预算上限/告警。
 匿名服务仍可能被恶意用户耗尽当天可用次数，IP 轮换可以绕过单 IP 限制，但不能突破同一计数库的全站上限；需要身份隔离时使用下方私有模式或接入真正的登录系统。
@@ -43,7 +45,7 @@ Authorization: Bearer <你的访问令牌>
 
 - Compose 已设置命名卷 `api-security`，文件位于 `/var/lib/endfield-security/ask-budget.sqlite3`；正常重建、更新和重启保留计数。
 - **不要执行 `docker compose down -v` 或删除该卷**，否则次数会被重置。修改 Compose 项目名也会使用另一份卷。
-- 手动 `docker run` 必须挂载命名卷并设置 `ASK_BUDGET_DB`，示例见根目录 `DEPLOYMENT.md`。
+- 手动 `docker run` 必须挂载命名卷并设置 `ASK_BUDGET_DB`，示例见 [DEPLOYMENT.md](DEPLOYMENT.md)。
 - Railway 等平台须自行挂载持久卷并将 `ASK_BUDGET_DB` 指向卷内路径，不能依赖容器临时文件系统。
 - 同一主机上的 worker 必须使用同一文件。当前不是跨主机的分布式限流器；多主机部署需统一计数服务，不能各自使用独立 SQLite 或把它放到不可靠的网络文件系统。
 
@@ -81,6 +83,7 @@ docker compose exec -T app python -c "import urllib.request; print(urllib.reques
 这是**有上限的分块下载后返回**，不是下载无限大文件再检查，也不是零缓冲转发。
 内存仍包含最多 25 MiB 的单响应缓冲及转换开销；提高 worker 或媒体并发数会增加总内存，不能把并发设置得过大。
 不承诺防御所有流量攻击；公网仍需要入口连接限制、监控与网络出站策略。
+模板已为 `/api/media` 配置独立频率与连接限制；不要让它继续落入无约束的通用 `location /`。
 
 ## 离线验证
 

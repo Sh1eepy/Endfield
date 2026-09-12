@@ -14,6 +14,8 @@ api_server.py — 终末地配方合成树 API（FastAPI）
   curl "http://127.0.0.1:8000/api/synthesis?item=重息壤"
   curl http://127.0.0.1:8000/api/names
 """
+import functools
+import glob
 import json
 import os
 import subprocess
@@ -27,6 +29,7 @@ from fastapi.responses import Response, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
+from starlette.concurrency import run_in_threadpool
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
@@ -77,6 +80,24 @@ class _MediaResponse(Response):
         finally:
             self.body = b""
             self._slot.release()
+
+
+class _AskStreamingResponse(StreamingResponse):
+    """Defer paid-stream admission until ASGI actually starts the response."""
+
+    def __init__(self, *args, before_start, cleanup_unstarted, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._before_start = before_start
+        self._cleanup_unstarted = cleanup_unstarted
+
+    async def __call__(self, scope, receive, send):
+        try:
+            # The route may be evaluated without the returned response ever being
+            # invoked. Acquire quota and concurrency only after ASGI owns cleanup.
+            await run_in_threadpool(self._before_start, self)
+            await super().__call__(scope, receive, send)
+        finally:
+            self._cleanup_unstarted()
 
 # 展示阶段：放开跨域，便于本地静态页直连
 _cors_raw = os.environ.get(
@@ -212,21 +233,68 @@ def _is_base(iid, item_index):
     return False
 
 
-def _lookup_item_kb(name):
-    """从 endfield_kb/*.jsonl 按名称精确匹配条目（无配方物品的回退信息来源）。"""
-    import glob as _glob
+_KB_RECORD_INDEX = None
+_KB_RECORD_INDEX_LOCK = threading.Lock()
+_SYNTHESIS_DATA = None
+_SYNTHESIS_DATA_LOCK = threading.Lock()
 
-    key = name.strip()
-    for f in _glob.glob(os.path.join(ROOT, "endfield_kb", "*.jsonl")):
-        with open(f, encoding="utf-8") as fh:
-            for line in fh:
-                line = line.strip()
-                if not line:
-                    continue
-                d = json.loads(line)
-                if d.get("name") == key:
-                    return d
-    return None
+
+def _load_kb_record_index():
+    """Build a small name -> (path, byte offset) index for immutable JSONL data."""
+    global _KB_RECORD_INDEX
+    if _KB_RECORD_INDEX is not None:
+        return _KB_RECORD_INDEX
+    with _KB_RECORD_INDEX_LOCK:
+        if _KB_RECORD_INDEX is not None:
+            return _KB_RECORD_INDEX
+        index = {}
+        for path in glob.glob(os.path.join(ROOT, "endfield_kb", "*.jsonl")):
+            try:
+                with open(path, "rb") as fh:
+                    while True:
+                        offset = fh.tell()
+                        raw = fh.readline()
+                        if not raw:
+                            break
+                        if not raw.strip():
+                            continue
+                        try:
+                            row = json.loads(raw)
+                        except (UnicodeDecodeError, json.JSONDecodeError):
+                            continue
+                        name = str(row.get("name") or "").strip()
+                        if name:
+                            index.setdefault(name, (path, offset))
+            except OSError:
+                continue
+        _KB_RECORD_INDEX = index
+    return _KB_RECORD_INDEX
+
+
+def _lookup_item_kb(name):
+    """按名称从轻量索引读取单条知识库记录；坏行或文件变化时安全回退。"""
+    location = _load_kb_record_index().get(name.strip())
+    if not location:
+        return None
+    path, offset = location
+    try:
+        with open(path, "rb") as fh:
+            fh.seek(offset)
+            return json.loads(fh.readline())
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+
+
+def _load_synthesis_data():
+    """配方文件在进程运行期间只读，首次读取后复用索引。"""
+    global _SYNTHESIS_DATA
+    if _SYNTHESIS_DATA is not None:
+        return _SYNTHESIS_DATA
+    with _SYNTHESIS_DATA_LOCK:
+        if _SYNTHESIS_DATA is None:
+            recipes = load_recipes(os.path.join(ROOT, "output", "recipes.json"))
+            _SYNTHESIS_DATA = (recipes, build_item_index(recipes))
+    return _SYNTHESIS_DATA
 
 
 _ITEM_MEDIA = None
@@ -375,8 +443,7 @@ def synthesis(item: str, max_depth: int = 10):
         return {"ok": False, "error": "max_depth 不能小于 0"}
     if max_depth > 10:
         return {"ok": False, "error": "max_depth 不能大于 10"}
-    recipes = load_recipes(os.path.join(ROOT, "output", "recipes.json"))
-    item_index = build_item_index(recipes)
+    recipes, item_index = _load_synthesis_data()
     media = _load_item_media()
     tids = find_item_ids_by_name(recipes, item)
     if len(tids) > 1:
@@ -440,28 +507,13 @@ _NAMES_CACHE = None
 def _load_all_names():
     """收集全部名称：配方物品 + 设备 + 知识库条目（供搜索联想）。"""
     result = set()
-    recipes = load_recipes(os.path.join(ROOT, "output", "recipes.json"))
-    item_index = build_item_index(recipes)
+    recipes, item_index = _load_synthesis_data()
     for e in item_index.values():
         result.add(e["name"].strip())
     for r in recipes:
         if r.get("machine"):
             result.add(r["machine"].strip())
-    import glob as _glob
-
-    for f in _glob.glob(os.path.join(ROOT, "endfield_kb", "*.jsonl")):
-        with open(f, encoding="utf-8") as fh:
-            for line in fh:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    d = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                n = d.get("name")
-                if n and n.strip():
-                    result.add(n.strip())
+    result.update(_load_kb_record_index())
     return sorted(result)
 
 
@@ -536,6 +588,7 @@ def _index_version():
         return ""
 
 
+@functools.lru_cache(maxsize=1)
 def _code_version():
     configured = os.environ.get("APP_VERSION", "").strip()
     if configured:
@@ -600,32 +653,67 @@ def ask_stream_http(req: AskRequest,
     from rag_ask import ask_stream
     from rag_monitor import monitor
     from llm_client import observe_llm
-    if not _ASK_SEMAPHORE.acquire(blocking=False):
-        raise HTTPException(
-            status_code=429,
-            detail="问答服务繁忙，请稍后重试",
-            headers={"Retry-After": "3"},
-        )
-    try:
-        consume_ask_budget(admission_client)
-    except Exception:
-        _ASK_SEMAPHORE.release()
-        raise
-    trace = None
-    try:
-        from scripts.rag_trace import RAGTrace
-        trace = RAGTrace(req.query, req.client_type,
-                         code_commit=_code_version(),
-                         index_version=_index_version())
-    except Exception:
-        trace = None  # 可观测性故障不能使知识问答不可用
+    lifecycle = {"admitted": False, "worker_started": False,
+                 "released": False, "trace": None}
+    lifecycle_lock = threading.Lock()
+
+    def release_slot():
+        should_release = False
+        with lifecycle_lock:
+            if lifecycle["admitted"] and not lifecycle["released"]:
+                lifecycle["released"] = True
+                should_release = True
+        if should_release:
+            _ASK_SEMAPHORE.release()
+
+    def admit(response):
+        if not _ASK_SEMAPHORE.acquire(blocking=False):
+            raise HTTPException(
+                status_code=429,
+                detail="问答服务繁忙，请稍后重试",
+                headers={"Retry-After": "3"},
+            )
+        with lifecycle_lock:
+            lifecycle["admitted"] = True
+        try:
+            consume_ask_budget(admission_client)
+        except Exception:
+            release_slot()
+            raise
+        try:
+            from scripts.rag_trace import RAGTrace
+            trace = RAGTrace(req.query, req.client_type,
+                             code_commit=_code_version(),
+                             index_version=_index_version())
+        except Exception:
+            trace = None  # 可观测性故障不能使知识问答不可用
+        lifecycle["trace"] = trace
+        if trace:
+            response.headers["X-Trace-ID"] = trace.trace_id
+
+    def cleanup_unstarted():
+        trace = None
+        should_release = False
+        with lifecycle_lock:
+            if (lifecycle["admitted"] and not lifecycle["worker_started"]
+                    and not lifecycle["released"]):
+                lifecycle["released"] = True
+                should_release = True
+                trace = lifecycle["trace"]
+        if trace:
+            try:
+                trace.finish({"ok": False, "error": "stream_not_started"},
+                             RuntimeError("SSE response body was not started"))
+            except Exception:
+                pass
+        if should_release:
+            _ASK_SEMAPHORE.release()
+
     sse_headers = {
         "Cache-Control": "no-cache",
         "X-Accel-Buffering": "no",  # 让 Nginx 等代理不缓冲 SSE
         "Connection": "keep-alive",
     }
-    if trace:
-        sse_headers["X-Trace-ID"] = trace.trace_id
 
     def event_source():
         # 单线程 worker 跑 ask_stream（含 LLM 调用），事件经队列转发给响应生成器：
@@ -636,6 +724,7 @@ def ask_stream_http(req: AskRequest,
         sentinel = object()
         state = {"result": None, "error": None}
         started = time.perf_counter()
+        trace = lifecycle["trace"]
 
         def worker():
             try:
@@ -690,10 +779,14 @@ def ask_stream_http(req: AskRequest,
                     pass
                 # 并发名额跟随真正的生成线程，而不是 HTTP 连接：若客户端断开时底层
                 # 请求尚未退出，不能提前放行另一个付费生成。
-                _ASK_SEMAPHORE.release()
+                release_slot()
 
         t = threading.Thread(target=worker, daemon=True)
-        t.start()
+        # Transfer cleanup ownership atomically. A very fast worker may finish as
+        # soon as start() returns, so it must not observe an unowned slot.
+        with lifecycle_lock:
+            t.start()
+            lifecycle["worker_started"] = True
         try:
             while True:
                 try:
@@ -715,7 +808,10 @@ def ask_stream_http(req: AskRequest,
             stop.set()
             t.join(timeout=2)
 
-    return StreamingResponse(event_source(), media_type="text/event-stream", headers=sse_headers)
+    return _AskStreamingResponse(
+        event_source(), media_type="text/event-stream", headers=sse_headers,
+        before_start=admit, cleanup_unstarted=cleanup_unstarted,
+    )
 
 
 class FeedbackRequest(BaseModel):

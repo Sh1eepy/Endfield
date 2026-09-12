@@ -21,6 +21,7 @@ interface Props {
   showTip: (x: number, y: number, content: ReactNode) => void
   hideTip: () => void
   synTreeRef: RefObject<HTMLDivElement>
+  onStopAsk: () => void
 }
 
 /** 结果区顶部：封面图 + 相关引用（点击切换合成树） */
@@ -126,6 +127,7 @@ function SynContent({ result, onPickName, showTip, hideTip, treeHandleRef }: {
 /** 结果面板：标题 + 树工具条 + 内容分发 */
 export default function ResultPanel({
   mode, title, state, errorMsg, result, onPickName, onRunQuery, showTip, hideTip, synTreeRef,
+  onStopAsk,
 }: Props) {
   const treeHandleRef = useRef<SynTreeHandle>(null)
   const reducedMotion = useReducedMotion()
@@ -136,6 +138,7 @@ export default function ResultPanel({
     && !result.data.ambiguous
     && !result.data.no_recipe
     && result.data.tree?.kind !== 'device'
+  const isStreaming = state === 'ready' && result?.kind === 'ask' && !!result.data.streaming
 
   return (
     <div className="panel">
@@ -145,18 +148,23 @@ export default function ResultPanel({
           <b id="tree-title">{title}</b>
         </span>
         <div className="tree-toolbar" id="tree-toolbar">
+          {isStreaming ? (
+            <button className="tool-btn" type="button" onClick={onStopAsk}>停止生成</button>
+          ) : null}
+          {mode === 'syn' && <>
           <button className="tool-btn" title="收起所有分支" disabled={!isTree} onClick={() => treeHandleRef.current?.collapse()}>收起</button>
           <button className="tool-btn" title="展开所有分支" disabled={!isTree} onClick={() => treeHandleRef.current?.expand()}>展开</button>
           <button className="tool-btn" title="缩小" disabled={!isTree} onClick={() => treeHandleRef.current?.zoom(-0.1)}>−</button>
           <button className="tool-btn" title="重置缩放" disabled={!isTree} onClick={() => treeHandleRef.current?.reset()}>100%</button>
           <button className="tool-btn" title="放大" disabled={!isTree} onClick={() => treeHandleRef.current?.zoom(0.1)}>＋</button>
+          </>}
         </div>
-        <span className="panel-guide" style={{ fontSize: 12, color: 'var(--faint)' }}>圆点展开/收起 · 点击物品名跳转 · 叶子 = 基础资源</span>
+        <span className="panel-guide" style={{ fontSize: 12, color: 'var(--faint)' }}>{mode === 'syn' ? '圆点展开/收起 · 点击物品名跳转 · 叶子 = 基础资源' : '基于检索证据回答 · 点击来源核对'}</span>
       </div>
       <div id="syn-tree" ref={synTreeRef}>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
-            key={`${mode}-${state}-${result?.query ?? 'none'}`}
+            key={mode}
             initial={reducedMotion ? false : { opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: reducedMotion ? 0 : -16 }}

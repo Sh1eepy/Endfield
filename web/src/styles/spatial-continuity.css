@@ -1,0 +1,49 @@
+/* A single sticky world spans hero, threshold and query. Official art is a surface, not a second renderer. */
+.archive-experience {
+  --chapter:0;
+  --space-ink:color-mix(in srgb,#292b2c calc((1 - var(--world-mix))*100%),#f1f0e7);
+  --space-muted:color-mix(in srgb,#626462 calc((1 - var(--world-mix))*100%),#c9cac4);
+  --glass-fill:color-mix(in srgb,#f5f4eddb calc((1 - var(--world-mix))*100%),#202326ed);
+  --glass-border:#adb0ab88;
+  background:#dcddd6;
+}
+.archive-query { position:relative; }
+.world-sticky { min-height:0; background:#dedfd8; }
+.art-terrain { opacity:calc(.5*(1 - var(--world-mix)*var(--chapter))); filter:contrast(1.65); }
+.art-signal { opacity:calc(.28*var(--world-mix)*var(--chapter)); }
+.world-vignette { opacity:1; background:linear-gradient(90deg,#dcddd68c,transparent 55%),linear-gradient(0deg,#24262818,transparent 45%); }
+.archive-experience .hero { background:linear-gradient(180deg,#f4f3ed70,transparent 96%); }
+.hero::before { content:''; position:absolute; inset:0; z-index:-1; pointer-events:none; background:url('/assets/official/landscape.jpg') center/cover; mix-blend-mode:multiply; filter:contrast(2.3); opacity:.52; mask-image:linear-gradient(#000 60%,transparent); }
+.hero-art { mask-image:linear-gradient(#000 80%,transparent 100%); }
+.hero-yellow-field { mask-image:linear-gradient(#000 65%,transparent 100%); }
+.hero-copy-block { padding:22px; margin-left:-22px; background:radial-gradient(ellipse at 42% 42%,#f0f0e9ed, #f0f0e9b0 54%,transparent 74%); }
+.hero-scroll { border-top-color:transparent; }
+.archive-bridge { position:relative; height:200px; display:flex; flex-direction:column; justify-content:center; gap:16px; padding:0 7%; overflow:hidden; color:#454847; background:linear-gradient(180deg,#eeeee52b,transparent); pointer-events:none; }
+.archive-bridge span { font:10px var(--font-tech); letter-spacing:.24em; }
+.archive-bridge b { font-size:16px; font-weight:400; letter-spacing:.12em; transform:translateY(calc((1 - var(--chapter))*18px)); }
+.archive-bridge > i { position:absolute; left:48%; font-style:normal; font-size:26px; transform:translateY(calc(var(--chapter)*25px)); }
+.bridge-rail { position:absolute; top:0; bottom:0; left:4%; width:1px; background:linear-gradient(transparent,#8a8c7f,transparent); }
+.bridge-rail::after { content:''; position:absolute; top:calc(var(--chapter)*70%); width:3px; height:40px; background:#b1b719; }
+.bridge-contours { position:absolute; width:70%; height:220%; right:-12%; border:1px solid #93978c66; border-radius:50%; transform:rotate(-22deg) translateY(calc(var(--chapter)*-30px)); box-shadow:0 0 0 24px #93978c12,0 0 0 48px #93978c12,0 0 0 74px #93978c12; }
+.experience-callout { background:#bcbfb11c; border-color:#b0b1a766; border-left-color:#d4dd22; }
+.archive-status { max-width:680px; font-size:12px; }
+[data-view='ask'] .archive-detail { --text:#eeeee5; --sub:#bfc2bb; --klein:#cad26b; }
+[data-view='ask'] .archive-detail .panel-head { color:#eeeee5; }
+[data-view='ask'] .archive-detail #tree-title { color:#eeeee5; }
+[data-detail='true'] .archive-status { position:relative; z-index:31; margin-top:28px; }
+[data-detail='true'] .retrieval-telemetry { position:fixed; bottom:18px; left:max(90px,8%); width:min(550px,80vw); box-shadow:0 8px 32px #0003; }
+[data-detail='true'] .archive-status > button { position:relative; z-index:32; }
+[data-detail='true'] .archive-status > .archive-skip-extract { position:fixed; right:24px; bottom:24px; }
+[data-reading='true'] .archive-status > .archive-skip-extract,
+[data-static='true'] .archive-status > .archive-skip-extract { display:none; }
+@media(prefers-reduced-motion:reduce) { .archive-skip-extract { display:none; } }
+@media(max-width:600px) {
+  .archive-bridge { height:130px; padding-left:25px; }
+  .archive-bridge b { font-size:12px; }
+  .hero-copy-block { padding:12px; margin-left:-12px; }
+  .retrieval-heading strong { font-size:12px; }
+  [data-detail='true'] .retrieval-telemetry { left:12px; bottom:8px; width:calc(100vw - 24px); padding:10px 14px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .archive-bridge b,.archive-bridge i,.bridge-contours { transform:none; }
+}

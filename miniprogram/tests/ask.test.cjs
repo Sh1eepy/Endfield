@@ -7,14 +7,22 @@ const vm = require('node:vm');
 function page(api = {}) {
   let definition;
   const redirects = [];
+  const navigations = [];
+  const copied = [];
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../pages/ask/ask.js'), 'utf8'), {
     Page: (value) => { definition = value; },
     require: (name) => name.endsWith('/api') ? api : { mdToNodes: (s) => [s] },
-    wx: { redirectTo: (value) => redirects.push(value) },
+    wx: {
+      redirectTo: (value) => redirects.push(value),
+      navigateTo: (value) => navigations.push(value),
+      setClipboardData: (value) => copied.push(value),
+      pageScrollTo: () => {},
+      previewImage: () => {},
+    },
     setTimeout,
   });
   return {
-    ...definition, data: { ...definition.data }, redirects,
+    ...definition, data: { ...definition.data }, redirects, navigations, copied,
     setData(patch) { Object.assign(this.data, patch); },
   };
 }
@@ -120,4 +128,43 @@ test('failed feedback can be retried', async () => {
   await p.onFeedback({ currentTarget: { dataset: { vote: 'not_useful' } } });
   assert.equal(calls, 2);
   assert.equal(p.data.feedbackState, 'sent');
+});
+
+test('references inside a markdown table do not split the table', () => {
+  const p = page({});
+  const segs = p._parseRefs('| 名称 | 说明 |\n| --- | --- |\n| 条目 | 内容[来源1] |');
+  assert.equal(segs.length, 1);
+  assert.equal(segs[0].t, 'md');
+  assert.match(segs[0].nodes[0], /\| 内容\[来源1\] \|/);
+});
+
+test('kb inline links and images survive mapping and media uses proxy', () => {
+  const p = page({ mediaUrl: (url) => 'proxy:' + url });
+  const block = p._mapBlock({ t: 'para', c: [
+    { t: 'text', x: '说明' },
+    { t: 'link', x: '官网', u: 'https://example.test' },
+    { t: 'img', u: 'https://bbs.hycdn.cn/image/a.png' },
+  ] });
+  assert.deepEqual(block.inline.map((x) => x.t), ['text', 'link', 'img']);
+  assert.equal(block.inline[2].u, 'proxy:https://bbs.hycdn.cn/image/a.png');
+});
+
+test('plain kb sections still use the unified inline renderer', () => {
+  const p = page({});
+  const kb = p._buildKbData({ name: '条目', sections: { 简介: '正文' } });
+  assert.equal(kb.sections[0].blocks[0].inline[0].text, '正文');
+});
+
+test('operator voice source opens the base operator name', () => {
+  const p = page({});
+  p.onSourceTap({ currentTarget: { dataset: {
+    name: '佩丽卡｜语音：任命助理', cat: '干员语音',
+  } } });
+  assert.equal(p.navigations.length, 1);
+  assert.match(p.navigations[0].url, /name=%E4%BD%A9%E4%B8%BD%E5%8D%A1$/);
+});
+
+test('ask requests use a timeout longer than the backend generation window', () => {
+  const source = fs.readFileSync(path.join(__dirname, '../utils/api.js'), 'utf8');
+  assert.match(source, /client_type: 'miniprogram' \}, 'POST', 180000\)/);
 });

@@ -1,134 +1,94 @@
-# Endfield 配方树与知识库
+# Endfield 配方树与知识问答
 
-一个基于《明日方舟：终末地》WIKI 数据的配方合成树和知识问答项目。
+基于《明日方舟：终末地》WIKI 数据的非官方工具。用户可查询物品和设备的完整配方链，也可检索干员、任务、武器、地点与人物关系。Web 与微信小程序共用 FastAPI、结构化配方库、RAG 和知识图谱。
 
-输入物品或设备名称，可以查看从基础资源到目标产物的纵向配方树；切换到知识问答后，可以查询干员、
-任务、武器、地点和人物关系。页面还支持干员技能、天赋、潜能、档案、图片和语音展示。
+## 主要能力
 
-## 主要功能
+- **配方合成树**：345 条真实配方，叶子收敛到基础资源，每个物品最多两个配方并处理循环与深度；
+- **知识问答**：确定性路由（结构化直查 / 枚举 / 图关系）+ 多路文本检索 + 有证据的可选 LLM 生成，证据不足时明确拒答；
+- **知识图谱**：2,129 个实体、9,358 条带来源与证据的关系，支持正反问法与最多三跳路径，图未命中回退文本检索；
+- **流式输出**：Web 走 SSE（`phase → meta → delta → done`），来源先亮、答案逐段显示；旧整包接口保留给小程序与评测；
+- **双端客户端**：React + TypeScript 的 Web（React SVG 配方树 + 按需 Three.js 空间）与原生微信小程序（Canvas 树），共享同一套 API 契约；
+- **可重建的数据链**：规范化知识库、RAG 索引、mention、图谱与媒体索引全部由脚本生成；RAG 与图谱带来源指纹和增量更新。
 
-- 345 条真实配方，支持物品树、设备配方卡、名称歧义选择和无配方回退；
-- 搜索框模糊联想，前缀匹配优先；
-- 名称 + BM25 + 向量的混合 RAG，并带实体直取、枚举、mention 和关键词补充检索；
-- 可追溯知识图谱，支持明确关系、正反向问法和最多三跳路径；
-- 流式问答输出：网页端答案边生成边显示（来源先亮 + 打字机效果），旧 `/api/ask` 保留给小程序与评测；
-- 启动预热：`start_server.py` 默认预加载 embedding 模型与索引，首个问题不承担冷启动；
-- 白色工业档案风格前端，包含纵向图片树、机械开场动画、响应式布局和问答答案 markdown 渲染；
-- 微信小程序端，覆盖搜索联想、配方树、知识问答与干员档案；
-- RAG/图谱增量更新、深度健康检查、运行指标和 CI 质量门禁。
+## 技术栈
 
-## 数据和请求流程
-
-```text
-WIKI 原始 JSON
-  ├─ build_kb_all.py → endfield_kb/ → RAG 索引 + 知识图谱
-  ├─ recipe_extract.py → output/recipes.json → 配方合成树
-  └─ 媒体/干员提取 → 图片、音频和档案详情
-
-网页 / 微信小程序 → FastAPI
-  ├─ /api/synthesis：配方、设备、知识库详情
-  ├─ /api/ask：图检索/RAG + 可选 LLM 回答（小程序与评测使用）
-  ├─ /api/ask/stream：流式问答（SSE，网页端默认；同 /api/ask 路由，生成增量推送）
-  └─ /api/names、/api/health、/api/metrics
-```
-
-RAG 负责找原文和描述性内容，知识图谱负责明确关系和路径。图里没有证据时会回退文本检索，不会把
-“图谱未命中”直接解释成“这个关系不存在”。
+| 层 | 选型 |
+|---|---|
+| 后端 | Python 3.12、FastAPI + Pydantic v2、httpx、uvicorn |
+| 检索 | `bge-small-zh-v1.5`（离线 CPU）、ChromaDB（cosine）、rank-bm25 + RRF 融合、jieba 专名词典 |
+| 图谱 | SQLite 属性表 + 白名单规则提取（不用图数据库，见 [决策记录](docs/DECISIONS.md)） |
+| 前端 | React 18 + TypeScript + Vite 6 + Framer Motion + Three.js；小程序原生 WXML/WXSS/Canvas |
+| 质量 | unittest、Vitest + jsdom、node:test、索引审计与版本化质量门禁 |
+| 交付 | Docker 多阶段构建（构建期重建索引）、Compose + Nginx、Railway 备选 |
 
 ## 快速启动
 
-### Docker（推荐）
-
-Docker 构建会下载 embedding 模型，并在镜像内重建本地 RAG 索引：
-
-```powershell
-docker build -t endfield-synthesis .
-docker run --rm -p 8000:8000 endfield-synthesis
-```
-
-浏览器打开：
-
-```text
-http://127.0.0.1:8000
-```
-
-如果需要在线 LLM 生成回答，先复制 `.env.example` 为 `.env` 并填写配置：
-
-```powershell
-Copy-Item .env.example .env
-docker run --rm -p 8000:8000 --env-file .env endfield-synthesis
-```
-
-`.env` 已被 Git 忽略，不要提交真实 API Key。
-
-已有 Linux 服务器和子域名时，使用仓库中的 `compose.yaml` 与 Nginx 模板上线；完整的 HTTPS、限流、更新、回滚和排障命令见
-[自有服务器部署手册](deploy/README.md)。容器默认只监听宿主机 `127.0.0.1:8000`，公网入口由 Nginx 提供。
-
-### 本地 Python
-
-项目使用 Python 3.12（conda env `endfield`）：
+项目使用 Python 3.12、Node.js 24。本地 embedding 只允许离线加载；浏览器直连后端请使用 `127.0.0.1`。
 
 ```powershell
 pip install -r requirements.txt
-python scripts/build_rag.py --inputs "endfield_kb/*.jsonl" --reset
-python scripts/build_knowledge_graph.py
-# 前端（Vite + React + TS）构建产物由后端托管
-cd web && npm install && npm run build && cd ..
-python -m uvicorn scripts.api_server:app --host 0.0.0.0 --port 8000
-```
-
-推荐用 `start_server.py` 启动（单进程默认预热 embedding 模型与索引，首个问答不卡；内存极紧可设 `RAG_PREWARM=0` 关闭预热）：
-
-```powershell
+Set-Location web
+npm ci
+npm run build
+Set-Location ..
 python scripts/start_server.py
 ```
 
-前端开发时用 `cd web && npm run dev`（http://localhost:5173，自动代理 `/api` 到 8000）。
-本地构建默认离线加载 `BAAI/bge-small-zh-v1.5`，需要提前把模型放入 Hugging Face 缓存。没有本地缓存时，
-使用 Docker 构建更省事。
+打开 `http://127.0.0.1:8000`。未配置 LLM 时，配方、设备和知识库检索仍可使用；生成式回答会按后端规则降级。LLM 配置参考 `.env.example`，真实密钥不得提交。`start_server.py` 默认单 worker 并预热 embedding 与索引；内存紧张可设 `RAG_PREWARM=0`。
 
-### 微信小程序
+## 接口速览
 
-先用上面的命令启动后端，再在微信开发者工具中导入仓库里的 `miniprogram/` 目录。开发者工具模拟器默认访问
-`http://127.0.0.1:8000`。真机调试时，`127.0.0.1` 指向手机自身，需要把
-`miniprogram/app.js` 中的 `apiBase` 临时改为电脑的局域网地址，并确保手机和电脑在同一网络。
+| 接口 | 用途 |
+|---|---|
+| `GET /api/synthesis` | 配方树、设备配方卡、知识库与干员详情 |
+| `POST /api/ask` | 整包知识问答（小程序、评测使用） |
+| `POST /api/ask/stream` | 流式知识问答（SSE，Web 默认） |
+| `GET /api/names` | 搜索联想名称表 |
+| `POST /api/feedback` | 用户反馈隔离区（人工审核后才回放） |
+| `GET /api/health`、`GET /api/health/deep`、`GET /api/metrics` | 存活、深度索引检查、进程指标 |
+| `GET /api/media` | WIKI 图片/音频同源代理（白名单 + 大小上限） |
 
-正式发布必须把 `apiBase` 改为线上 HTTPS 地址，并在微信公众平台配置 request 合法域名。个人开发者工具设置保存在
-`project.private.config.json`，该文件已被 Git 忽略。完整步骤见 [小程序说明](miniprogram/README.md)。
+端点边界与流式协议见 [API.md](docs/API.md)，限流与令牌见 [API_SECURITY.md](docs/API_SECURITY.md)。
 
 ## 验证
 
 ```powershell
 python -m unittest discover -s tests -v
-python scripts/eval_retrieval.py --out output/eval/final_reviewed.json
-python scripts/eval_graph.py
-python scripts/audit_relation_queries.py
-python scripts/quality_gate.py
+python -m unittest scripts.test_query_routes scripts.test_api_security scripts.test_rag_trace scripts.test_ask_stream scripts.test_backend_remediation -v
+python scripts/check_docs.py
+Set-Location web; npm test; npm run build; Set-Location ..
+node --test miniprogram/tests/ask.test.cjs
 ```
 
-最新固定评测数字（防回退基准）见 [PROJECT_STATE.md](PROJECT_STATE.md) ——这些数字不代表所有自然语言问题都能达到 100% 正确率。
+索引、图谱或问答逻辑改动后，再运行 `rag_audit.py --fail-on-error`、`eval_retrieval.py`、`eval_pipeline.py`、`graph_audit.py`、`quality_gate.py`。
+固定评测成绩的解释与边界见 [TESTING.md](docs/TESTING.md)：Recall 100% 只代表固定检索集召回，不代表回答正确率。
 
-## 项目目录
+## 文档
+
+文档总入口为 [docs/README.md](docs/README.md)。建议先读：
+
+- [当前状态](docs/PROJECT_STATE.md)：已完成、已验证与待处理事项；
+- [整体架构](docs/ARCHITECTURE.md)：模块边界和请求、数据流；
+- [开发指南](docs/DEVELOPMENT.md)：环境、改动规则和本地流程；
+- [测试与质量](docs/TESTING.md)：分层验证、指标解释和发布门禁；
+- [Web 空间体验](docs/FRONTEND_EXPERIENCE.md)：开场、共享 3D 场景、查询反馈、降级与交互不变量；
+- [部署总纲](docs/DEPLOYMENT.md)：本地、服务器和 Railway 路径。
+
+## 核心目录
 
 ```text
-scripts/       数据构建、检索、图谱、API 和评测工具
-endfield_kb/   按分类整理的知识库
-output/        配方、索引 manifest、图谱和评测结果
-web/           Vite+React+TS 前端（src 源码 + dist 构建产物；设计说明见 web/README.md）
-miniprogram/   微信小程序端页面、组件、主题与本地素材
-tests/         离线回归测试
+docs/          设计、开发、测试、部署和历史文档
+scripts/       数据构建、检索、图谱、API 与评测工具
+web/           Vite + React + TypeScript 前端
+miniprogram/   微信小程序
+endfield_kb/   规范化知识库产物
+output/        配方、索引、图谱和评测产物
+tests/         Python 离线回归测试
 ```
 
-## 继续阅读
+原始 WIKI 数据和根目录既有历史数据文件只作事实源，不在日常开发中改写或删除。早期“生产流水线空间规划”方向已经废弃，不应重建。
 
-- [项目当前状态](PROJECT_STATE.md)（成果、待办、发布边界）
-- [知识系统架构总览](KNOWLEDGE_SYSTEM_ARCHITECTURE.md)（架构 + 路线图 + 门禁）
-- [开发说明](DEVELOPER_GUIDE.md) / [工具命令](scripts/README.md)
-- [部署总纲](DEPLOYMENT.md) / [自有服务器部署手册](deploy/README.md) / [API 安全](deploy/API_SECURITY.md)
-- [前端设计与实现](web/README.md) / [微信小程序说明](miniprogram/README.md)
-- [RAG 开发记录（踩坑）](RAG_DEVLOG.md) / [Agent 设计原理](AGENT_WORKFLOW_DESIGN.md)
+## 数据与素材
 
-## 数据与素材说明
-
-项目数据来自《明日方舟：终末地》WIKI，仓库是非官方学习与展示项目。页面角色图片素材来自：呵纹Hevon，
-画师：仓鼠饭团c。相关游戏名称、图像和内容权利归原权利方所有。
+项目数据来自《明日方舟：终末地》WIKI。页面使用的相关名称、图像与内容权利归原权利方所有；来源和校验信息见 [素材说明](docs/ASSETS.md)。
