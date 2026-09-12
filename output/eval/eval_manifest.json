@@ -46,8 +46,8 @@
     "scripts/rag_ask.py": "7e3e6618419302a2754e27938e82118e6978c4374864f205d9fa6f504675841d",
     "scripts/graph_search.py": "0afd02c799f47528f00eb3bacab79ae64378bf1d66b3e92ba8bfec384a0ff1d9",
     "scripts/build_knowledge_graph.py": "830549f6e0356c90797780344b7b49e1b5110b3d228d330146f7b65f67e730b8",
-    "scripts/llm_client.py": "3ed30a5da2b910f5ba9d35aaa3c38d0b210fb8e3480305f8d80ddd9511c98c1f",
-    "scripts/eval_case.py": "ecb280b74f1e2b21ad71c40b0e5974ab63314ce1d90d3466592225365d68fa3d",
+    "scripts/llm_client.py": "a7819f0d7104ad534ac96b16b7fdcb5cb0813108804c646b67727c9d5de1a363",
+    "scripts/eval_case.py": "6b003ef4d65507daeb99fbc4dbd4bb2b05676baac5f2a9ad2c9224a7539907bc",
     "scripts/eval_retrieval.py": "905e88dd7f88fa5ba7c16e595b2352b86e170f8d3d2f62a8a5a8ca45061af252",
     "scripts/eval_rag.py": "8ceb6aca0fa5d16cddb71555e779201bfd9a990d4d134cc0e659787e98675ed8",
     "scripts/eval_pipeline.py": "13fd6700c43ad3335b814fc05d258e5d96f7c54dac020cac621a294825bb5a93",
@@ -68,6 +68,6 @@
     "ordinary_trace_query": "sha256+length",
     "feedback_query": "explicit_user_submission"
   },
-  "manifest_id": "sha256:b8a9329506bd9f947486e537f7505ba9ae42be7f9e91015427fa3f5d0e53764d",
-  "generated_at": "2026-09-08T11:17:58.304510+00:00"
+  "manifest_id": "sha256:792280523a10df7878b3124d11ecfc66efbdecc15ad778723771dc3282f53335",
+  "generated_at": "2026-09-12T10:07:52.941672+00:00"
 }

@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "manifest_id": "sha256:b8a9329506bd9f947486e537f7505ba9ae42be7f9e91015427fa3f5d0e53764d",
-    "git_commit": "72de90932e4cdddce0bd7e281e98bc2b6da4b9bc",
+    "manifest_id": "sha256:792280523a10df7878b3124d11ecfc66efbdecc15ad778723771dc3282f53335",
+    "git_commit": "c0c0f7ec8f30e05dd873d3e6cf4b308d218486e3",
     "git_dirty": true,
     "llm_model": "deepseek-v4-flash",
     "index_manifest_sha256": "226af200cf8cea9f5d51ffc58814b2d494d3a8861d2bab69f410c045b2bea31c",
