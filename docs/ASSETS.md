@@ -4,6 +4,8 @@ Web 的官方参考素材位于 `web/assets/official/`，完整来源 URL、字�
 
 公开来源为《明日方舟：终末地》官网 `https://endfield.hypergryph.com/`。相关名称、图像和内容权利归原权利方所有，页面应保持“非官方社区工具”说明。
 
+Query 的 `query-orbit.jpg` 来自 [PlayStation 官方产品页](https://www.playstation.com/zh-hans-cn/games/arknights-endfield/) 的第一张展示图（行星弧线与轨道设施）。该图约 145 kB，经 CSS 去色、低透明度和上下渐隐融入背景，只在 Query 章节显现；Home 仍使用原宣传主视觉。源 URL 和哈希同样记录在清单中。
+
 `scripts/fetch_official_design_assets.py` 只下载选定公开图片，不执行官网 JavaScript。官网 CSS/JavaScript 和审查期页面快照仅作设计证据，不进入产品运行链路。
 
 界面运动由项目自己的 CSS、Framer Motion 与 Three.js 实现。角色图片仍是本地静态素材；3D 双螺旋、档案盒和环均由程序化几何生成，并非官网或 RhineLabUI 模型。项目没有导入官网视频、Rhine 品牌标识、档案数据、字体、声音或 GLB；只复用清单中的终末地地景、纹理和波纹素材。详见 [Web 空间体验](FRONTEND_EXPERIENCE.md)。

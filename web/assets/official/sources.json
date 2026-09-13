@@ -3,6 +3,12 @@
   "note": "Official game artwork; original rights remain with the rights holders.",
   "assets": [
     {
+      "file": "query-orbit.jpg",
+      "source": "https://gmedia.playstation.com/is/image/SIEPDC/arknights-endfield-screenshot-01-zh-hans-cn-21jan26?fmt=jpeg&wid=1920",
+      "bytes": 145084,
+      "sha256": "8b1991fbc3dd33569b5b83482ee03a68d68b5969514aa21f979168decc3b6703"
+    },
+    {
       "file": "talos-keyvisual.jpg",
       "source": "https://web.hycdn.cn/endfield/official-v4/_next/static/media/kv-obt-pc.1d54f26f.jpg",
       "bytes": 1133153,

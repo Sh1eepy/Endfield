@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Mode } from '../App'
 
 interface Props { onDemo: (query: string, mode: Mode) => void }
@@ -11,6 +11,20 @@ const OPERATORS = [
 ]
 export default function Hero({ onDemo }: Props) {
   const [selected, setSelected] = useState(0)
+  const [pinned, setPinned] = useState(false)
+  const [restart, setRestart] = useState(0)
+  useEffect(() => {
+    if (pinned) return
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const schedule = () => {
+      clearTimeout(timer)
+      if (!document.hidden) timer = setTimeout(() => setSelected(value => (value + 1) % OPERATORS.length), 8000)
+    }
+    schedule()
+    document.addEventListener('visibilitychange', schedule)
+    return () => { clearTimeout(timer); document.removeEventListener('visibilitychange', schedule) }
+  }, [selected, pinned, restart])
+  const selectOperator = (index: number) => { setSelected(index); setRestart(value => value + 1) }
   const operator = OPERATORS[selected]
   return (
     <section className="hero" aria-label="终末地档案首页">
@@ -26,11 +40,12 @@ export default function Hero({ onDemo }: Props) {
         <div className="hero-subtitle">终末地 · 合成与知识档案</div>
         <p className="hero-copy">从一件原料，到完整生产链。<br />让每一次探索，都有迹可循。</p>
         <a className="hero-enter" href="#search-command"><span>进入档案</span><span aria-hidden="true">↗</span></a>
-        <div className="hero-character-label" aria-live="polite"><b>{operator.en}</b><span>{operator.role}</span></div>
+        <div className="hero-character-label"><b>{operator.en}</b><span>{operator.role}</span></div>
       </div>
       <div className="hero-bottom">
         <div className="hero-switcher" aria-label="切换首页角色">
-          {OPERATORS.map((item, index) => <button key={item.en} aria-pressed={selected === index} onClick={() => setSelected(index)}><span>0{index + 1}</span>{item.name}<i aria-hidden="true" /></button>)}
+          {OPERATORS.map((item, index) => <button key={item.en} aria-pressed={selected === index} onClick={() => selectOperator(index)}><span>0{index + 1}</span>{item.name}<i aria-hidden="true" /></button>)}
+          <button type="button" className="hero-pin" aria-label="固定当前立绘" aria-pressed={pinned} title={pinned ? '取消固定，恢复每 8 秒轮播' : '固定当前立绘，暂停轮播'} onClick={() => setPinned(value => !value)}><span aria-hidden="true">{pinned ? '■' : 'Ⅱ'}</span>{pinned ? '已固定' : '固定立绘'}</button>
         </div>
         <div className="hero-dock">
           <div className="dock-index"><span>LOCAL ARCHIVE</span><strong>345<span> 配方</span></strong><small>1,958 条知识条目</small></div>

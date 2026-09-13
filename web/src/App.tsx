@@ -383,7 +383,7 @@ export default function App() {
         </ArchiveExperience>
         <div className="footer-line reveal-on-scroll">
           <span>ENDFIELD ARCHIVE / 非官方社区工具</span>
-          <span>游戏美术素材 © 鹰角网络 · 来自终末地官网与官方 WIKI</span>
+          <span>游戏美术素材 © 鹰角网络 · 来自官方公开资料与 WIKI</span>
           <a href="#page-top">返回顶部 ↑</a>
         </div>
       </main>

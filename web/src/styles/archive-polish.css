@@ -17,6 +17,10 @@ h1,h2,h3,h4 { font-family:var(--font-cn); }
 .hero::before { z-index:-1;background:url('/assets/official/talos-keyvisual.jpg') center/cover;filter:grayscale(1);opacity:.16;mask-image:linear-gradient(#000 70%,transparent); }
 .hero::after { content:'';position:absolute;inset:0;z-index:-1;background:url('/assets/official/home-background.jpg') center/cover;filter:invert(1) contrast(3);mix-blend-mode:multiply;opacity:.42;pointer-events:none; }
 .art-terrain { background-image:url('/assets/official/home-background.jpg');filter:invert(1) contrast(3);opacity:calc(.36*(1 - var(--world-mix)*var(--chapter)));transform:none; }
+.art-query { background-image:url('/assets/official/query-orbit.jpg');background-position:62% center;filter:grayscale(1);mix-blend-mode:multiply;opacity:calc(var(--chapter)*.22);mask-image:linear-gradient(180deg,transparent 2%,#000 30%,#000 80%,transparent); }
+[data-view='ask'] .art-query { mix-blend-mode:screen;opacity:calc(var(--chapter)*.16); }
+.hero-switcher .hero-pin { border:1px solid #929784;background:#f0f1e8d9;white-space:nowrap; }
+.hero-switcher .hero-pin[aria-pressed='true'] { background:var(--yellow);border-color:#191919;color:#191919; }
 .hero-bottom { flex-wrap:wrap;gap:16px; }
 .hero-switcher { flex-wrap:wrap;gap:6px; }
 .hero-switcher button { font-size:13px;min-height:44px;padding:10px 13px; }

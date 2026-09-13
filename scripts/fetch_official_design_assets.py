@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEST = ROOT / 'web/assets/official'
 BASE = 'https://web.hycdn.cn/endfield/official-v4/_next/static/media/'
 ASSETS = {
+    'query-orbit.jpg': 'https://gmedia.playstation.com/is/image/SIEPDC/arknights-endfield-screenshot-01-zh-hans-cn-21jan26?fmt=jpeg&wid=1920',
     'talos-keyvisual.jpg': BASE + 'kv-obt-pc.1d54f26f.jpg',
     'laevatain-portrait.png': BASE + 'laevatain.d0ca2837.png',
     'chen-portrait.png': BASE + 'chen.2a091fd4.png',

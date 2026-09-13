@@ -118,6 +118,7 @@ export default function ArchiveExperience({ mode, children, query, home, resultS
   return <div ref={stage} className="archive-experience" data-view={mode} data-static={staticView} data-detail={(hasContent || resultState==='error') && !dismissed} data-state={resultState}>
     <div className="world-layer" aria-hidden="true"><div className="world-sticky">
       <div className="experience-art art-terrain" /><div className="experience-art art-signal" />
+      <div className="experience-art art-query" />
       <div ref={host} className={`experience-scene${ready && !staticView ? ' is-ready' : ''}`} />
       <div className="world-vignette" />
       <div className="world-coordinate">ENDFIELD / TALOS-II<br />SPATIAL ARCHIVE SYSTEM</div>
