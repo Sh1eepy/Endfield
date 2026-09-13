@@ -18,6 +18,7 @@ env/
 output/rag/chroma/
 output/eval/replay/
 output/frontend-spatial/
+output/frontend-polish/
 output/audit_*/
 logs/
 *.log

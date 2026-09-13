@@ -5,6 +5,9 @@ interface Props { onDemo: (query: string, mode: Mode) => void }
 const OPERATORS = [
   { name: '佩丽卡', en: 'PERLICA', image: 'perlica-portrait.png', role: '终末地工业 · 监督' },
   { name: '管理员', en: 'ENDMINISTRATOR', image: 'endministrator-portrait.png', role: '终末地工业 · 管理员' },
+  { name: '莱万汀', en: 'LAEVATAIN', image: 'laevatain-portrait.png', role: '干员档案 · 莱万汀' },
+  { name: '陈千语', en: 'CHEN QIANYU', image: 'chen-portrait.png', role: '干员档案 · 陈千语' },
+  { name: '艾尔黛拉', en: 'ARDELIA', image: 'ardelia-portrait.png', role: '干员档案 · 艾尔黛拉' },
 ]
 export default function Hero({ onDemo }: Props) {
   const [selected, setSelected] = useState(0)

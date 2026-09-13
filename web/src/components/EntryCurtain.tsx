@@ -65,6 +65,7 @@ export default function EntryCurtain() {
   return (
     <div className={`entry-curtain${complete ? ' is-complete' : ''}`} id="entry-curtain" aria-hidden={complete} role={complete?undefined:'dialog'} aria-label="终末地入场动画" aria-modal={complete?undefined:true}>
       <div className="entry-mechanism" key={replay}>
+        <div className="entry-landscape" aria-hidden="true" /><div className="entry-survey" aria-hidden="true"><span>TALOS-II / FIELD SURVEY</span><i /><span>拓荒记录 · ENDFIELD</span></div>
         <div className="entry-access"><span>ENDFIELD INDUSTRIES</span><b>连接档案终端<span>_</span></b><small>LOCAL ARCHIVE / TALOS-II</small></div>
         <svg className="entry-orbits" viewBox="0 0 600 600" aria-hidden="true">
           {[90,145,210,265].map((r,i)=><g key={r} className={`entry-orbit orbit-${i}`}><circle cx="300" cy="300" r={r} pathLength="100" /><circle cx={300+r} cy="300" r={i%2?4:6} className="orbit-point" /></g>)}

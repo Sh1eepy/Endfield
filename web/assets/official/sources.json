@@ -3,6 +3,30 @@
   "note": "Official game artwork; original rights remain with the rights holders.",
   "assets": [
     {
+      "file": "talos-keyvisual.jpg",
+      "source": "https://web.hycdn.cn/endfield/official-v4/_next/static/media/kv-obt-pc.1d54f26f.jpg",
+      "bytes": 1133153,
+      "sha256": "63ddb5c31832fae870ee22ebc63639f3d218a0c3536e92d1b3f3634d9960e179"
+    },
+    {
+      "file": "laevatain-portrait.png",
+      "source": "https://web.hycdn.cn/endfield/official-v4/_next/static/media/laevatain.d0ca2837.png",
+      "bytes": 1180819,
+      "sha256": "e4fe6f2d445836eecd4c2e11658b7040623fd7a9294642132b9b06e11fa52ec5"
+    },
+    {
+      "file": "chen-portrait.png",
+      "source": "https://web.hycdn.cn/endfield/official-v4/_next/static/media/chen.2a091fd4.png",
+      "bytes": 643001,
+      "sha256": "5eddc26bcea5d003991be7580a0d79ffa76875014f9355e4b67c71198a9a2c45"
+    },
+    {
+      "file": "ardelia-portrait.png",
+      "source": "https://web.hycdn.cn/endfield/official-v4/_next/static/media/ardelia.36d836c7.png",
+      "bytes": 748586,
+      "sha256": "2bd42a3d4c8caa0c0b8f1b9f73ec7c16f6368e49549961b8fd87214932571639"
+    },
+    {
       "file": "perlica-portrait.png",
       "source": "https://web.hycdn.cn/endfield/official-v4/_next/static/media/perlica.6710bc97.png",
       "bytes": 732113,

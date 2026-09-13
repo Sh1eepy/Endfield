@@ -62,9 +62,10 @@ export function createArchiveScene(host: HTMLElement, onLost: () => void, onSele
   const rings=new THREE.Group();rings.rotation.set(.12,0,-.06);spatialRoot.add(rings)
   const ringMaterial=new THREE.MeshStandardMaterial({color:0x555a5d,metalness:.82,roughness:.3})
   const ringAccent=new THREE.MeshStandardMaterial({color:0xcbd11d,emissive:0xb1b915,emissiveIntensity:.16,metalness:.45,roughness:.35})
+  const ringMeshes:THREE.Mesh[]=[]
   for(const [radius,tube,y,material] of [[6.4,.065,0,ringMaterial],[6.57,.022,.3,ringAccent],[6.24,.026,-.35,ringMaterial]] as const) {
     const g=new THREE.TorusGeometry(radius,tube,8,128);geometries.push(g)
-    const ring=new THREE.Mesh(g,material);ring.rotation.x=Math.PI/2;ring.position.y=y;rings.add(ring)
+    const ring=new THREE.Mesh(g,material);ring.rotation.x=Math.PI/2;ring.position.y=y;ring.userData.baseY=y;rings.add(ring);ringMeshes.push(ring)
   }
   for(let i=0;i<24;i++) {
     const marker=new THREE.Group(),a=i/24*Math.PI*2
@@ -127,6 +128,15 @@ export function createArchiveScene(host: HTMLElement, onLost: () => void, onSele
       const travel=smooth(e/.78),unfold=smooth((e-.55)/.45)
       const narrow=camera.aspect<.85
       helix.rotation.set(frame.pointerY*.13,frame.pointerX*.58+(frame.scrollOrbit ?? 0)+frame.browse*.035,0)
+      const orbit=frame.scrollOrbit ?? 0
+      rings.position.set(frame.pointerX*.3+Math.sin(orbit)*.2,frame.pointerY*.2+Math.sin(orbit*.8)*.16,0)
+      rings.rotation.set(.12+frame.pointerY*.09+Math.sin(orbit)*.045,frame.pointerX*.12,-.06+frame.pointerX*.07)
+      ringMeshes.forEach((ring,i)=>{
+        const phase=elapsed*(.43+i*.13)+i*.8
+        ring.rotation.x=Math.PI/2+Math.sin(phase)*(.014+i*.006)
+        ring.rotation.y=Math.cos(phase*.83)*(.012+i*.005)
+        ring.position.y=ring.userData.baseY+Math.sin(phase)*(.045+i*.022)
+      })
       camera.position.set(narrow?6:10-7*p,3-1.8*p,(narrow?42:26)-2*p+5*(1-chapter))
       lookAt.set(narrow?4.5:1.6,0,0);camera.lookAt(lookAt)
       camera.fov=(narrow?49:36)+frame.energy*4-e*2;camera.updateProjectionMatrix()
@@ -137,9 +147,10 @@ export function createArchiveScene(host: HTMLElement, onLost: () => void, onSele
         const y=(((row-13)*1.4+drift+19.6)%39.2+39.2)%39.2-19.6
         const angle=y*.34+strand*Math.PI
         carrier.position.set(...helixPoint(y,strand,elapsed))
-        carrier.rotation.set(.035*Math.sin(angle),-angle+Math.PI/2,.018*Math.sin(elapsed*.5+row))
+        carrier.rotation.set(.065*Math.sin(y*.52-elapsed*.95),-angle+Math.PI/2,.035*Math.sin(y*.52-elapsed*.95))
         carrier.visible=!(carrier.userData.index===selected && e>.005)
-        if(strand===0){const offset=row*6;linkArray[offset]=carrier.position.x;linkArray[offset+1]=y;linkArray[offset+2]=carrier.position.z;linkArray[offset+3]=-carrier.position.x;linkArray[offset+4]=y;linkArray[offset+5]=-carrier.position.z}
+        const offset=row*6+strand*3
+        linkArray[offset]=carrier.position.x;linkArray[offset+1]=carrier.position.y;linkArray[offset+2]=carrier.position.z
       }
       linkGeometry.attributes.position.needsUpdate=true
       selectionOutline.visible=e<.02

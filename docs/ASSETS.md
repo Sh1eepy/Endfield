@@ -1,6 +1,6 @@
 # 素材来源与使用
 
-Web 的官方参考素材位于 `web/assets/official/`，完整来源 URL、字节数和 SHA256 保存在 `web/assets/official/sources.json`。当前使用佩丽卡、管理员、地景与分区装饰；小程序仅复制实际使用的三份素材以控制包体。
+Web 的官方参考素材位于 `web/assets/official/`，完整来源 URL、字节数和 SHA256 保存在 `web/assets/official/sources.json`。当前首页可切换佩丽卡、管理员、莱万汀、陈千语和艾尔黛拉；入场和首页使用官网横版宣传主视觉 `talos-keyvisual.jpg`，通过 CSS 去色、渐变遮罩和透明度淡化，原图不修改。等高线使用已有 `home-background.jpg` 反相增强。小程序仅复制原先实际使用的三份素材以控制包体，本次新增素材不进入小程序。
 
 公开来源为《明日方舟：终末地》官网 `https://endfield.hypergryph.com/`。相关名称、图像和内容权利归原权利方所有，页面应保持“非官方社区工具”说明。
 

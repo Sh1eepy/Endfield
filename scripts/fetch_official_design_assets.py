@@ -13,6 +13,10 @@ ROOT = Path(__file__).resolve().parents[1]
 DEST = ROOT / 'web/assets/official'
 BASE = 'https://web.hycdn.cn/endfield/official-v4/_next/static/media/'
 ASSETS = {
+    'talos-keyvisual.jpg': BASE + 'kv-obt-pc.1d54f26f.jpg',
+    'laevatain-portrait.png': BASE + 'laevatain.d0ca2837.png',
+    'chen-portrait.png': BASE + 'chen.2a091fd4.png',
+    'ardelia-portrait.png': BASE + 'ardelia.36d836c7.png',
     'perlica-portrait.png': BASE + 'perlica.6710bc97.png',
     'endministrator-portrait.png': BASE + 'endministrator2.1ec20a16.png',
     'home-background.jpg': BASE + 'bg.9e174372.jpg',

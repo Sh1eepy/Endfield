@@ -113,3 +113,5 @@ python scripts/replay_bad_cases.py --mode answer --allow-llm
 ## 官方素材
 
 `fetch_official_design_assets.py` 从公开官网 CDN 下载选定图片到 `web/assets/official/`，记录 URL、大小和 SHA256。它只下载图片，不执行官网脚本；运行需要网络权限。使用与版权边界见 [ASSETS.md](ASSETS.md)。
+
+当前清单包含五位首页角色及入场/首页横版宣传主视觉；运行 `python scripts/fetch_official_design_assets.py` 可补齐缺失图片并重建来源清单。

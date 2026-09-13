@@ -15,6 +15,7 @@ import './styles/experience.css'
 import './styles/helix.css'
 import './styles/entry-orbit.css'
 import './styles/spatial-continuity.css'
+import './styles/archive-polish.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
