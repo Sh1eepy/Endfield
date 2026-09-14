@@ -7,10 +7,12 @@
 > 需要补充原因、影响或验证结果时，在对应提交下方缩进两格写 `  - 说明：…`，重新生成会按短哈希保留。
 > 本文件只包含**已提交**的历史，工作区未提交的改动不会出现在这里。
 
-共 64 条提交，覆盖 2026-08-17 至 2026-09-14。
+共 66 条提交，覆盖 2026-08-17 至 2026-09-14。
 
 ## 2026-09-14
 
+- `77a0e80` **文档** split reader-facing and developer docs, consolidate to 11 files
+- `9039c77` **新增** refresh wiki data and calibrate generation threshold
 - `5acd835` **文档** expand README with feature walkthrough and real UI screenshots
 - `3de2389` **文档** record logo provenance and untrack unused mascot art
 - `f24f38e` **文档** record asset and data provenance with a full disclaimer
