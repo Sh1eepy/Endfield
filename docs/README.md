@@ -15,7 +15,7 @@
 | 修改知识问答 | [RAG.md](RAG.md) 与 [GRAPH.md](GRAPH.md) |
 | 修改接口 | [API.md](API.md) |
 | 修改 Web 或小程序 | [WEB.md](WEB.md)、[FRONTEND_EXPERIENCE.md](FRONTEND_EXPERIENCE.md)、[FRONTEND_SPATIAL_ACCEPTANCE.md](FRONTEND_SPATIAL_ACCEPTANCE.md) / [MINIPROGRAM.md](MINIPROGRAM.md) |
-| 新增或替换素材 | [ASSETS.md](ASSETS.md) |
+| 新增素材、核对来源与免责声明 | [ASSETS.md](ASSETS.md)：素材清单、字体许可、数据来源、使用边界与免责声明 |
 | 编写或运行测试 | [TESTING.md](TESTING.md) |
 | 准备上线 | [DEPLOYMENT.md](DEPLOYMENT.md)、[API_SECURITY.md](API_SECURITY.md)、[SERVER_RUNBOOK.md](SERVER_RUNBOOK.md) |
 | 评估后续能力 | [EXTENSIBILITY.md](EXTENSIBILITY.md) |

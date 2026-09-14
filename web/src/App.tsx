@@ -384,6 +384,7 @@ export default function App() {
         <div className="footer-line reveal-on-scroll">
           <span>ENDFIELD ARCHIVE / 非官方社区工具</span>
           <span>游戏美术素材 © 鹰角网络 · 来自官方公开资料与 WIKI</span>
+          <span>数据来自公开 WIKI 条目，仅供查询与学习交流；内容以官方发布为准，权利归原权利方所有</span>
           <a href="#page-top">返回顶部 ↑</a>
         </div>
       </main>
