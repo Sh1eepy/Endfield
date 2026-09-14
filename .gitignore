@@ -32,6 +32,10 @@ web/dist/
 web/.npm-cache/
 web/tsconfig.tsbuildinfo
 
+# 未使用且来源未记录的吉祥物图：本地保留副本，不随仓库分发（见 docs/ASSETS.md）
+web/assets/mascots/mascot-*.png
+miniprogram/assets/images/mascot-*.png
+
 # 原始抓取与逆向缓存：体积大、可重新采集，不进入普通 Git 历史
 endfield_wiki_full_*.json
 chunks/

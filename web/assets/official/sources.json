@@ -73,6 +73,20 @@
       "source": "https://web.hycdn.cn/endfield/official-v4/_next/static/media/bg.269aa2f3.jpg",
       "bytes": 43653,
       "sha256": "0f1194b1973fa7b4617641be16d834359b05395afe2095baec2bc0e7ea757fa8"
+    },
+    {
+      "file": "../mascots/endfield-logo.png",
+      "source": "《明日方舟：终末地》官方网站（经项目使用者确认；具体直链未记录，补记时请替换本字段）",
+      "bytes": 527525,
+      "sha256": "d05c3f8a927363e2eff98d37",
+      "note": "1324x1188 带透明通道；游戏徽标，权利归鹰角网络。"
+    },
+    {
+      "file": "../../../miniprogram/assets/images/endfield-logo.png",
+      "source": "《明日方舟：终末地》官方网站（经项目使用者确认；具体直链未记录，补记时请替换本字段）",
+      "bytes": 2260,
+      "sha256": "a3a9bbbc3dc6cb309fc79185",
+      "note": "100x90 无透明通道；小程序使用的同一徽标的另一尺寸版本。"
     }
   ]
 }
