@@ -20,6 +20,10 @@ output/eval/replay/
 output/frontend-spatial/
 output/frontend-polish/
 output/audit_*/
+output/update_*/
+# 调参期的一次性中间产物：不是当前基线，也不被任何脚本读取
+output/eval/after_*.json
+output/rag_eval_result.json
 logs/
 *.log
 tmp/

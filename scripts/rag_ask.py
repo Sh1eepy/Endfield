@@ -13,6 +13,7 @@ CLI:
     python scripts/rag_ask.py "重息壤是什么" --gen
 """
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -29,6 +30,7 @@ sys.path.insert(0, os.path.join(ROOT, "scripts"))
 
 from intent_router import classify_query  # noqa: E402
 from llm_client import llm  # noqa: E402
+from rag_config import GENERATION_MIN_VECTOR_SIM  # noqa: E402
 from rag_prompts import ANSWER_SYSTEM as GEN_SYSTEM, SEMANTIC_PLAN_SYSTEM, semantic_plan_prompt  # noqa: E402
 
 # 惰性加载的单例（避免每次 ask 都重载索引）
@@ -154,6 +156,18 @@ def kb_direct_hits(query, top_n=3):
 
 _mention_index = None   # 条目名 → 提到它的条目 [{name, category}]（懒加载+缓存）
 _mention_loaded = False
+_mention_fingerprint = None
+
+
+def mention_source_fingerprint(kb=None):
+    """返回 mention 索引实际输入的稳定指纹。"""
+    kb = kb or _get_kb_names()
+    payload = [
+        (name, info.get("item_id", ""), info.get("category", ""), info.get("full_text", ""))
+        for name, info in sorted(kb.items())
+    ]
+    raw = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
 def build_mention_index(force=False):
@@ -165,19 +179,25 @@ def build_mention_index(force=False):
     索引: mention_index[被提及名] = [{name: 提及者条目名, category: ...}, ...]
     缓存到 output/mention_index.json（约几百 KB，可复用）。
     """
-    global _mention_index, _mention_loaded
+    global _mention_index, _mention_loaded, _mention_fingerprint
     cache_path = os.path.join(ROOT, "output", "mention_index.json")
-    if not force and _mention_loaded:
+    kb = _get_kb_names()
+    fingerprint = mention_source_fingerprint(kb)
+    if not force and _mention_loaded and _mention_fingerprint == fingerprint:
         return _mention_index
     if not force and os.path.exists(cache_path):
         try:
             with open(cache_path, encoding="utf-8") as f:
-                _mention_index = json.load(f)
-            _mention_loaded = True
-            return _mention_index
+                cached = json.load(f)
+            if (cached.get("schema_version") == 1
+                    and cached.get("source_fingerprint") == fingerprint
+                    and isinstance(cached.get("index"), dict)):
+                _mention_index = cached["index"]
+                _mention_loaded = True
+                _mention_fingerprint = fingerprint
+                return _mention_index
         except (OSError, ValueError):
             pass
-    kb = _get_kb_names()
     # 被提及名集合（长度>=2，排除超长条目名，减少误匹配）
     names = sorted([n for n in kb if len(n) >= 2 and len(n) <= 12], key=len, reverse=True)
     index = {}
@@ -199,9 +219,11 @@ def build_mention_index(force=False):
         index[n] = sorted(seen.values(), key=lambda e: e["name"])
     _mention_index = index
     _mention_loaded = True
+    _mention_fingerprint = fingerprint
     os.makedirs(os.path.dirname(cache_path), exist_ok=True)
     with open(cache_path, "w", encoding="utf-8") as f:
-        json.dump(index, f, ensure_ascii=False)
+        json.dump({"schema_version": 1, "source_fingerprint": fingerprint, "index": index},
+                  f, ensure_ascii=False)
     return index
 
 
@@ -914,7 +936,8 @@ def prepare_generation(query, hits, top_k=5):
     # 多路合并片段（关键词/mention/直取）是人工确认的相关上下文，不因 top-1 vec 低拒答
     has_curated = any(h.get("_keyword") or h.get("_mention") or h.get("_direct") or
                       h.get("_relationship_evidence") for h in hits[:top_k])
-    if not is_direct and not has_curated and top.get("vector_sim", 0) < 0.30:
+    if (not is_direct and not has_curated and
+            top.get("vector_sim", 0) < GENERATION_MIN_VECTOR_SIM):
         return {"kind": "reject", "answer": "知识库中未找到足够相关的资料来回答这个问题。",
                 "rejected": True, "hits": hits[:top_k]}
     ctx = "\n\n".join(

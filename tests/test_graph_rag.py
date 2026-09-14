@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
+import json
 import sqlite3
 import tempfile
 import unittest
 from unittest.mock import patch
 
-from scripts.build_knowledge_graph import create_schema
+from scripts.build_knowledge_graph import build, create_schema
 from scripts.graph_search import GraphRetriever, should_route_graph
 from scripts import rag_ask
 from scripts.rag_ask import focus_long_context, is_interpretive_relation, relationship_evidence_hits, semantic_plan
@@ -32,6 +33,9 @@ class GraphRAGTests(unittest.TestCase):
 
     def tearDown(self):
         self.tmp.cleanup()
+        rag_ask._mention_index = None
+        rag_ask._mention_loaded = False
+        rag_ask._mention_fingerprint = None
 
     def test_two_hop_common_task(self):
         retriever = GraphRetriever(self.db)
@@ -146,6 +150,53 @@ class GraphRAGTests(unittest.TestCase):
         with patch.object(rag_ask, "gen_answer", return_value={"answer": "回答", "rejected": False}):
             result = rag_ask.attach_generated_answer(base.copy(), "问题", [], 5, True)
         self.assertEqual(result["answer"], "回答")
+
+    def test_incremental_build_removes_deleted_entity_and_dependent_relation(self):
+        rows = [
+            {"item_id": "1", "name": "保留条目", "category": "任务", "full_text": "",
+             "sections_struct": {"正文": [{"t": "entry", "id": "2", "x": "下线条目"}]}},
+            {"item_id": "2", "name": "下线条目", "category": "档案库", "full_text": "",
+             "sections_struct": {}},
+        ]
+        with patch("scripts.build_knowledge_graph.load_rows", return_value=rows), \
+                patch("scripts.build_knowledge_graph.load_operator_details", return_value={}), \
+                patch("scripts.build_knowledge_graph.GraphBuilder.apply_curated_aliases"), \
+                patch("scripts.build_knowledge_graph.GraphBuilder.extract_recipes", return_value=0):
+            build(self.db, incremental=False)
+
+        with patch("scripts.build_knowledge_graph.load_rows", return_value=rows[:1]), \
+                patch("scripts.build_knowledge_graph.load_operator_details", return_value={}), \
+                patch("scripts.build_knowledge_graph.GraphBuilder.apply_curated_aliases"), \
+                patch("scripts.build_knowledge_graph.GraphBuilder.extract_recipes", return_value=0):
+            result = build(self.db, incremental=True)
+
+        con = sqlite3.connect(self.db)
+        self.assertEqual(con.execute("SELECT COUNT(*) FROM entities WHERE id='kb:2'").fetchone()[0], 0)
+        self.assertEqual(con.execute("SELECT COUNT(*) FROM relations").fetchone()[0], 0)
+        con.close()
+        self.assertEqual(result["deleted_entries"], 1)
+        self.assertEqual(result["changed_entries"], 1)
+
+    def test_mention_cache_rebuilds_when_kb_fingerprint_changes(self):
+        kb = {
+            "目标条目": {"item_id": "1", "category": "档案库", "full_text": "目标正文"},
+            "提及条目": {"item_id": "2", "category": "任务", "full_text": "这里提到目标条目"},
+        }
+        cache_dir = os.path.join(self.tmp.name, "output")
+        os.makedirs(cache_dir)
+        cache_path = os.path.join(cache_dir, "mention_index.json")
+        with open(cache_path, "w", encoding="utf-8") as fh:
+            json.dump({"schema_version": 1, "source_fingerprint": "stale", "index": {}}, fh)
+        with patch.object(rag_ask, "ROOT", self.tmp.name), \
+                patch.object(rag_ask, "_get_kb_names", return_value=kb):
+            rag_ask._mention_index = None
+            rag_ask._mention_loaded = False
+            rag_ask._mention_fingerprint = None
+            result = rag_ask.build_mention_index()
+        self.assertEqual(result["目标条目"][0]["name"], "提及条目")
+        with open(cache_path, encoding="utf-8") as fh:
+            cached = json.load(fh)
+        self.assertEqual(cached["source_fingerprint"], rag_ask.mention_source_fingerprint(kb))
 
 
 if __name__ == "__main__":

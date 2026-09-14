@@ -131,6 +131,15 @@ class EvaluationTests(unittest.TestCase):
         self.assertTrue(deterministic_score(case, canonical)["refusal_correct"])
         self.assertFalse(deterministic_score(case, incidental)["refusal_correct"])
 
+    def test_deterministic_routes_have_structured_provenance_without_citation_marker(self):
+        from scripts.eval_case import deterministic_score
+        case = {"query": "有哪些主线任务", "should_refuse": False}
+        for route in ("enum", "structured"):
+            with self.subTest(route=route):
+                result = {"route_used": route, "rejected": False,
+                          "answer": "知识库中的确定性结果"}
+                self.assertTrue(deterministic_score(case, result)["citation_present"])
+
 
 class StreamTests(unittest.TestCase):
     def test_partial_eof_or_done_without_finish_is_not_success_or_retried(self):

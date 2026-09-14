@@ -339,10 +339,26 @@ def build(db_path=DEFAULT_DB, incremental=False, inputs="endfield_kb/*.jsonl"):
         r, operator_details.get(str(r.get("item_id") or ""))) for r in rows}
     changed = set(new) if not incremental else {k for k, v in new.items() if old.get(k) != v}
     deleted = set(old) - set(new)
+    deleted_entity_ids = {"kb:" + source for source in deleted}
+    if deleted_entity_ids:
+        placeholders = ",".join("?" for _ in deleted_entity_ids)
+        dependent_sources = {
+            row[0] for row in con.execute(
+                f"SELECT DISTINCT source_item_id FROM relations "
+                f"WHERE subject_id IN ({placeholders}) OR object_id IN ({placeholders})",
+                tuple(deleted_entity_ids) * 2,
+            )
+        }
+        changed |= dependent_sources & set(new)
     for source in sorted(changed | deleted):
         con.execute("DELETE FROM relations WHERE source_item_id=?", (source,))
         con.execute("DELETE FROM aliases WHERE source_item_id=? AND review_status!='human_verified'", (source,))
         con.execute("DELETE FROM manifest WHERE source_item_id=?", (source,))
+    if deleted_entity_ids:
+        placeholders = ",".join("?" for _ in deleted_entity_ids)
+        con.execute(f"DELETE FROM relations WHERE subject_id IN ({placeholders}) "
+                    f"OR object_id IN ({placeholders})", tuple(deleted_entity_ids) * 2)
+        con.execute(f"DELETE FROM entities WHERE id IN ({placeholders})", tuple(deleted_entity_ids))
 
     by_id = {str(r.get("item_id") or ""): r for r in rows}
     now = datetime.now(timezone.utc).isoformat()

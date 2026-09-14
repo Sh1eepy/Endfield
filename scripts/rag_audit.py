@@ -67,6 +67,16 @@ def audit_index(index_dir="output/rag", check_chroma=True):
     mention_path = os.path.join(ROOT, "output", "mention_index.json")
     if not os.path.exists(mention_path):
         issues.append("mention_index_missing")
+    else:
+        try:
+            from rag_ask import mention_source_fingerprint
+            with open(mention_path, encoding="utf-8") as f:
+                mention = json.load(f)
+            if (mention.get("schema_version") != 1
+                    or mention.get("source_fingerprint") != mention_source_fingerprint()):
+                issues.append("mention_index_stale")
+        except (OSError, ValueError, TypeError):
+            issues.append("mention_index_unreadable")
     fingerprint = hashlib.sha256("".join(sorted(str(x.get("hash") or "") for x in manifest)).encode()).hexdigest()
     mtime = datetime.fromtimestamp(os.path.getmtime(manifest_path), timezone.utc).isoformat()
     return {

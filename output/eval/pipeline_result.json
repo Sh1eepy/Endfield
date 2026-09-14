@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "manifest_id": "sha256:792280523a10df7878b3124d11ecfc66efbdecc15ad778723771dc3282f53335",
-    "git_commit": "c0c0f7ec8f30e05dd873d3e6cf4b308d218486e3",
+    "manifest_id": "sha256:83b170c9fe0378a24db652be2583b4d6f4c3440ea012463a5ce10c55386e98d4",
+    "git_commit": "5acd835ff885c2f3020df60e291a5edd52068b21",
     "git_dirty": true,
     "llm_model": "deepseek-v4-flash",
-    "index_manifest_sha256": "226af200cf8cea9f5d51ffc58814b2d494d3a8861d2bab69f410c045b2bea31c",
+    "index_manifest_sha256": "04585f547f018b079fb75e58a74d724e6a4cbebbeeb8f412b349599ae7a11540",
     "prompt_versions": {
       "intent": "sha256:c5856069f5ef4abc",
       "semantic_plan": "sha256:086f8212123a4767",
@@ -16,7 +16,8 @@
       "vector_top_n": 20,
       "name_top_n_min": 10,
       "rrf_k": 60,
-      "final_top_k": 5
+      "final_top_k": 5,
+      "generation_min_vector_sim": 0.45
     }
   },
   "summary": {

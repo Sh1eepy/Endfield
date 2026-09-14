@@ -1,43 +1,43 @@
 {
  "source": "https://wiki.skland.com (明日方舟：终末地 WIKI)",
- "crawled_at": "2026-08-07T05:50:04.682Z",
- "total": 1958,
+ "crawled_at": "2026-09-14T09:18:35.106Z",
+ "total": 2229,
  "categories": [
   {
    "subTypeId": "1",
    "subTypeName": "干员",
    "mainTypeName": "终末地百科",
-   "entry_count": 31
+   "entry_count": 33
   },
   {
    "subTypeId": "2",
    "subTypeName": "武器",
    "mainTypeName": "终末地百科",
-   "entry_count": 77
+   "entry_count": 80
   },
   {
    "subTypeId": "3",
    "subTypeName": "威胁",
    "mainTypeName": "终末地百科",
-   "entry_count": 81
+   "entry_count": 83
   },
   {
    "subTypeId": "4",
    "subTypeName": "装备",
    "mainTypeName": "终末地百科",
-   "entry_count": 243
+   "entry_count": 258
   },
   {
    "subTypeId": "5",
    "subTypeName": "设备",
    "mainTypeName": "终末地百科",
-   "entry_count": 95
+   "entry_count": 102
   },
   {
    "subTypeId": "6",
    "subTypeName": "物品",
    "mainTypeName": "终末地百科",
-   "entry_count": 261
+   "entry_count": 272
   },
   {
    "subTypeId": "7",
@@ -49,13 +49,13 @@
    "subTypeId": "8",
    "subTypeName": "任务",
    "mainTypeName": "终末地百科",
-   "entry_count": 268
+   "entry_count": 277
   },
   {
    "subTypeId": "9",
    "subTypeName": "活动",
    "mainTypeName": "终末地百科",
-   "entry_count": 76
+   "entry_count": 88
   },
   {
    "subTypeId": "10",
@@ -67,19 +67,19 @@
    "subTypeId": "11",
    "subTypeName": "干员攻略",
    "mainTypeName": "游戏攻略辑",
-   "entry_count": 29
+   "entry_count": 31
   },
   {
    "subTypeId": "12",
    "subTypeName": "情报资讯",
    "mainTypeName": "情报档案库",
-   "entry_count": 9
+   "entry_count": 10
   },
   {
    "subTypeId": "13",
    "subTypeName": "游戏视频",
    "mainTypeName": "情报档案库",
-   "entry_count": 91
+   "entry_count": 103
   },
   {
    "subTypeId": "14",
@@ -91,13 +91,13 @@
    "subTypeId": "15",
    "subTypeName": "基建攻略",
    "mainTypeName": "游戏攻略辑",
-   "entry_count": 12
+   "entry_count": 1
   },
   {
    "subTypeId": "16",
    "subTypeName": "贵重品库",
    "mainTypeName": "终末地百科",
-   "entry_count": 303
+   "entry_count": 319
   },
   {
    "subTypeId": "18",
@@ -109,13 +109,13 @@
    "subTypeId": "19",
    "subTypeName": "装扮",
    "mainTypeName": "终末地百科",
-   "entry_count": 123
+   "entry_count": 133
   },
   {
    "subTypeId": "20",
    "subTypeName": "能量淤积点",
    "mainTypeName": "终末地百科",
-   "entry_count": 11
+   "entry_count": 12
   },
   {
    "subTypeId": "21",
@@ -127,13 +127,13 @@
    "subTypeId": "22",
    "subTypeName": "档案库",
    "mainTypeName": "终末地百科",
-   "entry_count": 104
+   "entry_count": 279
   },
   {
    "subTypeId": "23",
    "subTypeName": "百科速览",
    "mainTypeName": "游戏攻略辑",
-   "entry_count": 8
+   "entry_count": 12
   }
  ]
 }

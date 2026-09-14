@@ -1,6 +1,6 @@
 {
   "schema_version": 3,
-  "index_manifest_sha256": "226af200cf8cea9f5d51ffc58814b2d494d3a8861d2bab69f410c045b2bea31c",
+  "index_manifest_sha256": "04585f547f018b079fb75e58a74d724e6a4cbebbeeb8f412b349599ae7a11540",
   "embedding_model": "BAAI/bge-small-zh-v1.5",
   "prompt_versions": {
     "intent": "sha256:c5856069f5ef4abc",
@@ -13,7 +13,8 @@
     "vector_top_n": 20,
     "name_top_n_min": 10,
     "rrf_k": 60,
-    "final_top_k": 5
+    "final_top_k": 5,
+    "generation_min_vector_sim": 0.45
   },
   "datasets": {
     "retrieval": {
@@ -38,16 +39,16 @@
     }
   },
   "implementation": {
-    "scripts/rag_config.py": "6cea1176aead11b54d4c9861737c63c1b37890992536dd611d9f3ac373d65d70",
+    "scripts/rag_config.py": "d96d00786575b5685cd876a018b3299ada11e294441af903130564e8982067cc",
     "scripts/rag_prompts.py": "64bc81810b7843081bb89deaf6f02d6e5f076f9e0d7c279f13ee69d4a03b742d",
     "scripts/intent_router.py": "8ff48138ce558612ffa8227dcffef36282f34b22a55070feb28b86b4ac23fb81",
     "scripts/build_rag.py": "a87edeea13ae2339b2c9d80418dbd04e8c93c9e7ad6cf2046031efa53bc9c34c",
     "scripts/rag_search.py": "37b87219534d51f13c9e1b8538d600a2160827ec0ce20fd54090f460305b1350",
-    "scripts/rag_ask.py": "7e3e6618419302a2754e27938e82118e6978c4374864f205d9fa6f504675841d",
+    "scripts/rag_ask.py": "0aef9f330023ae4a8936a8becda776d1fa78953d0e06aa25e4a2229ef5942d63",
     "scripts/graph_search.py": "0afd02c799f47528f00eb3bacab79ae64378bf1d66b3e92ba8bfec384a0ff1d9",
-    "scripts/build_knowledge_graph.py": "830549f6e0356c90797780344b7b49e1b5110b3d228d330146f7b65f67e730b8",
+    "scripts/build_knowledge_graph.py": "ea5fddef57d7b84d48d90019273b3a7d4203460772e54b27fa3c10be2d22691c",
     "scripts/llm_client.py": "a7819f0d7104ad534ac96b16b7fdcb5cb0813108804c646b67727c9d5de1a363",
-    "scripts/eval_case.py": "6b003ef4d65507daeb99fbc4dbd4bb2b05676baac5f2a9ad2c9224a7539907bc",
+    "scripts/eval_case.py": "67ce134a0fbc31578246be3417449bdb31704db13d32e86e90fc7bbb0e3cab2e",
     "scripts/eval_retrieval.py": "905e88dd7f88fa5ba7c16e595b2352b86e170f8d3d2f62a8a5a8ca45061af252",
     "scripts/eval_rag.py": "8ceb6aca0fa5d16cddb71555e779201bfd9a990d4d134cc0e659787e98675ed8",
     "scripts/eval_pipeline.py": "13fd6700c43ad3335b814fc05d258e5d96f7c54dac020cac621a294825bb5a93",
@@ -68,6 +69,6 @@
     "ordinary_trace_query": "sha256+length",
     "feedback_query": "explicit_user_submission"
   },
-  "manifest_id": "sha256:792280523a10df7878b3124d11ecfc66efbdecc15ad778723771dc3282f53335",
-  "generated_at": "2026-09-12T10:07:52.941672+00:00"
+  "manifest_id": "sha256:83b170c9fe0378a24db652be2583b4d6f4c3440ea012463a5ce10c55386e98d4",
+  "generated_at": "2026-09-14T10:30:22.486370+00:00"
 }

@@ -1,7 +1,7 @@
 {
   "status": "ok",
   "consistent": true,
-  "checked_at": "2026-09-14T09:48:10.289184+00:00",
+  "checked_at": "2026-09-14T09:38:27.806726+00:00",
   "index_built_at": "2026-09-14T09:30:25.500695+00:00",
   "source_fingerprint": "e93019dd82c8d1da730949c940fddc166df175662c4a0a1308d9c741f1d50d9d",
   "kb_entries": 4764,

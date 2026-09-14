@@ -13,6 +13,7 @@ VECTOR_TOP_N = 20
 NAME_TOP_N_MIN = 10
 RRF_K = 60
 FINAL_TOP_K = 5
+GENERATION_MIN_VECTOR_SIM = 0.45
 
 
 def retrieval_config():
@@ -22,4 +23,5 @@ def retrieval_config():
         "name_top_n_min": NAME_TOP_N_MIN,
         "rrf_k": RRF_K,
         "final_top_k": FINAL_TOP_K,
+        "generation_min_vector_sim": GENERATION_MIN_VECTOR_SIM,
     }

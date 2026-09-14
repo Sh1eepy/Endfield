@@ -8151,57 +8151,7 @@
    "duration": 1.0
   },
   {
-   "id": "m177-r337",
-   "machine_id": "177",
-   "machine": "封装机",
-   "inputs": [
-    {
-     "item_id": "371",
-     "name": "蓝铁瓶",
-     "count": 1.0
-    },
-    {
-     "item_id": "373",
-     "name": "铁制零件",
-     "count": 10.0
-    }
-   ],
-   "outputs": [
-    {
-     "item_id": "594",
-     "name": "锦草软饮",
-     "count": 1.0
-    }
-   ],
-   "duration": 1.0
-  },
-  {
-   "id": "m177-r338",
-   "machine_id": "177",
-   "machine": "封装机",
-   "inputs": [
-    {
-     "item_id": "371",
-     "name": "蓝铁瓶",
-     "count": 1.0
-    },
-    {
-     "item_id": "373",
-     "name": "铁制零件",
-     "count": 10.0
-    }
-   ],
-   "outputs": [
-    {
-     "item_id": "593",
-     "name": "芽针针剂",
-     "count": 1.0
-    }
-   ],
-   "duration": 1.0
-  },
-  {
-   "id": "m746-r339",
+   "id": "m746-r337",
    "machine_id": "746",
    "machine": "反应池",
    "inputs": [
@@ -8226,7 +8176,7 @@
    "duration": 1.0
   },
   {
-   "id": "m176-r340",
+   "id": "m176-r338",
    "machine_id": "176",
    "machine": "灌装机",
    "inputs": [
@@ -8271,7 +8221,7 @@
    "duration": 1.0
   },
   {
-   "id": "m745-r341",
+   "id": "m745-r339",
    "machine_id": "745",
    "machine": "拆解机",
    "inputs": [
@@ -8310,6 +8260,56 @@
     {
      "item_id": "381",
      "name": "清水",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m177-r340",
+   "machine_id": "177",
+   "machine": "封装机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "373",
+     "name": "铁制零件",
+     "count": 10.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "593",
+     "name": "芽针针剂",
+     "count": 1.0
+    }
+   ],
+   "duration": 1.0
+  },
+  {
+   "id": "m177-r341",
+   "machine_id": "177",
+   "machine": "封装机",
+   "inputs": [
+    {
+     "item_id": "371",
+     "name": "蓝铁瓶",
+     "count": 1.0
+    },
+    {
+     "item_id": "373",
+     "name": "铁制零件",
+     "count": 10.0
+    }
+   ],
+   "outputs": [
+    {
+     "item_id": "594",
+     "name": "锦草软饮",
      "count": 1.0
     }
    ],

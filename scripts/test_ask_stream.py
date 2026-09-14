@@ -99,6 +99,16 @@ class PrepareGenerationTests(unittest.TestCase):
         self.assertEqual(prep["kind"], "reject")
         self.assertEqual(prep["hits"], hits[:1])
 
+    def test_hard_negative_below_generation_threshold_rejects(self):
+        hits = [hit(vector_sim=0.41)]
+        stub, p = _use_llm()
+        try:
+            prep = rag_ask.prepare_generation("火星城市什么时候开放", hits)
+        finally:
+            p.stop()
+        self.assertEqual(prep["kind"], "reject")
+        self.assertEqual(stub.calls["chat"], [])
+
     def test_direct_hit_bypasses_vector_threshold(self):
         hits = [hit(vector_sim=0.1, _direct=True)]
         stub, p = _use_llm()

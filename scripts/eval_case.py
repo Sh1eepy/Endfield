@@ -63,12 +63,15 @@ def deterministic_score(case, result):
     refused = (bool(result["rejected"]) if "rejected" in result else
                answer.strip() == "知识库中未找到足够相关的资料来回答这个问题。")
     names = result_source_names(result)
+    # 枚举/结构直查的事实直接来自确定性数据结构，不经过 LLM 拼接引用角标。
+    deterministic_provenance = result.get("route_used") in {"enum", "structured"}
     return {
         "refusal_correct": refused == case.should_refuse,
         "required_terms_coverage": (
             round(sum(term in answer for term in case.required_terms) / len(case.required_terms), 4)
             if case.required_terms else 1.0),
-        "citation_present": case.should_refuse or bool(re.search(r"\[来源\d+\]", answer)),
+        "citation_present": (case.should_refuse or deterministic_provenance or
+                             bool(re.search(r"\[来源\d+\]", answer))),
         "source_overlap": (case.should_refuse or not case.acceptable_sources or
                            any(source_name_matches(name, case.acceptable_sources) for name in names)),
     }
