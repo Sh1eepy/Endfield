@@ -1,37 +1,83 @@
 # 项目文档
 
-这里集中保存项目的重要说明。文档按职责拆分：总览只解释边界，专项文档负责实现、测试、问题与扩展点，历史报告不作为当前事实来源。
+文档按读者分两类：
 
-## 建议阅读路径
+- **使用这个工具的人** → [使用指南](USER_GUIDE.md)：能问什么、怎么问、界面怎么操作、常见问题与隐私说明，不含实现细节；
+- **改代码、跑测试、做部署的人** → 本文件是开发者入口；产品门面在根目录 [README.md](../README.md)。
 
-| 目标 | 文档 |
-|---|---|
-| 了解目前做到哪里 | [PROJECT_STATE.md](PROJECT_STATE.md) |
-| 理解全局结构和模块关系 | [ARCHITECTURE.md](ARCHITECTURE.md) |
-| 开始本地开发 | [DEVELOPMENT.md](DEVELOPMENT.md) |
-| 查脚本和命令 | [TOOLS.md](TOOLS.md) |
-| 修改配方树 | [SYNTHESIS.md](SYNTHESIS.md) |
-| 修改数据构建 | [DATA_PIPELINE.md](DATA_PIPELINE.md) |
-| 修改知识问答 | [RAG.md](RAG.md) 与 [GRAPH.md](GRAPH.md) |
-| 修改接口 | [API.md](API.md) |
-| 修改 Web 或小程序 | [WEB.md](WEB.md)、[FRONTEND_EXPERIENCE.md](FRONTEND_EXPERIENCE.md)、[FRONTEND_SPATIAL_ACCEPTANCE.md](FRONTEND_SPATIAL_ACCEPTANCE.md) / [MINIPROGRAM.md](MINIPROGRAM.md) |
-| 新增素材、核对来源与免责声明 | [ASSETS.md](ASSETS.md)：素材清单、字体许可、数据来源、使用边界与免责声明 |
-| 编写或运行测试 | [TESTING.md](TESTING.md) |
-| 准备上线 | [DEPLOYMENT.md](DEPLOYMENT.md)、[API_SECURITY.md](API_SECURITY.md)、[SERVER_RUNBOOK.md](SERVER_RUNBOOK.md) |
-| 评估后续能力 | [EXTENSIBILITY.md](EXTENSIBILITY.md) |
-| 查看变更原因 | [CHANGELOG.md](CHANGELOG.md) 与 [DECISIONS.md](DECISIONS.md) |
+## 文档地图
 
-## 文档职责
+| 文档 | 讲什么 | 什么时候读 |
+|---|---|---|
+| [USER_GUIDE.md](USER_GUIDE.md) | 使用者的问法、操作与边界 | 第一次使用产品 |
+| [DEVELOPMENT.md](DEVELOPMENT.md) | 环境、项目结构、工具清单、改动路径、双端客户端 | 准备本地开发 |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | 模块边界、技术选型、数据管道、配方树、全部 ADR | 改任何模块之前 |
+| [RETRIEVAL.md](RETRIEVAL.md) | 检索编排、索引与切分、图谱建模与查询、拒答门槛 | 改检索、图谱或 Prompt |
+| [API.md](API.md) | 接口契约、流式协议、鉴权限流、媒体代理安全 | 改接口或访问控制 |
+| [TESTING.md](TESTING.md) | 测试矩阵、质量门禁、当前证据与验收记录 | 改完代码要验证时 |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | 部署路径、容器与 Nginx、上线验收、更新与回滚 | 准备上线 |
+| [CHANGELOG.md](CHANGELOG.md) | 已完成的重要变更（批次摘要） | 想知道"这版有什么变化" |
+| [CHANGELOG_DETAIL.md](CHANGELOG_DETAIL.md) | 按提交逐条的小改动 | 想查某个小改动是哪次做的 |
+| [ASSETS.md](ASSETS.md) | 素材与数据来源、字体与第三方许可、免责声明 | 新增素材、核对来源与授权 |
 
-- `PROJECT_STATE.md` 保存当前快照，不承载详细实现；
-- `ARCHITECTURE.md` 保存稳定的整体边界、技术选型总览和数据流；
-- 专项设计文档按"职责与技术选型 → 不变量与实现 → 测试问题与对策 → 扩展接口"组织，便于单独阅读某一块设计；
-- `CHANGELOG.md` 记录已经完成的重要改进；
-- `FRONTEND_EXPERIENCE.md` 记录当前 Web 空间层实现，`FRONTEND_SPATIAL_ACCEPTANCE.md` 保存对应验收数据与边界；
-- `DECISIONS.md` 记录仍会影响维护的取舍和理由（ADR）；
-- `archive/` 保存阶段审查证据，只描述当时状态。
+文档按"职责与技术选型 → 不变量与实现 → 测试问题与对策 → 扩展接口"组织，一份文档负责一块设计，便于单独阅读。所有数字必须能在代码、构建报告或评测产物中找到来源；未验证的事项单独列出，不把计划写成已完成。
 
-业务行为发生变化时，至少更新状态、对应专项文档和变更记录；接口、测试或部署受影响时再更新相应文档。数字必须能在代码、构建报告或评测产物中找到来源。
+## 当前能力
 
-文档移动、改名或新增后运行 `python scripts/check_docs.py`，它会检查全部 Markdown 中的本地相对链接（不访问网络）。
-`archive/` 下的报告是当时的审查证据，不作为当前事实来源；若与专项文档冲突，以专项文档和代码为准。
+| 能力 | 当前实现 | 状态 |
+|---|---|---|
+| 规范化知识库 | 2,229 个 WIKI 来源，按 22 个子分类输出 JSONL/Markdown | 已构建 |
+| 配方合成树 | 345 条真实配方；基础资源叶子、最多两配方、循环与深度剪枝 | 已实现并有回归 |
+| RAG | 8,300 chunks，其中 2,535 条为中文干员语音；名称 + BM25 + 向量 + 全文补充 | 增量/全量对照及一致性审计通过 |
+| 知识图谱 | 2,405 个实体、10,076 条可追溯关系；明确关系和最多三跳路径 | 增量/全量逻辑等价，专项审查通过 |
+| 知识问答 | 结构化直查、枚举、图检索、多路文本检索和有证据生成 | Web 与小程序已接入 |
+| 流式输出 | Web 使用 SSE：`phase → meta → delta → done`；旧接口供小程序和评测 | 已实现并有离线回归 |
+| Web | React 18 + TypeScript + Vite 6 + Framer Motion + Three.js；共享空间层、玻璃查询层、React SVG 配方树、Markdown 来源 | 已构建并测试 |
+| 微信小程序 | Canvas 树、问答、干员详情、媒体、反馈；视觉与 Web 同步 | 模拟测试通过，待真机 |
+| 部署 | Docker、Compose、Nginx/HTTPS/限流模板、Railway 配置、更新与回滚手册 | 本地容器曾验证，**未公网部署** |
+| 可观测性 | 深度健康、进程指标、脱敏 Trace、反馈隔离审核和坏例回放 | 已实现 |
+
+## 当前质量快照
+
+- 71 条严格检索快照：Recall@5 98.59%、MRR 97.89%、Precision@5 45.35%；唯一未命中为多系列任务比较困难样本；
+- 25 条离线路由集 92%；图固定集 10/10；关系正向、反向和是非问审查 1,662/1,662；
+- 当前 manifest 下的在线答案黄金集 6 条：拒答、必要事实、引用/结构化溯源 100%，来源重合 66.67%；样本太少，不能用于声称生产回答准确率；
+- 严格发布门禁 `--require-versioned-results` 通过，0 失败、0 警告；主测试 73/73、后端专项 85/85。
+
+数字口径、逐项命令、原始返回与未验证边界见 [测试与质量](TESTING.md)。
+
+## 待处理与发布边界
+
+1. 扩充独立 holdout/challenge 集并校准 LLM judge；当前 6 题只验证链路与已知边界；
+2. 在 Android、iOS 真机验证小程序长答案、图片/音频、弱网、后台切换、滚动和 Canvas 手势；
+3. 公网发布后用正式 HTTPS 域名验证健康检查、配方、整包问答、SSE、代理 IP 与持久卷；
+4. `EvidenceRef`、统一请求 deadline/cancel、版本化索引切换仍是设计预留，尚未完整实现；
+5. reranker 和一次受限补检索只在困难评测证明收益后引入。
+
+## 扩展路线
+
+扩展遵循"先稳定接口和证据，再增加模型步骤"的顺序。
+
+| 能力 | 当前缺口 | 建议接口 | 启用条件 |
+|---|---|---|---|
+| 统一来源引用 | 图、chunk、语音的打开方式不完全一致 | `EvidenceRef {source_id,item_id,section,span,kind,open_action}` | 双端来源跳转契约测试通过 |
+| 稳定实体解析 | 主要路径已修最长名称，仍缺统一 resolver | `EntityResolver.resolve(query) -> candidates[]` | 重叠名、单字名、衍生物、多实体回归通过 |
+| 整体请求上下文 | LLM 有操作预算，整道问题未共享 deadline/cancel | `RequestContext {deadline,cancel,trace_id,budget}` | Web、小程序、后端超时语义一致 |
+| 版本化仓库 | 部分数据懒加载，索引仍原目录更新 | `Repository(version)` + 原子活动版本切换 | 构建审计后切换且能回滚 |
+| 客户端环境配置 | 小程序真机地址仍需手改 | development/experience/production 配置 | 发布流程自动拒绝 HTTP 或本机地址 |
+| 持久指标 | 当前指标为单进程内存 | Prometheus/OpenTelemetry 导出 | 多 worker 或多实例部署前 |
+
+**检索能力候选**：一次受限补检索（仅在困难集证明首轮证据覆盖不足时启用，白名单最多次补一次，受整体 deadline 与调用预算约束）；reranker（先补 hard negatives，证明相对 RRF 有稳定收益才启用）；长文档证据（让索引保存章节与原文 span，改善引用定位与跨段指代）。
+
+**产品能力候选**：配方数量传播/收藏/导出走结构化树而非模型；用 URL 保存可分享的查询状态；桌面证据侧栏与移动端详情页复用 `EvidenceRef`；数据更新时间与版本从后端元信息读取，不在 UI 写死。
+
+**不采用或暂缓**：开放式 Agent Loop（增加串行调用与不可复现路径，固定评测未证明需要）；让 LLM 自动写图谱或正式知识库（无法保证来源与可回滚）；把 3D 展示载体绑定知识条目；多主机继续各自使用独立 SQLite 限额。
+
+任何扩展必须同时满足：固定事实正确率不下降、答案完整性有可测提升、拒答质量不明显下降、延迟在目标内，并具备超时、次数上限、日志、降级和回滚。最终由严格版本门禁及人工抽查决定是否发布。
+
+## 文档维护约定
+
+- 业务行为变化时至少更新本文件的能力与状态、对应专项文档和 [CHANGELOG.md](CHANGELOG.md)；
+- 用户可见行为变化时必须同步 [USER_GUIDE.md](USER_GUIDE.md)；
+- 提交后运行 `python scripts/build_changelog_detail.py` 让 [详细更新日志](CHANGELOG_DETAIL.md) 跟上；
+- 文档移动、改名或新增后运行 `python scripts/check_docs.py`，它会检查全部 Markdown 中的本地相对链接（不访问网络）。

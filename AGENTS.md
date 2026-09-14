@@ -4,16 +4,24 @@
 
 ## 接手顺序
 
-1. 阅读 [当前状态](docs/PROJECT_STATE.md)；
-2. 阅读 [整体架构](docs/ARCHITECTURE.md)；
-3. 查看 [工具清单](docs/TOOLS.md)，避免重复实现；
-4. 修改 RAG 前读 [RAG 设计](docs/RAG.md) 与 [决策记录](docs/DECISIONS.md)；
-5. 按改动范围阅读 [测试与质量](docs/TESTING.md)。
+1. 阅读 [文档总入口](docs/README.md)，它含当前能力、待处理边界与扩展路线；
+2. 阅读 [整体架构](docs/ARCHITECTURE.md) 与 [开发指南](docs/DEVELOPMENT.md)；
+3. 查看 [开发指南](docs/DEVELOPMENT.md) 的工具清单，避免重复实现；
+4. 修改 RAG、图谱或 Prompt 前读 [检索与图谱](docs/RETRIEVAL.md)；
+5. 按改动范围阅读 [测试与质量](docs/TESTING.md) 与 [接口设计](docs/API.md)；
+6. 改用户可见行为前读 [使用指南](docs/USER_GUIDE.md)，它是使用者视角的承诺面。
+
+## 文档分层
+
+- 根 `README.md`：产品门面，只回答"是什么、能做什么、怎么跑起来、数据从哪来"；
+- `docs/USER_GUIDE.md`：使用者视角，只讲怎么用，不写实现与内部命名；
+- `docs/` 共 11 份：1 份使用指南 + 10 份开发者文档（入口、开发、架构、检索、接口、测试、部署、变更两层、素材声明），入口是 [docs/README.md](docs/README.md)；
+- 变更记录分两层：`docs/CHANGELOG.md` 记批次摘要，`docs/CHANGELOG_DETAIL.md` 由 `scripts/build_changelog_detail.py` 按提交生成。
 
 ## 不可破坏的业务约束
 
 - 配方树唯一事实源是 `output/recipes.json`，不得用 RAG 猜配方；
-- 叶子必须收敛到基础资源：清水、矿物、气体矿物或种子类；
+- 叶子必须收敛到基础资源：免费资源（清水/惰气/息壤气）、无产出配方的矿物、种子类（种植循环终止点）；
 - 每个物品最多展示 2 个配方，必须处理自循环并限制深度为 10；
 - 名称歧义返回候选，不自动猜测；无配方物品回退知识库；
 - 知识图谱的确定关系必须带来源和证据；图未命中不能解释为关系不存在；
@@ -43,11 +51,12 @@
 
 ## 工作纪律
 
-- 先查 `scripts/` 和 [工具清单](docs/TOOLS.md)，已有能力直接复用；
+- 先查 `scripts/` 和 [开发指南](docs/DEVELOPMENT.md) 的工具清单，已有能力直接复用；
 - 复杂操作沉淀成可复用脚本，并同步更新工具文档；
 - 修改接口时同步更新 Web 类型、小程序封装和契约测试；
 - 修改索引、路由、图谱或 Prompt 时保存版本信息并运行对应门禁；
+- 用户可见行为变化时同步 [使用指南](docs/USER_GUIDE.md)；提交后运行 `python scripts/build_changelog_detail.py` 让详细日志跟上；
 - 不把固定评测集成绩表述成所有自然语言问题的正确率；
 - 文档应说明当前实现、测试证据和已知边界，不把计划写成已完成。
 
-常用命令与验证矩阵分别见 [工具清单](docs/TOOLS.md) 和 [测试与质量](docs/TESTING.md)。
+常用命令见 [开发指南](docs/DEVELOPMENT.md) 的工具清单，验证矩阵见 [测试与质量](docs/TESTING.md)。
